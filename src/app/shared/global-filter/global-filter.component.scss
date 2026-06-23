@@ -1,0 +1,13 @@
+.p-input-icon-left {
+  position: relative;
+  display: inline-block;
+}
+
+.p-input-icon-left > i {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+  pointer-events: none;
+}

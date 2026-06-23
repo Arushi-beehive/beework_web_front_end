@@ -1,0 +1,19 @@
+.item-report {
+  ::ng-deep {
+    .p-datatable-wrapper{
+      overflow-x: auto !important;
+    }
+    .p-datatable-table {
+      border-spacing: 0 !important;
+       border-collapse: separate !important; 
+    }
+    .p-datatable-thead > tr > th:nth-child(5),
+    .p-datatable-tbody > tr > td:nth-child(5) {
+      box-shadow: 4px 0 6px -2px rgba(0, 0, 0, 0.15);
+    }
+
+    th.sticky-last, td.sticky-last{
+      box-shadow: 4px 0 8px -2px rgba(0,0,0,0.18) !important;
+    }
+  }
+}

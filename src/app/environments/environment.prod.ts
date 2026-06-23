@@ -1,0 +1,19 @@
+
+export const environment = {
+  production: false,
+  //  baseurl: "http://13.201.136.123:8081/api/v1",
+   
+  baseurl: "https://api.hexahivepro.com/api",
+  //  baseurl:"https://api-prod.hexahivepro.com/v1",
+  // baseurl:"https://cm2.beehiveinfotech.com/api/v1",
+//   SubDomain:window.location.protocol+ '//'+window.location.host
+};
+
+/*
+ * For easier debugging in development mode, you can import the following file
+ * to ignore zone related error stack frames such as `zone.run`, `zoneDelegate.invokeTask`.
+ *
+ * This import should be commented out in production mode because it will have a negative impact
+ * on performance if an error is thrown.
+ */
+// import 'zone.js/plugins/zone-error';  // Included with Angular CLI.

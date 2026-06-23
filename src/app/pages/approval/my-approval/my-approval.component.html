@@ -1,0 +1,235 @@
+<div class="card p-6">
+    <!-- Header Row: Stock In + Buttons -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <span class="block text-surface-900 font-bold text-2xl">My Approval</span>
+
+        <!-- Buttons - Hidden on mobile, shown in header on desktop -->
+        <div class="hidden md:flex gap-4">
+            <button pButton type="button" label="Display" class="p-button-warning" (click)="display()" [disabled]="approvalForm.invalid"></button>
+            <button pButton type="button" label="Download" icon="pi pi-download" iconPos="right" class="p-button-warning" (click)="onDownloadClick()"></button>
+            <button pButton type="button" label="Reset" class="p-button-secondary" (click)="reset()"></button>
+        </div>
+    </div>
+
+    <form [formGroup]="approvalForm" class="space-y-8">
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-x-8 gap-y-4 w-full">
+
+              <!-- Type -->
+            <div class="flex flex-col">
+                <label class="font-medium mb-1">Type <span class="text-red-500">*</span></label>
+                <p-dropdown [options]="typeOptions" optionValue="rule_id" optionLabel="rule_name" [filter]="true" [showClear]="true" filterPlaceholder="Search Type" formControlName="p_type" placeholder="Type" class="w-full"> </p-dropdown>
+                 <small class="text-red-500 mt-1" *ngIf="approvalForm.get('p_type')?.touched && approvalForm.get('p_type')?.invalid"> Type is required </small>
+            </div>
+
+             <!-- Project Name -->
+            <div class="flex flex-col">
+                <label class="font-medium mb-1">Project <span class="text-red-500">*</span></label>
+                <p-dropdown
+                    [options]="projectNameOptions"
+                    optionLabel="project_name"
+                    optionValue="project_id"
+                    [filter]="true"
+                    [showClear]="true"
+                    filterPlaceholder="Select Project Name"
+                    formControlName="projectName"
+                    placeholder="Project Name"
+                    class="w-full"
+                >
+                </p-dropdown>
+                <small class="text-red-500 mt-1" *ngIf="approvalForm.get('projectName')?.touched && approvalForm.get('projectName')?.invalid"> Project Name is required </small>
+            </div>
+
+             <!-- Group Leader - Full width on mobile, half on desktop -->
+            <div class="flex flex-col">
+                <label class="font-medium mb-1">Group Leader</label>
+                <p-dropdown [options]="groupLeaderOptions" optionLabel="dd_value" optionValue="id" [filter]="true" [showClear]="true" filterPlaceholder="Search Group Leader" formControlName="groupleader" placeholder="Group Leader" class="w-full">
+                </p-dropdown>
+            </div>
+
+             <div class="flex flex-col">
+                <label class="font-medium mb-1"> Period <span class="text-red-500" *ngIf="isPeriodRequired()">*</span> </label>
+                <p-dropdown [options]="periodOptions" optionLabel="label" optionValue="value" [filter]="true" [showClear]="true" filterPlaceholder="Select Period" formControlName="period" placeholder="Period" class="w-full"> </p-dropdown>
+                <small class="text-red-500 mt-1" *ngIf="approvalForm.get('period')?.touched && approvalForm.get('period')?.invalid"> Period is required </small>
+            </div>
+
+            <!-- Request -->
+            <div class="flex flex-col">
+                <label class="font-medium mb-1">Request</label>
+                <p-dropdown [options]="requestOptions" optionValue="value" optionLabel="label" [filter]="true" [showClear]="true" filterPlaceholder="Search Request" formControlName="p_request" placeholder="Request" class="w-full"> </p-dropdown>
+            </div>
+
+        </div>
+
+        <!-- Action Buttons - Visible only on mobile, below form fields -->
+        <div class="flex md:hidden justify-center gap-2 mt-6">
+            <button pButton type="button" label="Display" class="p-button-warning flex-1" (click)="display()" [disabled]="approvalForm.invalid"></button>
+            <button pButton type="button" label="Download" class="p-button-warning flex-1" (click)="onDownloadClick()"></button>
+            <button pButton type="button" label="Reset" class="p-button-secondary flex-1" (click)="reset()"></button>
+        </div>
+
+        <!-- Product Table with Pagination -->
+        <div>
+            <p-table
+                [value]="products"
+                dataKey="mobile"
+                selectionMode="multiple"
+                [tableStyle]="{ 'min-width': '50rem' }"
+                [paginator]="true"
+                [rows]="10"
+                [rowsPerPageOptions]="[10, 20, 50]"
+                [responsiveLayout]="'scroll'"
+                class="p-datatable-gridlines mt-6 item-report"
+            >
+                <ng-template pTemplate="header">
+                    <tr class="bg-yellow-400">
+                        <th>Id</th>
+                        <th>Project</th>
+                        <th>Group Leader</th>
+                        <th>Worker</th>
+                        <th>Request Date</th>
+                        <th>Old Rate</th>
+                         <th>Old Unit</th>
+                        <th>New Rate</th>
+                        <th>New Unit</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="body" let-row let-i="rowIndex">
+                    <tr>
+                        <td>{{ row.request_id }}</td>
+                        <td>{{ row.project_name }}</td>
+                        <td>{{ row.group_leader}}</td>
+                        <td>{{ row.fullname }}</td>
+                        <td>{{ row.request_date | date }}</td>
+                        <td>{{ row.old_rate }}</td>
+                        <td>{{ row.old_rateunit }}</td>
+                        <td>{{ row.new_rate}}</td>
+                        <td>{{ row.new_rateunit }}</td>
+                        <td>{{ row.status }}</td>
+                        <td class="text-center w-[60px]">
+                            <div class="flex g-2">
+                                <button pButton type="button" icon="pi pi-eye" class="p-button-text p-button-sm p-button-info" (click)="view(row.id)"></button>
+                                <button pButton type="button" icon="pi pi-check-square" class="p-button-text p-button-sm p-button-success" (click)="approved(row)" [disabled]="row.status === 'APPROVED' || row.status === 'REJECTED'"></button>
+                                <button pButton type="button" icon="pi pi-ban" class="p-button-text p-button-sm p-button-danger" (click)="reject(row)" [disabled]="row.status === 'APPROVED' || row.status === 'REJECTED'"></button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="paginatorleft" appendTo="body">
+                    <div class="total-items text-gray-600 ms-2">Total Items: {{ products?.length || 0 }}</div>
+                </ng-template>
+            </p-table>
+        </div>
+    </form>
+    <p-dialog header="Approval Details" [(visible)]="viewdetails" [modal]="true" [style]="{ width: '1000px' }">
+        <p-card styleClass="shadow-2">
+            <!-- Top Details -->
+            <div class="grid">
+                <div class="col-6"><b>Request Type:</b> Sales Requisition</div>
+                <div class="col-6"><b>Requested By:</b> Amit</div>
+                <div class="col-6"><b>Request Date:</b> 20-Mar-2026</div>
+                <div class="col-6"><b>Amount:</b> ₹25,000</div>
+            </div>
+
+            <p-divider></p-divider>
+
+            <!-- Customer Details -->
+            <div class="grid">
+                <div class="col-12"><b>Customer:</b> ABC Enterprises</div>
+                <div class="col-12"><b>Product:</b> 100 Units - Laptops</div>
+                <div class="col-12"><b>Justification:</b> Discount offered to close the deal.</div>
+            </div>
+
+            <p-divider></p-divider>
+
+            <!-- Approval History -->
+            <h5><b>Approval History</b></h5>
+            <br />
+            <p-table [value]="approvalHistory" [tableStyle]="{ 'min-width': '100%' }">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Level</th>
+                        <th>Approver</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Comment</th>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="body" let-row>
+                    <tr>
+                        <td>{{ row.level }}</td>
+                        <td>{{ row.approver }}</td>
+                        <td>
+                            <p-tag [value]="row.status" [severity]="getSeverity(row.status)"> </p-tag>
+                        </td>
+                        <td>{{ row.date }}</td>
+                        <td>{{ row.comment }}</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </p-card>
+    </p-dialog>
+
+    <p-dialog
+    header="Approval Request"
+    [(visible)]="approvalDetails"
+    [modal]="true"
+    [style]="{ width: '480px' }"
+    [closable]="true"
+>
+    <div class="p-fluid flex flex-col">
+ <label class="font-medium mb-1">
+        New Rate
+    </label>
+    <input
+        pInputText
+        type="number"
+        [(ngModel)]="newRate"
+        [ngModelOptions]="{ standalone: true }"
+        placeholder="Leave blank to keep group leader rate"
+        class="w-full"
+    />    
+    </div>
+
+    <ng-template pTemplate="footer">
+        <button
+            pButton
+            label="Cancel"
+            class="p-button-secondary"
+            (click)="approvalDetails = false"
+        ></button>
+        <button
+            pButton
+            label="Approve"
+            class="p-button-warning"
+            (click)="submitApproval()"
+        ></button>
+    </ng-template>
+</p-dialog>
+
+    <p-dialog header="Rejection" [(visible)]="rejectiondetails" [modal]="true" [style]="{ width: '600px' }" [closable]="true">
+        <div class="p-fluid">
+            <label class="mb-2 block"> Please provide a reason for rejection: </label>
+
+            <div class="mb-3">
+                <label for="comment"><b>Comment *</b></label>
+                <textarea id="comment" pInputTextarea [(ngModel)]="rejectComment" [ngModelOptions]="{ standalone: true }" rows="4" class="w-full" [ngClass]="{ 'ng-invalid ng-dirty': submitted && !rejectComment }"> </textarea>
+            </div>
+
+            <!-- Error Message -->
+            <p-message *ngIf="submitted && !rejectComment" severity="error" text="Comment is required for rejection."> </p-message>
+        </div>
+
+        <!-- Footer -->
+        <ng-template pTemplate="footer">
+            <button pButton label="Cancel" class="p-button-secondary" (click)="rejectiondetails = false"></button>
+
+            <button pButton label="Submit" class="p-button-danger" (click)="submitReject()" [disabled]="!rejectComment || rejectComment.trim().length === 0"></button>
+        </ng-template>
+    </p-dialog>
+    <p-confirmDialog></p-confirmDialog>
+</div>

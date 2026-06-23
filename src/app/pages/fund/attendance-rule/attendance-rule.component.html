@@ -1,0 +1,83 @@
+<div class="card p-6">
+    <span class="block text-surface-900 font-bold text-xl mb-6">Attendance</span>
+
+    <div class="flex items-center gap-8 flex-wrap">
+         <!-- Radio -->
+        <div class="flex items-center gap-4 mb-4">
+            <div class="flex items-center gap-2">
+                <p-radioButton name="wiseType" value="Group" [(ngModel)]="selectedWise" inputId="groupWise" (ngModelChange)="onWiseChanges()"></p-radioButton>
+                <label for="groupWise" class="cursor-pointer">Groupwise</label>
+            </div>
+            <div class="flex items-center gap-2">
+                <p-radioButton name="wiseType" value="Worker" [(ngModel)]="selectedWise" inputId="workerWise" (ngModelChange)="onWiseChanges()"></p-radioButton>
+                <label for="workerWise" class="cursor-pointer">Workerwise</label>
+            </div>
+        </div>
+        <!-- Project -->
+        <div class="mb-4 flex items-center gap-3">
+            <label class="font-semibold">Project <span class="text-red-500">*</span></label>
+            <div class="flex flex-col">
+                <p-dropdown
+                    [options]="projectOptions"
+                    optionLabel="project_name"
+                    optionValue="project_id"
+                    [(ngModel)]="selectedProject"
+                    placeholder="Select Project"
+                    [filter]="true"
+                    filterPlaceholder="Search Project"
+                    (onChange)="onProjectChange()"
+                    styleClass="w-64"
+                    #projectRef="ngModel"
+                    required>
+                </p-dropdown>
+                <small class="text-red-500 mt-1" *ngIf="projectRef.invalid && projectRef.touched">Project is required.</small>
+            </div>
+        </div>
+
+        <!-- Attendance Date -->
+        <div class="mb-4 flex items-start gap-3">
+            <label class="font-medium mt-2">Attendance Date <span class="text-red-500">*</span></label>
+            <div class="flex flex-col">
+                <p-datepicker [(ngModel)]="startDate" dateFormat="dd/mm/yy" [showIcon]="true" placeholder="Date" styleClass="w-70" [maxDate]="maxDate" #startDateRef="ngModel" required></p-datepicker>
+                <small class="text-red-500 mt-1" *ngIf="startDateRef.invalid && startDateRef.touched">Attendance date is required.</small>
+            </div>
+        </div>
+
+    <!-- Multiselect Dropdown -->
+    <div class="mb-4 flex items-center gap-3">
+        <label class="font-semibold">{{ selectedWise === 'Group' ? 'Group Leader' : 'Worker' }} <span class="text-red-500">*</span></label>
+        <p-multiselect
+            [options]="availablePermissions"
+            [(ngModel)]="selectedItems"
+            [optionLabel]="selectedWise === 'Group' ? 'group_leader_name' : 'worker_name'"
+            [placeholder]="'Select ' + (selectedWise === 'Group' ? 'Group Leaders' : 'Workers')"
+            [filter]="true"
+            styleClass="w-96"
+            (onChange)="onMultiSelectChange()">
+        </p-multiselect>
+    </div>
+    </div>
+
+    <!-- Selected Items Box -->
+    <div *ngIf="selectedItems.length > 0" class="border rounded-md p-4 mt-4">
+        <h3 class="font-semibold mb-3">Selected {{ selectedWise === 'Group' ? 'Group Leaders' : 'Workers' }}</h3>
+        <div class="overflow-y-auto max-h-72">
+            <div *ngFor="let item of selectedItems" class="flex items-center gap-2 mb-2">
+                <p-checkbox
+                    [(ngModel)]="item.selected"
+                    [binary]="true"
+                    (onChange)="onItemUncheck(item)">
+                </p-checkbox>
+                <span>{{ selectedWise === 'Group' ? item.group_leader_name : item.worker_name }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="flex gap-4 mt-6">
+        <button pButton label="Submit" class="p-button-warning" (click)="submit()" [disabled]="!selectedProject || !startDate || selectedItems.length === 0"></button>
+        <button pButton label="Reset" class="p-button-secondary" (click)="reset()"></button>
+    </div>
+
+    <p-confirmDialog></p-confirmDialog>
+</div>

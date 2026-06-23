@@ -1,0 +1,106 @@
+<div class="card p-6">
+    <div class="flex justify-between items-center mb-6">
+        <span class="block text-surface-900 font-bold text-xl mb-6">Tower/Block</span>
+
+        <div class="flex gap-4">
+            <button pButton type="button" label="Add Tower" icon="pi pi-plus" class="p-button-warning" (click)="openTowerDialog()"></button>
+        </div>
+    </div>
+
+    <div class="mb-3 w-full">
+        <app-global-filter [(value)]="globalFilter" placeholder="Search Project Details" (valueChange)="applyGlobalFilter()"></app-global-filter>
+    </div>
+
+    <p-table [value]="filteredTowers" dataKey="id" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10, 20]" [responsiveLayout]="'scroll'" class="p-datatable-gridlines mt-6">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Tower/Block Name</th>
+                <th>Project Name</th>    
+                <th>Tower Incharge</th>
+                <th>Active</th>
+                <th class="text-center">Action</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-row>
+            <tr>
+                <td>{{ row.tower_name }}</td>
+                <td>{{ row.project_name }}</td>
+                <td>{{ row.tower_incharge_name }}</td>
+                <td>{{ row.tower_is_active }}</td>
+                <td>
+                    <div class="flex gap-2">
+                        <i class="pi pi-pencil cursor-pointer text-blue-500" (click)="openEditDialog(row)"> </i>
+                        <i class="pi pi-trash cursor-pointer text-red-500" (click)="deleteRow(row)"></i>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="paginatorleft">
+            <div class="text-gray-600 ms-2">Total Users: {{ filteredTowers?.length || 0 }}</div>
+        </ng-template>
+    </p-table>
+
+    <p-dialog header="{{ editMode ? 'Edit Tower' : 'Add Tower' }}" [(visible)]="visibleDialog" [modal]="true" [style]="{ width: '60vw' }" [draggable]="false" [resizable]="false">
+        <form [formGroup]="towerForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-4">
+            <div class="grid grid-cols-2 gap-x-6 gap-y-4">
+                <!-- Project -->
+                <div class="flex flex-col">
+                    <label class="font-medium mb-1">Project <span class="text-red-500">*</span></label>
+                    <p-dropdown [options]="projectOption" optionLabel="project_name" optionValue="project_id" [filter]="true" [showClear]="true" filterPlaceholder="Search Project Name" formControlName="projectName" placeholder="Select Project" class="w-full">
+                    </p-dropdown>
+                     <small class="text-red-500 mt-1" *ngIf="towerForm.get('project_name')?.touched && towerForm.get('project_name')?.invalid"> Project Name is required </small>
+                </div>
+
+                <!-- Tower -->
+                <div class="flex flex-col">
+                    <label class="font-medium mb-1">Tower/Block <span class="text-red-500">*</span></label>
+                    <input pInputText formControlName="towerName" placeholder="Tower/Block" />
+                     <small class="text-red-500 mt-1" *ngIf="towerForm.get('towerName')?.touched && towerForm.get('towerName')?.invalid"> Tower Name is required </small>
+                </div>
+
+                <!-- Location -->
+                <div class="flex flex-col">
+                    <label class="font-medium mb-1">Location</label>
+                    <input pInputText formControlName="location" placeholder="Location" />
+                </div>
+
+                <!-- Toser Incharge -->
+                <div class="flex flex-col">
+                    <label class="font-medium mb-1">Tower Incharge</label>
+                    <p-dropdown
+                        [options]="towerInchargeOption"
+                        optionLabel="fullname"
+                        optionValue="userid"
+                        [filter]="true"
+                        [showClear]="true"
+                        filterPlaceholder="Select Tower Incharge"
+                        formControlName="towerincharge"
+                        placeholder="Select Tower Incharge"
+                        class="w-full"
+                        styleClass="w-full h-[35px] flex items-center"
+                    >
+                    </p-dropdown>
+                </div>
+
+                <!-- Project Incharge -->
+                <div class="flex flex-col">
+                    <label class="font-medium mb-1">Project Incharge</label>
+                   <input pInputText formControlName="projectIncharge" placeholder="Project Incharge">
+                </div>
+
+                <!-- Active -->
+                <div class="flex gap-3 mt-9">
+                    <p-checkbox formControlName="checked" [binary]="true"></p-checkbox>
+                    <label class="font-medium">Active</label>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-4">
+                <button pButton type="button" label="Cancel" class="p-button-secondary" (click)="closeDialog()"></button>
+                <button pButton type="submit" label="Save Tower" class="p-button-warning" [disabled]="towerForm.invalid"></button>
+            </div>
+        </form>
+    </p-dialog>
+
+    <p-confirmDialog></p-confirmDialog>
+</div>

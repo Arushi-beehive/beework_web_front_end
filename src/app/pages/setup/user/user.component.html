@@ -1,0 +1,218 @@
+<div class="card p-6">
+    <div class="flex justify-between items-center mb-6">
+        <span class="block text-surface-900 font-bold text-xl mb-6">User</span>
+
+        <div class="flex gap-4">
+            <button pButton type="button" label="Add User" icon="pi pi-plus" class="p-button-warning" (click)="openUserDialog()"></button>
+        </div>
+    </div>
+
+    <!-- 🔍 Compact Global Search Section -->
+    <div class="mb-3 w-full" *ngIf="showGlobalSearch">
+        <app-global-filter [(value)]="globalFilter" placeholder="Type here to search anything related to user" (valueChange)="applyGlobalFilterManual()"></app-global-filter>
+    </div>
+
+    <!-- 📋 User Table -->
+    <p-table [value]="filteredUser" dataKey="id" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10, 20]" [responsiveLayout]="'scroll'" class="p-datatable-gridlines mt-6">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Profile</th>
+                <th>User Name</th>
+                <th>Mobile</th>
+                <th>Email</th>
+                <th>Active</th>
+                <th>Project Mapping</th>
+                <th class="text-center">Action</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-user>
+            <tr>
+                <td>{{ user.profile }}</td>
+                <td>{{ user.username }}</td>
+                <td>{{ user.mobileno }}</td>
+                <td>{{ user.emailid }}</td>
+                <td>{{ user.isactive }}</td>
+                <td>{{ user.project_mapping_type }}</td>
+                <td>
+                    <div class="flex gap-2">
+                        <i class="pi pi-trash cursor-pointer text-red-500" (click)="deleteRow(user)"></i>
+                        <i class="pi pi-pencil cursor-pointer text-blue-500" (click)="openEditDialog(user)"> </i>
+                        <i class="pi pi-check-circle cursor-pointer text-green-500" *ngIf="user.isactive === 'Yes'" pTooltip="Mark as Inactive" (click)="openExitDialog(user)"></i>
+                        <i class="pi pi-times-circle cursor-pointer text-red-500" *ngIf="user.isactive !== 'Yes'" (click)="confirmActivate(user)"></i>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="paginatorleft">
+            <div class="text-gray-600 ms-2">Total Users: {{ filteredUser?.length || 0 }}</div>
+        </ng-template>
+    </p-table>
+
+    <!-- ✳️ Add/Edit User Dialog -->
+    <p-dialog header="{{ editMode ? 'Edit User' : 'Add Profile' }}" [(visible)]="visibleDialog" [modal]="true" [style]="{ width: '60vw' }" [draggable]="false" [resizable]="false">
+        <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="space-y-6">
+            <div class="grid grid-cols-2 gap-x-6 gap-y-4">
+                <!-- Mobile -->
+                <div class="flex flex-col">
+                    <label class="font-medium mb-1">Mobile <span class="text-red-500">*</span></label>
+                    <input pInputText type="text" formControlName="p_phone" maxlength="10" placeholder="Mobile" (keypress)="allowOnlyDigits($event)" />
+                    <small class="text-red-500 mt-1" *ngIf="userForm.get('p_phone')?.touched && userForm.get('p_phone')?.invalid"> Enter a valid 10-digit mobile number </small>
+                </div>
+
+                <!-- Profile -->
+                <div class="flex flex-col">
+                    <label class="font-medium mb-1">Profile<span class="text-red-500">*</span></label>
+                    <p-dropdown
+                        [options]="profileOptions"
+                        optionLabel="profilename"
+                        optionValue="profileid"
+                        [filter]="true"
+                        [showClear]="true"
+                        filterPlaceholder="Search Profile"
+                        formControlName="p_profile"
+                        placeholder="Select Profile"
+                        class="w-full"
+                    >
+                    </p-dropdown>
+                    <small class="text-red-500 mt-1" *ngIf="userForm.get('p_profile')?.touched && userForm.get('p_profile')?.invalid"> Profile Name is required </small>
+                </div>
+
+                <!-- Password -->
+                <div class="flex flex-col relative">
+                    <label class="font-medium mb-1">Password <span class="text-red-500">*</span></label>
+                    <div class="relative">
+                        <input pInputText [type]="showPassword ? 'text' : 'password'" formControlName="p_pwd" placeholder="Password" class="w-full pr-10" />
+                    </div>
+                    <small class="text-red-500 mt-1" *ngIf="userForm.get('p_pwd')?.touched && userForm.get('p_pwd')?.invalid"> Password must contain uppercase, lowercase, number, and special character </small>
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="flex flex-col relative">
+                    <label class="font-medium mb-1">Confirm Password <span class="text-red-500">*</span></label>
+                    <div class="relative">
+                        <input pInputText [type]="showPassword ? 'text' : 'password'" formControlName="conPassword" placeholder="Confirm Password" class="w-full pr-10" />
+                    </div>
+                    <small class="text-red-500 mt-1" *ngIf="userForm.hasError('passwordMismatch')"> Passwords do not match </small>
+                </div>
+
+                <!-- First Name -->
+                <div class="flex flex-col">
+                    <label class="font-medium mb-1">Full Name <span class="text-red-500">*</span></label>
+                    <input pInputText formControlName="p_name" placeholder="Full Name" />
+                    <small class="text-red-500 mt-1" *ngIf="userForm.get('p_name')?.touched && userForm.get('p_name')?.invalid"> Full Name is required </small>
+                </div>
+
+                <!-- Project Name -->
+                <div class="flex flex-col">
+                    <label class="font-medium mb-1">Project <span class="text-red-500">*</span></label>
+                    <p-multiSelect
+                        [options]="projectOptions"
+                        optionLabel="project_name"
+                        optionValue="project_id"
+                        [filter]="true"
+                        [showClear]="true"
+                        filterPlaceholder="Search Project"
+                        formControlName="projectname"
+                        placeholder="Select Project"
+                        class="w-full"
+                        appendTo="body"
+                        [selectionLimit]="isSiteAdmin ? 1 : null"
+                        (onChange)="onProjectSelectionChange($event.value)"
+                    >
+                    </p-multiSelect>
+                    <small class="text-blue-500 mt-1" *ngIf="isSiteAdmin"> Site Admin can only be mapped to one project. </small>
+                    <small class="text-red-500 mt-1" *ngIf="userForm.get('projectname')?.touched && userForm.get('projectname')?.invalid"> Profile Name is required </small>
+                </div>
+
+                <!-- Email -->
+                <div class="flex flex-col">
+                    <label class="font-medium mb-1">Email</label>
+                    <input pInputText type="email" formControlName="p_email" placeholder="Email" />
+                    <small class="text-red-500 mt-1" *ngIf="userForm.get('p_email')?.touched && userForm.get('p_email')?.invalid"> Enter a valid email address </small>
+                </div>
+
+                <!-- Active -->
+                <div class="flex gap-3 mt-9">
+                    <div class="flex gap-2">
+                        <p-checkbox formControlName="checked" [binary]="true"></p-checkbox>
+                        <label class="font-medium">Active</label>
+                    </div>
+                    <div class="flex gap-2">
+                        <p-checkbox formControlName="mobileaccess" [binary]="true"></p-checkbox>
+                        <label class="font-medium">Mobile Access</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-4 mt-6">
+                <button pButton type="button" label="Cancel" class="p-button-secondary" (click)="visibleDialog = false"></button>
+                <button pButton type="submit" label="Submit" class="p-button-warning" [disabled]="userForm.invalid"></button>
+            </div>
+        </form>
+    </p-dialog>
+
+    <p-dialog header="Exit Worker" [(visible)]="showExitDialog" [modal]="true" [style]="{ width: '400px' }">
+        <div class="flex flex-col gap-3 p-2">
+            <div class="flex align-items-center gap-2">
+                <p-checkbox [(ngModel)]="exitForm.ppeReturn" [binary]="true" inputId="ppe"></p-checkbox>
+                <label for="ppe" class="font-medium"> PPE Kit Returned <span class="text-red-500">*</span> </label>
+            </div>
+            <small class="text-color-secondary">Must me PPE kit returned before making worker as exited</small>
+
+            <ng-container *ngIf="selectedUser?.profile === 'Group Leader'">
+                <div class="flex align-items-center gap-2">
+                    <p-checkbox [(ngModel)]="exitLinkedUser" [binary]="true" inputId="exitLinked"></p-checkbox>
+                    <label for="exitLinked" class="font-medium">Exit Linked User</label>
+                </div>
+            </ng-container>
+
+            <div class="flex flex-col gap-1">
+                <label>Exit Date <span class="text-red-500">*</span></label>
+                <p-datepicker [(ngModel)]="exitForm.exitDate" placeholder="Exit Date" [showIcon]="true" styleClass="w-full" dateFormat="dd/mm/yy" appendTo="body" [maxDate]="today"></p-datepicker>
+            </div>
+
+            <!-- Group Leader specific fields -->
+            <ng-container *ngIf="selectedUser?.profile === 'Group Leader' && !exitLinkedUser">
+                <div class="flex flex-col gap-1">
+                    <label>New Group Leader <span class="text-red-500">*</span></label>
+                    <p-dropdown
+                        #glDropdown="ngModel"
+                        [options]="groupLeaderOptions"
+                        optionLabel="dd_value"
+                        optionValue="id"
+                        [filter]="true"
+                        [showClear]="true"
+                        filterPlaceholder="Search Group Leader"
+                        [(ngModel)]="exitForm.newGroupLeader"
+                        placeholder="Select Group Leader"
+                        class="w-full"
+                        appendTo="body"
+                        (onChange)="onGroupLeaderChange()"
+                        (onHide)="glDropdown.control.markAsTouched()"
+                    >
+                    </p-dropdown>
+                    <small class="text-red-500" *ngIf="(glDropdown.touched || glTouched) && !exitForm.newGroupLeader"> Group Leader selection is required </small>
+                    <small class="text-red-500" *ngIf="glSameError"> New Group Leader cannot be the same as the exiting user </small>
+                </div>
+            </ng-container>
+
+            <div class="flex flex-col gap-1">
+                <label>Remark</label>
+                <textarea pInputTextarea [(ngModel)]="exitForm.remark" placeholder="Remark" rows="3" class="w-full"></textarea>
+            </div>
+        </div>
+
+        <ng-template pTemplate="footer">
+            <button
+                pButton
+                label="Submit"
+                class="p-button-warning"
+                (click)="submitExit()"
+                [disabled]="!exitForm.ppeReturn || !exitForm.exitDate || (selectedUser?.profile === 'Group Leader' && !exitLinkedUser && !exitForm.newGroupLeader) || glSameError"
+            ></button>
+            <button pButton label="Cancel" class="p-button-secondary" (click)="showExitDialog = false"></button>
+        </ng-template>
+    </p-dialog>
+
+    <p-confirmDialog></p-confirmDialog>
+</div>
