@@ -31,7 +31,14 @@ export class LoginComponent implements OnInit {
         { label: 'Employee', value: 'employee' },
         { label: 'Manager', value: 'manager' }
     ];
-
+modules = [
+  { label: 'Inventory',            icon: 'pi pi-box',          route: '/inventory' },
+  { label: 'Workforce',            icon: 'pi pi-users',        route: '/workforce' },
+  { label: 'Work Management',      icon: 'pi pi-briefcase',    route: '/work-management' },
+  { label: 'Management Reporting', icon: 'pi pi-chart-bar',    route: '/management-reporting' },
+  { label: 'Human Resource',       icon: 'pi pi-id-card',      route: '/human-resource' },
+  { label: 'Accounting',           icon: 'pi pi-wallet',       route: '/accounting' },
+]
     LayoutService = inject(LayoutService);
     isDarkTheme = computed(() => this.LayoutService.isDarkTheme());
     loginForm!: FormGroup;
@@ -67,6 +74,10 @@ export class LoginComponent implements OnInit {
             event.preventDefault();
         }
     }
+
+openModule(m: { label: string; route: string }) {
+  this.route.navigate([m.route])
+}
 
     loadRememberedCredentials() {
         try {

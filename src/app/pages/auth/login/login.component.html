@@ -15,64 +15,106 @@
     <path [attr.fill]="isDarkTheme() ? 'var(--p-primary-500)' : 'var(--p-primary-100)'" d="M1397.5 154.8c47.2-10.6 93.6-25.3 138.6-43.8c21.7-8.9 43-18.8 63.9-29.5V0H643.4c62.9 41.7 129.7 78.2 202.1 107.4C1020.4 178.1 1214.2 196.1 1397.5 154.8z" />
 </svg>
 
-<div class="px-8 min-h-screen flex justify-center flex-col  items-center">
+<div class="px-8 min-h-screen flex justify-center flex-col items-center">
 
- <div class="mb-2 relative">
+    <!-- Title -->
+    <div class="mb-3 relative z-10">
+        <div class="text-surface-900 dark:text-surface-0 text-xl font-bold">Log in with</div>
+    </div>
 
+    <!-- Card -->
+    <div class="bg-white dark:bg-surface-900 rounded-2xl px-10 py-8 z-10 w-full max-w-lg shadow-md" style="border: none;">
 
-            <div class="text-surface-900 dark:text-surface-0 text-xl font-bold mb-2">Log in with</div>
-
+        <!-- Logo -->
+        <div class="flex justify-center flex-col mb-6 items-center">
+            <img src="/layout/images/BeeWork_with_Title_noBG.png" alt="Beework" width="110">
         </div>
-    <div class="border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 rounded px-8 py-8 z-10">
-
-         <div class="flex justify-center flex-col mb-6   items-center relative">
-    <img src="/layout/images/BeeWork_with_Title_noBG.png" alt="Beework" width="100">
-</div>
 
         <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
             <div class="flex flex-col">
+
+                <!-- Mobile Number -->
                 <p-iconfield class="w-full">
-                    <p-inputicon class="pi pi-address-book" />
+                    <p-inputicon class="pi pi-mobile" style="color:#F5C518;" />
                     <input
                         type="text"
                         pInputText
                         maxlength="10"
                         (keypress)="allowOnlyDigits($event)"
                         formControlName="clientcode"
-                        class="w-full md:w-[25rem]"
+                        class="w-full login-input"
                         placeholder="Mobile Number"
                         aria-label="clientcode"
                         [ngClass]="{ 'ng-invalid': loginForm.get('clientcode')?.invalid && loginForm.get('clientcode')?.touched }"
+                        style="background:#FFF8E1; border-color:#F0D060; color:#333; border-radius:10px;"
                     />
                 </p-iconfield>
-                <p-message *ngIf="loginForm.get('clientcode')?.hasError('required') && loginForm.get('clientcode')?.touched" severity="error" variant="simple" size="small"> Mobile No is required </p-message>
+                <p-message *ngIf="loginForm.get('clientcode')?.hasError('required') && loginForm.get('clientcode')?.touched" severity="error" variant="simple" size="small">Mobile No is required</p-message>
                 <p-message class="mt-1 ms-3" *ngIf="loginForm.get('clientcode')?.hasError('pattern') && loginForm.get('clientcode')?.touched" severity="error" variant="simple" size="small">Enter a valid 10-digit mobile number</p-message>
 
-                <p-iconfield class="w-full mt-6">
-                    <p-inputicon class="pi pi-lock" />
-                    <input formControlName="pwd" [type]="showPassword ? 'text' :'password'" pInputText class="w-full md:w-[25rem]" placeholder="Password" />
-                    <p-inputicon [class]="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'" (click)="togglePassword()" style="cursor: pointer;"></p-inputicon>
+                <!-- Password -->
+                <p-iconfield class="w-full mt-4">
+                    <p-inputicon class="pi pi-lock" style="color:#F5C518;" />
+                    <input
+                        formControlName="pwd"
+                        [type]="showPassword ? 'text' : 'password'"
+                        pInputText
+                        class="w-full"
+                        placeholder="Password"
+                        style="background:#FFF8E1; border-color:#F0D060; color:#333; border-radius:10px;"
+                    />
+                    <p-inputicon
+                        [class]="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"
+                        (click)="togglePassword()"
+                        style="cursor:pointer; color:#F5C518;"
+                    ></p-inputicon>
                 </p-iconfield>
-                <p-message class="mt-1 ms-3" *ngIf="loginForm.get('pwd')?.hasError('required') && loginForm.get('pwd')?.touched" severity="error" variant="simple" size="small"> Password is required </p-message>
-                <p-message class="mt-1 ms-3" *ngIf="loginForm.get('pwd')?.hasError('minlength') && loginForm.get('pwd')?.touched" severity="error" variant="simple" size="small"> Password must be atleast 4 characters</p-message>
-              
-                <div class="my-6 flex flex-wrap items-center justify-between gap-4">
-                    <div class="flex items-center">
-                        <p-checkbox   formControlName="rememberMe" styleClass="mr-2" inputId="rememberMe" class="flex" [binary]="true"></p-checkbox>
-                        <label for="rememberMe" class="text-surface-600 dark:text-surface-200 font-medium mr-20 cursor-pointer">Remember Me</label>
+                <p-message class="mt-1 ms-3" *ngIf="loginForm.get('pwd')?.hasError('required') && loginForm.get('pwd')?.touched" severity="error" variant="simple" size="small">Password is required</p-message>
+                <p-message class="mt-1 ms-3" *ngIf="loginForm.get('pwd')?.hasError('minlength') && loginForm.get('pwd')?.touched" severity="error" variant="simple" size="small">Password must be at least 4 characters</p-message>
+
+                <!-- Remember Me + Forgot Password -->
+                <div class="my-4 flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex items-center gap-2">
+                        <p-checkbox formControlName="rememberMe" inputId="rememberMe" [binary]="true"></p-checkbox>
+                        <label for="rememberMe" class="text-surface-600 dark:text-surface-200 font-medium cursor-pointer text-sm">Remember Me</label>
                     </div>
-                    <a class="text-surface-600 dark:text-surface-200 cursor-pointer hover:text-primary ml-auto transition-colors duration-300" (click)="forgetPassword()">Forgot password</a>
+                    <a class="cursor-pointer hover:underline transition-colors duration-300 text-sm font-medium" style="color:#F5C518;" (click)="forgetPassword()">Forgot password</a>
                 </div>
-                <button pButton pRipple label="Log In" class="w-full" type="submit" [disabled]="loginForm.invalid"></button>
+
+                <!-- Module Grid -->
+                <div class="grid grid-cols-3 gap-3 mb-5">
+                    <button
+                        *ngFor="let m of modules"
+                        type="button"
+                        (click)="openModule(m)"
+                        class="flex flex-col items-center justify-center gap-2 rounded-xl py-4 px-2 bg-white dark:bg-surface-800 hover:bg-amber-50 transition-colors duration-200 cursor-pointer"
+                        style="border: 1.5px solid #E5E0D0;"
+                    >
+                        <i [class]="m.icon" style="font-size:1.4rem; color:#F5C518;"></i>
+                        <span class="text-xs text-center font-semibold leading-tight" style="color:#1a1a1a;">{{ m.label }}</span>
+                    </button>
+                </div>
+
+                <!-- Log In Button -->
+                <button
+                    pRipple
+                    type="submit"
+                    [disabled]="loginForm.invalid"
+                    class="w-full py-3 rounded-xl font-bold text-base tracking-wide transition-opacity duration-200"
+                    [ngStyle]="{'background':'#F5C518','color':'#fff','border':'none','cursor':'pointer','opacity':loginForm.invalid?'0.6':'1'}"
+                >
+                    Log In
+                </button>
+
             </div>
         </form>
-           <div class="relative">
-            <div class="flex justify-center flex-col mt-6   items-center relative">
-                A Product By
-    <img src="/layout/images/company-logo.png" alt="CM2" width="130">
 
-</div>
-    </div>
+        <!-- Footer -->
+        <div class="flex flex-col justify-center items-center mt-6 gap-1">
+            <span class="text-sm" style="color:#888;">A Product By</span>
+            <img src="/layout/images/company-logo.png" alt="Beehive Infotech" width="140">
+        </div>
+
     </div>
 
 </div>
