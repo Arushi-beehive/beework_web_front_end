@@ -31,7 +31,7 @@ export class UserSecurityComponent {
     allPermissions: AccessPermission[] = [];
     availablePermissions: any[] = [];
     restrictPermissions: any[] = [];
-    selectedAccess:string = 'M';
+    selectedAccess: string = 'M';
     companyId = '';
 
     ngOnInit() {
@@ -41,10 +41,10 @@ export class UserSecurityComponent {
         this.availablePermissions = JSON.parse(JSON.stringify(this.allPermissions));
     }
 
-    onAccessChange(){
-        this.allPermissions=[];
-        this.restrictPermissions=[];
-        this.availablePermissions=[];
+    onAccessChange() {
+        this.allPermissions = [];
+        this.restrictPermissions = [];
+        this.availablePermissions = [];
         this.loadDropdown('ACCESSPERMISSION', 'allPermissions', this.selectedAccess);
     }
     loadDropdown(type: string, key: 'roleOptions' | 'allPermissions' | 'restrictPermissions', value: string) {
@@ -52,8 +52,8 @@ export class UserSecurityComponent {
             returnType: type,
             returnValue: value,
             username: '',
-            option1: this.companyId, 
-            option2:''
+            option1: this.companyId,
+            option2: ''
         };
 
         this.setupService.onDropdownDetails(payload).subscribe({
@@ -61,15 +61,15 @@ export class UserSecurityComponent {
                 this[key] = res.data;
                 if (type === 'ACCESSPERMISSION') {
                     this.availablePermissions = this.clonePermissions(this.allPermissions);
-                     if(this.selectedRole){
-                    const selectedUser = this.roleOptions.find(r => r.profileid === this.selectedRole);
-        const value = selectedUser?.profilename ?? '';
-        this.loadDropdown('ACCESSCONTROL', 'restrictPermissions', value);
+                    if (this.selectedRole) {
+                        const selectedUser = this.roleOptions.find((r) => r.profileid === this.selectedRole);
+                        const value = selectedUser?.profilename ?? '';
+                        this.loadDropdown('ACCESSCONTROL', 'restrictPermissions', value);
                     }
                 }
                 if (type === 'ACCESSCONTROL') {
-                    this.restrictPermissions = this.allPermissions.filter((p) => res.data.some((a:any) => a.access_name === p.access_name)).map(p=>({...p, selected:false}));
-                    this.availablePermissions = this.allPermissions.filter((p)=> !this.restrictPermissions.some((r)=> r.access_name === p.access_name)).map(p=>({...p,selected:false}));
+                    this.restrictPermissions = this.allPermissions.filter((p) => res.data.some((a: any) => a.access_name === p.access_name)).map((p) => ({ ...p, selected: false }));
+                    this.availablePermissions = this.allPermissions.filter((p) => !this.restrictPermissions.some((r) => r.access_name === p.access_name)).map((p) => ({ ...p, selected: false }));
                 }
             }
         });
@@ -78,14 +78,14 @@ export class UserSecurityComponent {
     onRoleChange() {
         const selectedUser = this.roleOptions.find((r) => r.profileid === this.selectedRole);
         const value = selectedUser?.profilename ?? '';
-         this.restrictPermissions = [];
-    this.availablePermissions = this.clonePermissions(this.allPermissions);
+        this.restrictPermissions = [];
+        this.availablePermissions = this.clonePermissions(this.allPermissions);
         this.loadDropdown('ACCESSCONTROL', 'restrictPermissions', value);
     }
 
-  private clonePermissions(permissions:AccessPermission[]):any[]{
-    return permissions.map(p=>({ ...p,selected:false}))
-  }
+    private clonePermissions(permissions: AccessPermission[]): any[] {
+        return permissions.map((p) => ({ ...p, selected: false }));
+    }
 
     moveSelectedToRight() {
         const selected = this.availablePermissions.filter((p) => p.selected);
@@ -114,23 +114,22 @@ export class UserSecurityComponent {
         const payload: SubmitSecurity = {
             companyId: this.companyId,
             profileId: this.selectedRole,
-            permission: this.restrictPermissions.map(p=>p.permissionid),
+            permission: this.restrictPermissions.map((p) => p.permissionid),
             pType: this.selectedAccess,
             created: userid
         };
-        
+
         this.setupService.onSubmitSecurity(payload).subscribe({
             next: (res) => {
                 let severity, summary;
-                if(res.data.status){
+                if (res.data.status) {
                     severity = 'success';
                     summary = 'Success';
-                }
-                else{
+                } else {
                     severity = 'error';
                     summary = 'failed';
                 }
-                this.showSuccess(severity,summary, res.data.message);
+                this.showSuccess(severity, summary, res.data.message);
             }
         });
     }
@@ -151,7 +150,7 @@ export class UserSecurityComponent {
         this.availablePermissions = this.clonePermissions(this.allPermissions);
     }
 
-    showSuccess(severity:string, summary:string, message: string) {
+    showSuccess(severity: string, summary: string, message: string) {
         this.messageService.add({ severity: severity, summary: summary, detail: message });
     }
 }

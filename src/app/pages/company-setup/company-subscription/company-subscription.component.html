@@ -1,0 +1,217 @@
+<p-toast />
+<p-confirmDialog />
+
+<div class="card p-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <span class="block text-surface-900 font-bold text-xl">Module Subscription</span>
+        <button pButton pRipple type="button" label="Add Subscription" icon="pi pi-plus" class="p-button-warning" (click)="openDialog()"></button>
+    </div>
+
+    <!-- Global Search -->
+    <div class="mb-3 w-full" *ngIf="showGlobalSearch">
+        <app-global-filter [(value)]="globalFilter" placeholder="Search by company, email, module..." (valueChange)="applyGlobalFilterManual()"></app-global-filter>
+    </div>
+
+    <!-- Main Table -->
+    <p-table [value]="flattenedRows" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10, 20]" responsiveLayout="scroll" class="p-datatable-gridlines mt-4">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Company</th>
+                <th>Mobile</th>
+                <th>Email</th>
+                <th>Module</th>
+                <th>Tenure</th>
+                <th>Start date</th>
+                <th>End date</th>
+                <th>Status</th>
+                <th class="text-center">Action</th>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-row>
+            <tr>
+                <td class="font-medium">{{ row.company }}</td>
+                <td>{{ row.mobile }}</td>
+                <td>{{ row.email }}</td>
+                <td>
+                    <span class="inline-flex items-center gap-1 px-2 py-1 border-round text-xs font-medium" style="background: #fff3b0; color: #a07800; border: 1px solid #f5e070">
+                        <i [class]="row.icon" style="font-size: 11px"></i>
+                        {{ row.module }}
+                    </span>
+                </td>
+                <td>{{ row.tenureLbl }}</td>
+                <td>{{ row.startDate | date: 'dd MMM yyyy' }}</td>
+                <td>{{ row.endDate | date: 'dd MMM yyyy' }}</td>
+                <td>
+                    <span class="px-3 py-1 border-round-xl text-xs font-semibold" style="background: #d4edda; color: #155724">
+                        {{ row.status }}
+                    </span>
+                </td>
+                <td class="text-center">
+                    <i class="pi pi-trash cursor-pointer text-red-500" (click)="deleteSubscriptionRow(row)"></i>
+                </td>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="paginatorleft">
+            <div class="text-gray-600 ms-2">Total: {{ flattenedRows?.length || 0 }}</div>
+        </ng-template>
+    </p-table>
+</div>
+
+<!-- ─── Add Subscription Dialog ─────────────────────────── -->
+<p-dialog header="Add Subscription" [(visible)]="visibleDialog" [modal]="true" [style]="{  width: '55vw', minWidth: '320px', maxWidth: '95vw' }" [draggable]="false" [resizable]="false">
+    <!-- Company Details Form -->
+    <form [formGroup]="companyForm" class="mb-5">
+        <div class="text-sm font-semibold text-color-secondary uppercase mb-3" style="letter-spacing: 0.04em">Company details</div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
+            <!-- Company Name -->
+            <div class="flex flex-col">
+                <label class="font-medium"> Company name <span class="text-red-500">*</span> </label>
+                <input pInputText formControlName="companyName" placeholder="Company Name" class="w-full" [ngClass]="{ 'ng-invalid ng-dirty': cf['companyName'].invalid && cf['companyName'].touched }" />
+                <small class="text-red-500" style="min-height: 16px; display: block">
+                    <ng-container *ngIf="cf['companyName'].invalid && cf['companyName'].touched"> Company name is required </ng-container>
+                </small>
+            </div>
+
+            <!-- Admin Full Name -->
+            <div class="flex flex-col">
+                <label class="font-medium"> Admin Full Name <span class="text-red-500">*</span> </label>
+                <input pInputText formControlName="adminName" placeholder="Full Name" class="w-full" [ngClass]="{ 'ng-invalid ng-dirty': cf['adminName'].invalid && cf['adminName'].touched }" />
+                <small class="text-red-500" style="min-height: 16px; display: block">
+                    <ng-container *ngIf="cf['adminName'].invalid && cf['adminName'].touched"> Admin name is required </ng-container>
+                </small>
+            </div>
+
+            <!-- Admin Mobile No -->
+            <div class="flex flex-col">
+                <label class="font-medium"> Admin Mobile No <span class="text-red-500">*</span> </label>
+                <input pInputText formControlName="mobileNo" placeholder="Mobile no" maxlength="10" (keypress)="allowOnlyDigits($event)" class="w-full" [ngClass]="{ 'ng-invalid ng-dirty': cf['mobileNo'].invalid && cf['mobileNo'].touched }" />
+                <small class="text-red-500" style="min-height: 16px; display: block">
+                    <ng-container *ngIf="cf['mobileNo'].touched">
+                        <ng-container *ngIf="cf['mobileNo'].hasError('required')">Mobile no is required</ng-container>
+                        <ng-container *ngIf="cf['mobileNo'].hasError('pattern')">Enter valid 10-digit number</ng-container>
+                    </ng-container>
+                </small>
+            </div>
+
+            <!-- Admin Email -->
+            <div class="flex flex-col">
+                <label class="font-medium"> Admin Email ID <span class="text-red-500">*</span> </label>
+                <input pInputText formControlName="email" placeholder="Email Id" class="w-full" [ngClass]="{ 'ng-invalid ng-dirty': cf['email'].invalid && cf['email'].touched }" />
+                <small class="text-red-500" style="min-height: 16px; display: block">
+                    <ng-container *ngIf="cf['email'].touched">
+                        <ng-container *ngIf="cf['email'].hasError('required')">Email is required</ng-container>
+                        <ng-container *ngIf="cf['email'].hasError('email')">Enter a valid email</ng-container>
+                    </ng-container>
+                </small>
+            </div>
+        </div>
+    </form>
+
+    <div class="border-top-1 surface-border mb-5"></div>
+
+    <!-- Module Form -->
+    <div class="text-sm font-semibold text-color-secondary uppercase mb-3" style="letter-spacing: 0.04em">Add modules</div>
+
+    <form [formGroup]="moduleForm" (ngSubmit)="addInnerRow()">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4 mb-5">
+            <!-- Module -->
+            <div class="flex flex-col">
+                <label class="font-medium"> Module <span class="text-red-500">*</span> </label>
+                <p-dropdown formControlName="module" [options]="moduleOptions" optionLabel="label" placeholder="Choose module" styleClass="w-full" appendTo="body" [ngClass]="{ 'ng-invalid ng-dirty': f['module'].invalid && f['module'].touched }">
+                    <ng-template pTemplate="selectedItem" let-item>
+                        <div class="flex items-center gap-2" *ngIf="item">
+                            <i [class]="item.icon" style="color: #f5c518"></i>
+                            <span>{{ item.label }}</span>
+                        </div>
+                    </ng-template>
+                    <ng-template pTemplate="item" let-item>
+                        <div class="flex items-center gap-2">
+                            <i [class]="item.icon" style="color: #f5c518"></i>
+                            <span>{{ item.label }}</span>
+                        </div>
+                    </ng-template>
+                </p-dropdown>
+                <small class="text-red-500" style="min-height: 16px; display: block">
+                    <ng-container *ngIf="f['module'].invalid && f['module'].touched"> Module is required </ng-container>
+                </small>
+            </div>
+
+            <!-- Tenure -->
+            <div class="flex flex-col">
+                <label class="font-medium"> Tenure <span class="text-red-500">*</span> </label>
+                <p-dropdown formControlName="tenure" [options]="tenureOptions" optionLabel="label" placeholder="Select" styleClass="w-full" appendTo="body" [ngClass]="{ 'ng-invalid ng-dirty': f['tenure'].invalid && f['tenure'].touched }" />
+                <small class="text-red-500" style="min-height: 16px; display: block">
+                    <ng-container *ngIf="f['tenure'].invalid && f['tenure'].touched"> Tenure is required </ng-container>
+                </small>
+            </div>
+
+            <!-- Start Date -->
+            <div class="flex flex-col">
+                <label class="font-medium"> Start date <span class="text-red-500">*</span> </label>
+                <p-calendar
+                    formControlName="startDate"
+                    placeholder="dd/mm/yyyy"
+                    dateFormat="dd/mm/yy"
+                    [minDate]="minDate"
+                    [showIcon]="true"
+                    styleClass="w-full"
+                    (onShow)="onCalendarShow()"
+                    [ngClass]="{ 'ng-invalid ng-dirty': f['startDate'].invalid && f['startDate'].touched }"
+                />
+                <small class="text-red-500" style="min-height: 16px; display: block">
+                    <ng-container *ngIf="f['startDate'].touched">
+                        <ng-container *ngIf="f['startDate'].hasError('required')">Start date is required</ng-container>
+                        <ng-container *ngIf="f['startDate'].hasError('pastDate')">Must be after today</ng-container>
+                    </ng-container>
+                </small>
+            </div>
+
+            <!-- Add Button -->
+            <div class="flex flex-col">
+                <label class="font-medium" style="visibility: hidden">Add</label>
+                <button pButton pRipple type="submit" icon="pi pi-plus" class="p-button-warning w-full" label="Add module"></button>
+                <small style="min-height: 16px; display: block"></small>
+            </div>
+        </div>
+    </form>
+
+    <!-- Inner Table -->
+    <p-table [value]="innerRows" class="p-datatable-sm p-datatable-gridlines">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Module</th>
+                <th>Tenure</th>
+                <th>Start date</th>
+                <th>End date</th>
+                <th class="text-center">Remove</th>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-row>
+            <tr>
+                <td>
+                    <span class="inline-flex items-center gap-1 px-2 py-1 border-round text-xs font-medium" style="background: #fff3b0; color: #a07800; border: 1px solid #f5e070">
+                        <i [class]="row.icon" style="font-size: 11px"></i>
+                        {{ row.module }}
+                    </span>
+                </td>
+                <td>{{ row.tenureLbl }}</td>
+                <td>{{ row.startDate | date: 'dd MMM yyyy' }}</td>
+                <td>{{ row.endDate | date: 'dd MMM yyyy' }}</td>
+                <td class="text-center">
+                    <i class="pi pi-trash cursor-pointer text-red-500" (click)="removeInnerRow(row)"></i>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+    <div class="text-gray-600 text-sm mt-2">Total modules: {{ innerRows?.length || 0 }}</div>
+
+    <!-- Dialog Footer -->
+    <ng-template pTemplate="footer">
+        <button pButton pRipple type="button" label="Cancel" class="p-button-secondary" (click)="closeDialog()"></button>
+        <button pButton pRipple type="button" label="Submit" icon="pi pi-check" class="p-button-warning" (click)="submitDialog()" [disabled]="!innerRows.length"></button>
+    </ng-template>
+</p-dialog>

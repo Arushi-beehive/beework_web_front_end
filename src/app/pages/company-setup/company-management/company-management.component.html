@@ -1,0 +1,257 @@
+<div class="card p-6">
+    <div class="flex justify-between items-center mb-6">
+        <span class="block text-surface-900 font-bold text-xl mb-6">Company Management</span>
+        <div class="flex gap-4">
+            <button pButton type="button" label="Add Company" icon="pi pi-plus" class="p-button-warning" (click)="openUserDialog()"></button>
+        </div>
+    </div>
+
+    <!-- 🔍 Global Search -->
+    <div class="mb-3 w-full" *ngIf="showGlobalSearch">
+        <app-global-filter [(value)]="globalFilter" placeholder="Search company..." (valueChange)="applyGlobalFilterManual()"></app-global-filter>
+    </div>
+
+    <!-- 📋 Table -->
+    <p-table [value]="filteredUser" dataKey="id" [paginator]="true" [rows]="10"
+        [rowsPerPageOptions]="[10, 20]" [responsiveLayout]="'scroll'" class="p-datatable-gridlines mt-6">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Company Name</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>GST No</th>
+                <th>City</th>
+                <th class="text-center">Action</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-user>
+            <tr>
+                <td>{{ user.companyname }}</td>
+                <td>{{ user.companyphone }}</td>
+                <td>{{ user.companyemail }}</td>
+                <td>{{ user.companygstno }}</td>
+                <td>{{ user.companycity }}</td>
+                <td>
+                    <div class="flex gap-2 justify-center">
+                        <i *ngIf="user.noneditable !== 'Y'"
+                            class="pi pi-pencil cursor-pointer text-blue-500"
+                            (click)="openEditDialog(user)">
+                        </i>
+                        <i *ngIf="user.noneditable !== 'Y'"
+                            class="pi pi-trash cursor-pointer text-red-500"
+                            (click)="deleteRow(user)">
+                        </i>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="paginatorleft">
+            <div class="text-gray-600 ms-2">Total: {{ filteredUser?.length || 0 }}</div>
+        </ng-template>
+    </p-table>
+
+    <!-- ✳️ Add/Edit Company Dialog -->
+    <p-dialog [header]="editMode ? 'Edit Company' : 'Add Company'"
+        [(visible)]="visibleDialog" [modal]="true"
+        [style]="{ width: '70vw', maxWidth: '95vw' }" [draggable]="false" [resizable]="false">
+
+        <form [formGroup]="companyForm" (ngSubmit)="onSubmit()">
+
+            <!-- Logo -->
+            <div class="flex items-center gap-4 mb-5">
+                <img [src]="imageUrl" alt="logo" class="w-[140px] h-[80px] object-contain border rounded-md bg-white p-2" />
+                <p-fileupload
+                    #fileUpload
+                    mode="basic"
+                    name="companylogo"
+                    accept="image/*"
+                    [maxFileSize]="1000000"
+                    styleClass="p-button-outlined p-button-plain"
+                    chooseLabel="Upload Logo"
+                    (onSelect)="onFileSelect($event)"
+                    (onClear)="onFileClear()"
+                ></p-fileupload>
+            </div>
+
+            <!-- Basic Info -->
+            <p class="font-semibold text-sm text-color-secondary uppercase mb-3" style="letter-spacing:.04em">Company details</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4 mb-5">
+                <div class="flex flex-col">
+                    <label class="font-medium mb-1">Company Name <span class="text-red-500">*</span></label>
+                    <input pInputText formControlName="companyname" placeholder="Company Name" />
+                    <small class="text-red-500 mt-1" style="min-height:16px;display:block"
+                        *ngIf="cf['companyname'].touched && cf['companyname'].invalid">Company Name is required</small>
+                </div>
+
+                <div class="flex flex-col">
+                    <label class="font-medium mb-1">Company Email <span class="text-red-500">*</span></label>
+                    <input pInputText formControlName="companyemail" placeholder="Company Email" />
+                    <small class="text-red-500 mt-1" style="min-height:16px;display:block"
+                        *ngIf="cf['companyemail'].touched && cf['companyemail'].invalid">Enter a valid email</small>
+                </div>
+
+                <div class="flex flex-col">
+                    <label class="font-medium mb-1">Company Phone <span class="text-red-500">*</span></label>
+                    <input pInputText formControlName="companyphone" placeholder="Phone No" maxlength="10" (keypress)="allowOnlyDigits($event)" />
+                    <small class="text-red-500 mt-1" style="min-height:16px;display:block"
+                        *ngIf="cf['companyphone'].touched && cf['companyphone'].invalid">Enter a valid 10-digit number</small>
+                </div>
+            </div>
+
+            <!-- Address -->
+            <p class="font-semibold text-sm text-color-secondary uppercase mb-3" style="letter-spacing:.04em">Company address</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4 mb-5">
+                <div class="flex flex-col">
+                    <label class="font-medium mb-1">Address <span class="text-red-500">*</span></label>
+                    <input pInputText formControlName="companyaddress" placeholder="Address" />
+                    <small class="text-red-500 mt-1" style="min-height:16px;display:block"
+                        *ngIf="cf['companyaddress'].touched && cf['companyaddress'].invalid">Address is required</small>
+                </div>
+
+                <div class="flex flex-col">
+                    <label class="font-medium mb-1">Warehouse Name <span class="text-red-500">*</span></label>
+                    <input pInputText formControlName="p_warehouse" placeholder="Warehouse Name" />
+                    <small class="text-red-500 mt-1" style="min-height:16px;display:block"
+                        *ngIf="cf['p_warehouse'].touched && cf['p_warehouse'].invalid">Warehouse name is required</small>
+                </div>
+
+                <div class="flex flex-col">
+                    <label class="font-medium mb-1">Pincode <span class="text-red-500">*</span></label>
+                    <input pInputText formControlName="companypincode" placeholder="Pincode" maxlength="6" />
+                    <small class="text-red-500 mt-1" style="min-height:16px;display:block"
+                        *ngIf="cf['companypincode'].touched && cf['companypincode'].invalid">Pincode is required</small>
+                </div>
+
+                <div class="flex flex-col">
+                    <label class="font-medium mb-1">Country <span class="text-red-500">*</span></label>
+                    <p-dropdown
+                        formControlName="companycountry"
+                        [options]="countries"
+                        optionLabel="country_name"
+                        optionValue="country_id"
+                        [filter]="true"
+                        [showClear]="true"
+                        placeholder="Select Country"
+                        styleClass="w-full"
+                        (onChange)="onCountryChange($event)"
+                    ></p-dropdown>
+                    <small class="text-red-500 mt-1" style="min-height:16px;display:block"
+                        *ngIf="cf['companycountry'].touched && cf['companycountry'].invalid">Country is required</small>
+                </div>
+
+                <div class="flex flex-col">
+                    <label class="font-medium mb-1">State <span class="text-red-500">*</span></label>
+                    <p-dropdown
+                        formControlName="companystate"
+                        [options]="states"
+                        optionLabel="state_name"
+                        optionValue="state_id"
+                        [filter]="true"
+                        [showClear]="true"
+                        placeholder="Select State"
+                        styleClass="w-full"
+                        (onChange)="onStateChange($event)"
+                    ></p-dropdown>
+                    <small class="text-red-500 mt-1" style="min-height:16px;display:block"
+                        *ngIf="cf['companystate'].touched && cf['companystate'].invalid">State is required</small>
+                </div>
+
+                <div class="flex flex-col">
+                    <label class="font-medium mb-1">City <span class="text-red-500">*</span></label>
+                    <p-dropdown
+                        formControlName="companycity"
+                        [options]="cities"
+                        optionLabel="city_name"
+                        optionValue="city_id"
+                        [filter]="true"
+                        [showClear]="true"
+                        placeholder="Select City"
+                        styleClass="w-full"
+                    ></p-dropdown>
+                    <small class="text-red-500 mt-1" style="min-height:16px;display:block"
+                        *ngIf="cf['companycity'].touched && cf['companycity'].invalid">City is required</small>
+                </div>
+            </div>
+
+            <!-- Contact -->
+            <p class="font-semibold text-sm text-color-secondary uppercase mb-3" style="letter-spacing:.04em">Company contact</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4 mb-5">
+                <div class="flex flex-col">
+                    <label class="font-medium mb-1">Contact Person</label>
+                    <input pInputText formControlName="companycontactperson" placeholder="Name" />
+                </div>
+                <div class="flex flex-col">
+                    <label class="font-medium mb-1">Contact Phone</label>
+                    <input pInputText formControlName="companycontactphone" placeholder="Phone No" maxlength="10" (keypress)="allowOnlyDigits($event)" />
+                    <small class="text-red-500 mt-1" style="min-height:16px;display:block"
+                        *ngIf="cf['companycontactphone'].touched && cf['companycontactphone'].invalid">Enter a valid 10-digit number</small>
+                </div>
+                <div class="flex flex-col">
+                    <label class="font-medium mb-1">Contact Email</label>
+                    <input pInputText formControlName="companycontactemail" placeholder="Email" />
+                    <small class="text-red-500 mt-1" style="min-height:16px;display:block"
+                        *ngIf="cf['companycontactemail'].touched && cf['companycontactemail'].invalid">Enter a valid email</small>
+                </div>
+            </div>
+
+            <!-- GST -->
+            <p class="font-semibold text-sm text-color-secondary uppercase mb-3" style="letter-spacing:.04em">Company GST</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4 mb-5">
+                <div class="flex flex-col">
+                    <label class="font-medium mb-1">GST No <span class="text-red-500">*</span></label>
+                    <input pInputText formControlName="companygstno" placeholder="GST No" maxlength="15" />
+                    <small class="text-red-500 mt-1" style="min-height:16px;display:block"
+                        *ngIf="cf['companygstno'].touched && cf['companygstno'].errors?.['invalidGst']">Enter a valid GST number</small>
+                </div>
+                <div class="flex flex-col">
+                    <label class="font-medium mb-1">State Code <span class="text-red-500">*</span></label>
+                    <input pInputText formControlName="statecode" placeholder="State Code" maxlength="5" />
+                    <small class="text-red-500 mt-1" style="min-height:16px;display:block"
+                        *ngIf="cf['statecode'].touched && cf['statecode'].invalid">Enter a valid state code</small>
+                </div>
+            </div>
+
+            <!-- Bank -->
+            <p class="font-semibold text-sm text-color-secondary uppercase mb-3" style="letter-spacing:.04em">Company bank info</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4 mb-5">
+                <div class="flex flex-col">
+                    <label class="font-medium mb-1">Bank Name <span class="text-red-500">*</span></label>
+                    <input pInputText formControlName="bankname" placeholder="Bank Name" />
+                    <small class="text-red-500 mt-1" style="min-height:16px;display:block"
+                        *ngIf="cf['bankname'].touched && cf['bankname'].invalid">Bank name is required</small>
+                </div>
+                <div class="flex flex-col">
+                    <label class="font-medium mb-1">Branch <span class="text-red-500">*</span></label>
+                    <input pInputText formControlName="branch" placeholder="Branch" />
+                    <small class="text-red-500 mt-1" style="min-height:16px;display:block"
+                        *ngIf="cf['branch'].touched && cf['branch'].invalid">Branch is required</small>
+                </div>
+                <div class="flex flex-col">
+                    <label class="font-medium mb-1">IFSC <span class="text-red-500">*</span></label>
+                    <input pInputText formControlName="ifsc" placeholder="IFSC" />
+                    <small class="text-red-500 mt-1" style="min-height:16px;display:block"
+                        *ngIf="cf['ifsc'].touched && cf['ifsc'].invalid">IFSC is required</small>
+                </div>
+                <div class="flex flex-col">
+                    <label class="font-medium mb-1">Account No <span class="text-red-500">*</span></label>
+                    <input pInputText formControlName="accountno" placeholder="Account No" />
+                    <small class="text-red-500 mt-1" style="min-height:16px;display:block"
+                        *ngIf="cf['accountno'].touched && cf['accountno'].invalid">Account No is required</small>
+                </div>
+                <div class="flex flex-col">
+                    <label class="font-medium mb-1">Company PAN <span class="text-red-500">*</span></label>
+                    <input pInputText formControlName="pan" placeholder="Company PAN" />
+                    <small class="text-red-500 mt-1" style="min-height:16px;display:block"
+                        *ngIf="cf['pan'].touched && cf['pan'].invalid">PAN is required</small>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-4 mt-6">
+                <button pButton type="button" label="Cancel" class="p-button-secondary" (click)="closeDialog()"></button>
+                <button pButton type="submit" label="Submit" class="p-button-warning" [disabled]="companyForm.invalid"></button>
+            </div>
+        </form>
+    </p-dialog>
+
+    <p-confirmDialog></p-confirmDialog>
+</div>

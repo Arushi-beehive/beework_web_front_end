@@ -31,18 +31,21 @@ export class LoginComponent implements OnInit {
         { label: 'Employee', value: 'employee' },
         { label: 'Manager', value: 'manager' }
     ];
-modules = [
-  { label: 'Inventory',            icon: 'pi pi-box',          route: '/inventory' },
-  { label: 'Workforce',            icon: 'pi pi-users',        route: '/workforce' },
-  { label: 'Work Management',      icon: 'pi pi-briefcase',    route: '/work-management' },
-  { label: 'Management Reporting', icon: 'pi pi-chart-bar',    route: '/management-reporting' },
-  { label: 'Human Resource',       icon: 'pi pi-id-card',      route: '/human-resource' },
-  { label: 'Accounting',           icon: 'pi pi-wallet',       route: '/accounting' },
-]
+
+    modules = [
+        { label: 'Inventory', icon: 'pi pi-box', route: 'http://13.201.136.123/', isSelected: false },
+        { label: 'Workforce', icon: 'pi pi-users', route: '/layout', isSelected: false },
+        { label: 'Work Management', icon: 'pi pi-briefcase', route: 'http://YOUR_IP:PORT/dashboard', isSelected: false },
+        { label: 'Management Reporting', icon: 'pi pi-chart-bar', route: 'http://YOUR_IP:PORT/dashboard', isSelected: false },
+        { label: 'Human Resource', icon: 'pi pi-id-card', route: 'http://YOUR_IP:PORT/dashboard', isSelected: false },
+        { label: 'Accounting', icon: 'pi pi-wallet', route: 'http://YOUR_IP:PORT/dashboard', isSelected: false }
+    ];
+
     LayoutService = inject(LayoutService);
     isDarkTheme = computed(() => this.LayoutService.isDarkTheme());
     loginForm!: FormGroup;
     showPassword: boolean = false;
+    selectedModule: any = null;
 
     constructor(
         private fb: FormBuilder,
@@ -75,9 +78,12 @@ modules = [
         }
     }
 
-openModule(m: { label: string; route: string }) {
-  this.route.navigate([m.route])
-}
+    openModule(m: any) {
+        // Deselect all, select clicked one
+        this.modules.forEach((mod) => (mod.isSelected = false));
+        m.isSelected = true;
+        this.selectedModule = m;
+    }
 
     loadRememberedCredentials() {
         try {
@@ -135,7 +141,16 @@ openModule(m: { label: string; route: string }) {
 
     onSubmit() {
         if (this.loginForm.valid) {
-            const { clientcode, pwd, rememberMe } = this.loginForm.value;
+            if (!this.selectedModule) {
+                this.messageService.add({
+                    severity: 'warn',
+                    summary: 'Warning',
+                    detail: 'Please select a module to continue'
+                });
+                return;
+            }
+
+            const { clientcode, pwd } = this.loginForm.value;
             this.sharedService.setClientCode(clientcode);
             this.saveCredentials(clientcode, pwd);
             this.loginService.isLogged(this.loginForm.value).subscribe({
@@ -147,7 +162,12 @@ openModule(m: { label: string; route: string }) {
                             this.sharedService.setUserToken(token);
                             this.sharedService.setUserData(res.data);
                             this.showSuccess(res.message);
-                            this.route.navigate(['/layout']);
+                            // this.route.navigate(['/layout']);
+                            if (this.selectedModule.route.startsWith('http')) {
+                                window.location.href = this.selectedModule.route;
+                            } else {
+                                this.route.navigate([this.selectedModule.route]);
+                            }
                         }
                     } else {
                         this.errorSuccess(res.message);

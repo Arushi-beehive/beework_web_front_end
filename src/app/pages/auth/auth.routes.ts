@@ -17,5 +17,5 @@ export default[
     { path: 'forgotpassword', component: ForgotPassword },
     // { path: 'newpassword', component: NewPassword },
     { path: 'verification', component: Verification },
-    { path: 'lockscreen', component: LockScreen }
+    { path: 'lockscreen', component: LockScreen },
 ] as Routes;

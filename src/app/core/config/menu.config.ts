@@ -14,6 +14,29 @@ export const MENU_MODEL: MenuItem[] = [
         ]
     },
     {
+        label: 'COMPANY',
+        icon: 'pi pi-building-columns',
+        items: [
+            {
+                label: 'Company Setup',
+                icon: 'pi pi-fw pi pi-building-columns',
+                routerLink: ['/layout/setup/overview'],
+                items: [
+                    {
+                        label: 'Company Management',
+                        icon: 'pi pi-fw pi-crown',
+                        routerLink: ['/layout/company-setup/company-management']
+                    },
+                     {
+                        label: 'Company Subscription',
+                        icon: 'pi pi-fw pi-paypal',
+                        routerLink: ['/layout/company-setup/company-subscription']
+                    }
+                ]
+                }
+        ]
+    },
+    {
         label: 'SETUP',
         icon: 'pi pi-cog',
         items: [

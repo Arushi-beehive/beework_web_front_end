@@ -24,6 +24,11 @@ export const appRoutes: Routes = [
                 loadComponent: () => import('./app/pages/dashboards/ecommercedashboard').then((c) => c.EcommerceDashboard),
             },
             {
+                path: 'company-setup',
+                canActivate:[permissionGuard],
+                loadChildren:()=> import('@/pages/company-setup/company-setup.router'),
+            },
+            {
                 path: 'setup',
                 canActivate: [permissionGuard],
                 loadChildren: () => import('@/pages/setup/setup.routers'),

@@ -17,6 +17,12 @@
   z-index: 10;
 }
 
+// styles.scss
+.p-datepicker,
+.p-dropdown-panel {
+  z-index: 1200 !important; // higher than PrimeNG dialog's default mask z-index (~1100)
+}
+
 .p-datatable-thead > tr > th {
   background-color: var(--primary-color) !important;
   color: var(--text-color) !important;

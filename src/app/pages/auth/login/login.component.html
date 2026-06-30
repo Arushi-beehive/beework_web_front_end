@@ -88,7 +88,7 @@
                         type="button"
                         (click)="openModule(m)"
                         class="flex flex-col items-center justify-center gap-2 rounded-xl py-4 px-2 bg-white dark:bg-surface-800 hover:bg-amber-50 transition-colors duration-200 cursor-pointer"
-                        style="border: 1.5px solid #E5E0D0;"
+                        [style]="m.isSelected ? 'border: 2px solid #F5C518; background:#FFF8E1;' : 'border: 1.5px solid #E5E0D0; background: white,'"
                     >
                         <i [class]="m.icon" style="font-size:1.4rem; color:#F5C518;"></i>
                         <span class="text-xs text-center font-semibold leading-tight" style="color:#1a1a1a;">{{ m.label }}</span>
