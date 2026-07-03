@@ -44,12 +44,9 @@ export class WorkerOnboardingComponent {
 
     ngOnInit(): void {
         this.reportForm = this.fb.group({
-            startDate: [this.today],
-            endDate: [this.today],
             projectName: ['', [Validators.required]],
             groupleader: [''],
             supervisior: [''],
-            fund: [],
             filterPhoto: [false],
             filterAadhar: [false],
             filterBank: [false]
@@ -78,7 +75,6 @@ export class WorkerOnboardingComponent {
     }
 
     loadDropdownMaster() {
-        console.log;
         const payload: any = {};
         const ddType = 'GROUP LEADER';
         const ddValue = null;
@@ -117,7 +113,6 @@ export class WorkerOnboardingComponent {
 
                 if (groupLeader) {
                     filtered = filtered.filter((r) => r.group_leader_id === groupLeader);
-                    console.log('hsjd', filtered);
                 }
 
                 if (supervisior) {
@@ -130,7 +125,6 @@ export class WorkerOnboardingComponent {
 
                 if (filterAadhar) {
                     filtered = filtered.filter((r) => r.aadhaarno === '');
-                    console.log('dsds', filterAadhar);
                 }
 
                 if (filterBank) {
@@ -154,7 +148,6 @@ export class WorkerOnboardingComponent {
     }
 
     projectChange(data: any) {
-        console.log(data);
         if (data.value) {
             this.loadDropdown('ACTIVEGROUPLEADER', 'groupLeaderOptions', data.value);
         } else {
@@ -164,8 +157,6 @@ export class WorkerOnboardingComponent {
 
     reset() {
         this.reportForm.reset({
-            startDate: this.today,
-            endDate: this.today,
             filterPhoto: false,
             filterAadhar: false,
             filterBank: false

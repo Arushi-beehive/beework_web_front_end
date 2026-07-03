@@ -25,6 +25,7 @@ import { DropdownParamter } from '@/core/models/setup.model';
 import { SetupMaintainceService } from '@/core/services/setup-maintaince.service';
 import { MobileOption } from '@/core/models/project.model';
 import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 import { DashboardsService } from '@/core/services/dashboardCard.service';
 
 @Component({
@@ -61,11 +62,25 @@ export class WorkerWagesComponent {
     today: Date = new Date();
     columns: any[] = [];
     projectNameOptions: any[] = [];
-    groupLeaderOptions: MobileOption[] = [];
-    supervisiorOptions: any[] = [];
+    groupLeaderOptions: any[] = [];
     recordReport: any[] = [];
     originalReport: any[] = [];
+    columnLeftOffsets: number[] = [];
     companyId = '';
+    periodOptions: any[] = [
+        { label: 'JAN-26', value: 'JAN-26' },
+        { label: 'FEB-26', value: 'FEB-26' },
+        { label: 'MAR-26', value: 'MAR-26' },
+        { label: 'APR-26', value: 'APR-26' },
+        { label: 'MAY-26', value: 'MAY-26' },
+        { label: 'JUN-26', value: 'JUN-26' },
+        { label: 'JUL-26', value: 'JUL-26' },
+        { label: 'AUG-26', value: 'AUG-26' },
+        { label: 'SEP-26', value: 'SEP-26' },
+        { label: 'OCT-26', value: 'OCT-26' },
+        { label: 'NOV-26', value: 'NOV-26' },
+        { label: 'DEC-26', value: 'DEC-26' }
+    ];
 
     constructor(
         private fb: FormBuilder,
@@ -77,26 +92,22 @@ export class WorkerWagesComponent {
 
     ngOnInit(): void {
         this.reportForm = this.fb.group({
-            startDate: [this.today],
-            endDate: [this.today],
-            projectName: [''],
-            groupleader: [''],
-            supervisior: [''],
-            fund: []
+            period: ['', [Validators.required]],
+            projectName: ['', [Validators.required]],
+            groupleader: ['']
         });
         this.companyId = this.authService.isLogIntType()?.companyid.toString();
-        this.loadDropdown('ACTIVEPROJECT', 'projectNameOptions');
+        this.loadDropdown('ACTIVEPROJECT', 'projectNameOptions', '');
         this.loadDropdownMaster();
         this.reportForm.get('projectName')?.valueChanges.subscribe((selected) => {
             this.reportForm.patchValue({ groupleader: null });
         });
-        this.loadTableData();
     }
 
-    loadDropdown(type: string, key: 'projectNameOptions') {
+    loadDropdown(type: string, key: 'projectNameOptions' | 'groupLeaderOptions', value: string) {
         const payload: DropdownParamter = {
             returnType: type,
-            returnValue: '',
+            returnValue: value,
             username: '',
             option1: this.companyId,
             option2: ''
@@ -109,7 +120,6 @@ export class WorkerWagesComponent {
     }
 
     loadDropdownMaster() {
-        console.log;
         const payload: any = {};
         const ddType = 'GROUP LEADER';
         const ddValue = null;
@@ -121,71 +131,54 @@ export class WorkerWagesComponent {
         });
     }
 
-    loadTableData() {
-        const loginid = this.authService.isLogIntType().userid;
-        const payload: DropdownParamter = {
-            returnType: 'REPORTDATAINCOMPLETE',
-            returnValue: '',
-            username: loginid,
-            option1: this.companyId,
-            option2: ''
-        };
-        this.reportService.onGetReportDetails(payload).subscribe({
-            next: (res) => {
-                this.columns = res.data.columns;
-                this.originalReport = res.data.data;
-                this.recordReport = [...this.originalReport];
-            }
-        });
+    onProjectChange(data: any) {
+        console.log(data);
+        if (data.value) {
+            this.loadDropdown('ACTIVEGROUPLEADER', 'groupLeaderOptions', data.value);
+        } else {
+            this.loadDropdownMaster();
+        }
     }
 
     display() {
-        const startDate = this.reportForm.controls['startDate'].value;
-        const endDate = this.reportForm.controls['endDate'].value;
         const projectName = this.reportForm.controls['projectName'].value;
+        const period = this.reportForm.controls['period'].value;
         const groupLeader = this.reportForm.controls['groupleader'].value;
-        const supervisior = this.reportForm.controls['supervisior'].value;
+        let payload: DropdownParamter;
+            payload = {
+                returnType: 'HAZIRIREPORT',
+                returnValue: period,
+                username: projectName.toString(),
+                option1: this.companyId,
+                option2: ''
+            };
 
-        if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
-            this.errorSuccess('To Date must be greater than or equal to From Date.');
-            return;
-        }
+        this.reportService.onGetReportDetails(payload).subscribe({
+            next: (res) => {
+                this.columns = res?.data?.columns ?? [];
+                this.originalReport = Array.isArray(res?.data?.data) ? res.data.data : [];
 
-        let filtered = [...this.originalReport];
-        if (startDate) {
-            const from = new Date(startDate);
-            from.setHours(0, 0, 0, 0);
-            filtered = filtered.filter((r) => new Date(r.date) >= from);
-        }
+                let filtered = [...this.originalReport];
 
-        if (endDate) {
-            const to = new Date(endDate);
-            to.setHours(23, 59, 59, 999);
-            filtered = filtered.filter((r) => new Date(r.date) <= to);
-        }
+                if (groupLeader) {
+                    const selectedOption = this.groupLeaderOptions.find((g) => g.id === groupLeader);
+                    if (selectedOption) {
+                        filtered = filtered.filter((r) => r.group_leader === selectedOption.dd_value);
+                    }
+                }
 
-        if (projectName) {
-            filtered = filtered.filter((r) => r.project_id === projectName);
-        }
+                this.recordReport = [...filtered];
 
-        if (groupLeader) {
-            filtered = filtered.filter((r) => r.group_leader_id === groupLeader);
-            console.log('dfs', filtered);
-        }
-
-        if (supervisior) {
-            filtered = filtered.filter((r) => r.supervisior_id === supervisior);
-        }
-
-        this.recordReport = filtered;
-        console.log('ans', this.recordReport, filtered);
-        this.recordReport = [...filtered];
-
-        if (filtered.length === 0) {
-            this.showSuccess('No Data Available for the selected filters.');
-        }
+                if (filtered.length === 0) {
+                    this.showSuccess('No Data Available for the selected filters.');
+                }
+            },
+            error: () => {
+                this.originalReport = [];
+                this.recordReport = [];
+            }
+        });
     }
-
     onReportChange(event: any) {
         const projectName = event.value;
         if (!projectName) {
@@ -195,26 +188,39 @@ export class WorkerWagesComponent {
 
     reset() {
         this.reportForm.reset({
-            startDate: this.today,
-            endDate: this.today
+            period: '',
+            projectName: '',
+            groupleader: ''
         });
-        this.recordReport = [...this.originalReport];
+        this.columns = [];
+        this.originalReport = [];
+        this.recordReport = [];
     }
 
-    downloadExcel() {
-        const exportData = this.recordReport.map((row) => {
-            const obj: any = {};
-            this.columns.forEach((col) => {
-                obj[col.header] = row[col.field];
-            });
-            return obj;
-        });
-
-        const ws = XLSX.utils.json_to_sheet(exportData);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
-        XLSX.writeFile(wb, 'export.xlsx');
-    }
+   downloadExcel() {
+          const exportData = this.recordReport.map((row) => {
+              const obj: any = {};
+              this.columns.forEach((col) => {
+                  obj[col.header] = row[col.field];
+              });
+              return obj;
+          });
+  
+          const ws = XLSX.utils.json_to_sheet(exportData);
+          const wb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+          const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+          const blob = new Blob([wbout], { type: 'application/octet-stream' });
+          const url = window.URL.createObjectURL(blob);
+  
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'Worker_Wages_Report.xlsx';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+      }
 
     showSuccess(message: string) {
         this.messageService.add({ severity: 'success', summary: 'Success', detail: message });
