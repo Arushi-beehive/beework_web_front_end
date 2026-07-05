@@ -29,7 +29,8 @@ export class TotalWorkerOnboardingComponent {
     recordReport: any[] = [];
     originalReport: any[] = [];
     periodOptions: any[] = [];
-workerOptions: any[] = [];
+ projectNameOptions: any[] = [];
+    groupLeaderOptions: any[] = [];
 
     constructor(
         private fb: FormBuilder,
@@ -42,13 +43,14 @@ workerOptions: any[] = [];
     ngOnInit(): void {
         this.reportForm = this.fb.group({
           period:      ['', Validators.required],
-            worker:      ['', Validators.required]
+          projectName: ['', [Validators.required]],
+            groupleader: ['']
         });
-        this.loadDropdown('ALLWORKER','workerOptions');
-        this.loadDropdown('PERIOD','periodOptions');
+         this.loadDropdown('ACTIVEPROJECT', 'projectNameOptions','');
+        this.loadDropdown('PERIOD','periodOptions','');
     }
 
-    loadDropdown(type: string, key: 'workerOptions'|'periodOptions') {
+    loadDropdown(type: string, key: 'projectNameOptions' | 'groupLeaderOptions' | 'periodOptions', value: string) {
         const payload: DropdownParamter = {
             returnType: type,
             returnValue: '',
@@ -61,13 +63,35 @@ workerOptions: any[] = [];
         });
     }
 
+     loadDropdownMaster() {
+        const payload: any = {};
+        const ddType = 'GROUP LEADER';
+        const ddValue = null;
+        this.setupService.onGetDropdownMaster(payload, ddType, ddValue).subscribe({
+            next: (res: any) => {
+                this.groupLeaderOptions = res.data.data;
+            }
+        });
+    }
+
+onProjectChange(data: any) {
+        if (data.value) {
+            this.loadDropdown('ACTIVEGROUPLEADER', 'groupLeaderOptions', data.value);
+        } else {
+            this.loadDropdownMaster();
+        }
+    }
+
+
   display(): void {
-    const { period, worker } = this.reportForm.value;
+    const projectName = this.reportForm.controls['projectName'].value;
+        const period = this.reportForm.controls['period'].value;
+        const groupLeader = this.reportForm.controls['groupleader'].value;
 
     const payload: DropdownParamter = {
         returnType:  'INOUTREPORT',
         returnValue: period,
-        username:  worker
+        username:  projectName.toString()
     };
 
     this.reportService.onGetReportDetails(payload).subscribe({
@@ -75,7 +99,16 @@ workerOptions: any[] = [];
             this.columns       = res.data.columns;
             this.originalReport = res.data.data;
             this.recordReport = [...this.originalReport];
+let filtered = [...this.originalReport];
 
+                if (groupLeader) {
+                    const selectedOption = this.groupLeaderOptions.find((g) => g.id === groupLeader);
+                    if (selectedOption) {
+                        filtered = filtered.filter((r) => r.group_leader === selectedOption.dd_value);
+                    }
+                }
+
+                this.recordReport = [...filtered];
             if (this.recordReport.length === 0) {
                 this.showSuccess('No data available for the selected filters.');
             }

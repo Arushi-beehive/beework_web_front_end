@@ -48,7 +48,7 @@
 
              <div class="flex flex-col">
                 <label class="font-medium mb-1"> Period <span class="text-red-500" *ngIf="isPeriodRequired()">*</span> </label>
-                <p-dropdown [options]="periodOptions" optionLabel="period_name" optionValue="period_id" [filter]="true" [showClear]="true" filterPlaceholder="Select Period" formControlName="period" placeholder="Period" class="w-full"> </p-dropdown>
+                <p-dropdown [options]="periodOptions" optionLabel="period_name" optionValue="period_name" [filter]="true" [showClear]="true" filterPlaceholder="Select Period" formControlName="period" placeholder="Period" class="w-full"> </p-dropdown>
                 <small class="text-red-500 mt-1" *ngIf="approvalForm.get('period')?.touched && approvalForm.get('period')?.invalid"> Period is required </small>
             </div>
 

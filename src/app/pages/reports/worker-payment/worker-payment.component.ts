@@ -115,7 +115,6 @@ export class WorkerPaymentComponent {
     }
 
     onProjectChange(data: any) {
-        console.log(data);
         if (data.value) {
             this.loadDropdown('ACTIVEGROUPLEADER', 'groupLeaderOptions', data.value);
         } else {

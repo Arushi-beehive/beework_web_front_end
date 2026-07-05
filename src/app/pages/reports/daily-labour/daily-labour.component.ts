@@ -137,7 +137,7 @@ export class DailyLabourComponent {
         if (reportType === 'groupLeader') {
             payload = {
                 returnType: 'REPORTDLR',
-                returnValue: period,
+                returnValue: period.toString(),
                 username: projectName.toString()
             };
         } else {

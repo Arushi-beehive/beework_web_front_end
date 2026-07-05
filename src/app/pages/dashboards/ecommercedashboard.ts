@@ -63,7 +63,7 @@ import { on } from '@ngrx/store';
                         [options]="periodOptions"
                         [(ngModel)]="selectedPeriod"
                         optionLabel="period_name"
-                        optionValue="period_id"
+                        optionValue="period_name"
                         placeholder="Period"
                         (onChange)="onFilterChange()"
                         styleClass="w-60 mb-4"
