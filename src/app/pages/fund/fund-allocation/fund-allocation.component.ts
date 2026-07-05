@@ -72,7 +72,6 @@ export class FundAllocationComponent {
     first: number = 0;
     rowsPerPage: number = 5;
     globalFilter: string = '';
-    companyId = '';
     today: Date = new Date();
     categoryOptions = [];
     itemOptions = [];
@@ -110,7 +109,7 @@ export class FundAllocationComponent {
             groupleader: [],
             fund: []
         });
-        this.companyId = this.authService.isLogIntType()?.companyid.toString();
+    
         this.loadDropdown('ACTIVEPROJECT', '', 'projectNameOptions');
         this.loadDropdown('REQINPUT', null, 'recordReport');
         this.loadDropdownMaster();
@@ -120,9 +119,7 @@ export class FundAllocationComponent {
         const payload: DropdownParamter = {
             returnType: type,
             returnValue: value,
-            username: '',
-            option1: this.companyId,
-            option2: ''
+            username: '' 
         };
         this.setupService.onDropdownDetails(payload).subscribe({
             next: (res) => {
@@ -141,8 +138,7 @@ export class FundAllocationComponent {
         const payload: any = {};
         const ddType = 'GROUP LEADER';
         const ddValue = null;
-        const companyId = this.companyId;
-        this.setupService.onGetDropdownMaster(payload, ddType, ddValue, companyId).subscribe({
+        this.setupService.onGetDropdownMaster(payload, ddType, ddValue).subscribe({
             next: (res: any) => {
                 this.groupLeaderOptions = res.data.data;
             }
@@ -333,9 +329,7 @@ export class FundAllocationComponent {
         const payload = {
             returnType: 'REQINPUT',
             returnValue: 'PENDING',
-            username: username.toString(),
-            option1: this.companyId,
-            option2: ''
+            username: username.toString() 
         };
 
         this.setupService.onDropdownDetails(payload).subscribe({

@@ -270,7 +270,6 @@ export class RecentWorkerWidget {
     labourChartOptions: any;
     labourOnboarding: any[] = [];
     labourOnboardingColumn: any[] = [];
-    companyId= '';
 
     // ── Fund Allocation Table ───────────────────────────
     fundAllocations = [
@@ -309,7 +308,6 @@ export class RecentWorkerWidget {
     ) {}
 
     ngOnInit(): void {
-        this.companyId = this.authService.isLogIntType()?.companyid.toString();
            this.initLabourChart();
            this.initPaymentChart();
         this.applyFilters();
@@ -326,9 +324,7 @@ export class RecentWorkerWidget {
         const payload: DropdownParamter = {
             returnType: type,
             returnValue: value,
-            username: username,
-           option1: this.companyId, 
-            option2:''
+            username: username
         };
         this.dashboardService.onGetReportDetails(payload).subscribe({
             next: (res) => {

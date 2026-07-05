@@ -33,7 +33,6 @@ export class TowerComponent {
     towers: any[] = [];
     towerInchargeOption: MobileOption[] = [];
     filteredTowers: any[] = [];
-    companyId = '';
 
     constructor(
         private fb: FormBuilder,
@@ -48,7 +47,6 @@ export class TowerComponent {
         this.initForm();
         this.filteredTowers = [...this.towers];
         this.onGetTowerList();
-        this.companyId = this.authService.isLogIntType()?.companyid.toString();
         this.loadDropdown('TOWERINCHARGE', 'towerInchargeOption');
         this.loadDropdown('ACTIVEPROJECT', 'projectOption');
     }
@@ -68,9 +66,7 @@ export class TowerComponent {
         const payload: DropdownParamter = {
             returnType: type,
             returnValue: '',
-            username: '',
-           option1: this.companyId, 
-            option2:''
+            username: ''
         };
         this.setupService.onDropdownDetails(payload).subscribe({
             next: (res) => {
@@ -96,9 +92,7 @@ export class TowerComponent {
         const payload: DropdownParamter = {
             returnType: 'TOWERINCHARGE',
             returnValue: '',
-            username: '',
-           option1: this.companyId, 
-            option2:''
+            username: ''
         };
         this.setupService.onDropdownDetails(payload).subscribe({
             next: (res) => {
@@ -138,8 +132,7 @@ export class TowerComponent {
 
     onGetTowerList() {
         const payload: UserType = {
-            isActive: null,
-            companyId: this.companyId
+            isActive: null
         };
         this.projectService.onGetTowerList(payload).subscribe({
             next: (res) => {
@@ -216,8 +209,7 @@ export class TowerComponent {
                 const payload: removeParamter = {
                     returnType: 'REMOVETOWER',
                     returnValue: data.tower_id,
-                    username: username,
-                    companyId: this.companyId
+                    username: username
                 };
                 this.setupService.onDeleteData(payload).subscribe({
                     next: (res) => {

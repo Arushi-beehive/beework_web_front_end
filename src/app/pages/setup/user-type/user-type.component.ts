@@ -31,7 +31,6 @@ export class UserTypeComponent {
     selectedUser: any = null;
     globalFilter: string = '';
     showGlobalSearch: boolean = true;
-    companyId = '';
 
     constructor(
         private fb: FormBuilder,
@@ -43,7 +42,7 @@ export class UserTypeComponent {
 
     ngOnInit() {
         this.initForm();
-        this.companyId = this.authService.isLogIntType()?.companyid.toString();
+
         this.filteredUser = [...this.user];
         this.onGetUserList();
     }
@@ -83,8 +82,7 @@ export class UserTypeComponent {
     }
     onGetUserList() {
         const payload: UserType = {
-            isActive:'',
-            companyId: this.companyId
+            isActive:''
         };
         this.setupService.onUserTypeList(payload).subscribe({
             next: (res) => {
@@ -99,7 +97,6 @@ export class UserTypeComponent {
     onUserCreation(data: any) {
         const username = this.authService.isLogIntType()?.userid.toString();
         const payload: UserTypeInsert = {
-            companyId: this.companyId,
             profileId: this.editMode ? this.selectedUser.profileid : 0,
             profileName: data.p_pname,
             isActive: data.checked ? 'Y' : 'N',
@@ -157,8 +154,7 @@ export class UserTypeComponent {
                 const payload: removeParamter = {
                     returnType: 'REMOVEUSERTYPE',
                     returnValue: data.profilename,
-                    username: username,
-                    companyId: this.companyId
+                    username: username
                 };
                 this.setupService.onDeleteData(payload).subscribe({
                     next: (res) => {

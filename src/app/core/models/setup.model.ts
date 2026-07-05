@@ -2,15 +2,12 @@ export interface DropdownParamter{
   returnType:string;
   returnValue:string | null;
   username:string;
-  option1:string | null;
-  option2:string | null;
 }
 
 export interface removeParamter{
   returnType:string;
   returnValue:string | null;
   username:string;
-  companyId: string;
 }
 
 export interface DropdownMaster{
@@ -34,11 +31,9 @@ export interface AccessPermission{
 
 export interface UserType{
    isActive: string | null;
-   companyId: string | null;
 }
 
 export interface UserTypeInsert {
-  companyId: string;
   profileId: number;
   profileName: string;
   isActive: 'Y' | 'N';
@@ -47,7 +42,6 @@ export interface UserTypeInsert {
 }
 
 export interface UserInsert{
-  companyId: string;
   userId: number,
   mobileNo: string,
   password: string,
@@ -66,7 +60,6 @@ export interface MultipleProject{
 }
 
 export interface SubmitSecurity{
-  companyId: string;
   profileId: number;
   permission: AvailablePermission[],
   pType: string,
@@ -78,7 +71,6 @@ export interface AvailablePermission{
 }
 
 export interface UpsertWorkerProfileExit{
-  companyId: string;
   userId: number;
   exitDate: string;
   remark: string;

@@ -99,7 +99,6 @@ export class CardStatus implements OnChanges, OnInit {
     public authService = inject(AuthService);
     usertype:string='';
     projectname:string='';
-    companyId: string = '';
     loading = true;
     skeletonItems = [1, 2, 3, 4];
     dashboardCards: any = [];
@@ -108,7 +107,6 @@ export class CardStatus implements OnChanges, OnInit {
 
 ngOnInit() {
   this.usertype = this.authService.isLogIntType()?.usertype;
-  this.companyId = this.authService.isLogIntType()?.companyid.toString();
   this.projectname = this.authService.isLogIntType()?.projectname;
 }
 
@@ -124,7 +122,6 @@ ngOnInit() {
         const project = Number(this.filters.project ?? '');
         const period = String(this.filters.period ?? '');
         let payload: CardParameter = {
-            companyId: this.companyId,
             mobileNo: mobileno,
             projectId: project,
             status: ''

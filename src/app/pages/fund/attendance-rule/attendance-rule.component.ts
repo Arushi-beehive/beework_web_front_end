@@ -41,11 +41,9 @@ export class AttendanceRuleComponent implements OnInit {
     selectedItems: any[] = [];       // multiselect bound value
     selectedWise: string = 'Group';
     userid: string = '';
-    companyId = '';
 
     ngOnInit() {
         this.userid = this.authService.isLogIntType()?.userid.toString();
-        this.companyId = this.authService.isLogIntType()?.companyid.toString();
         this.loadDropdown('PROJECTLIST', 'projectOptions', this.userid);
     }
 
@@ -73,9 +71,7 @@ export class AttendanceRuleComponent implements OnInit {
         const payload: DropdownParamter = {
             returnType: type,
             returnValue: value,
-            username: this.userid,
-           option1: this.companyId, 
-            option2:''
+            username: this.userid
         };
 
         this.setupService.onDropdownDetails(payload).subscribe({

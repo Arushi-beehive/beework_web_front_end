@@ -196,14 +196,12 @@ export class WorkerGraphReport implements OnInit {
     // ── Daily Attendance Grouped Bar ────────────────────
     attendanceChartData: any;
     attendanceChartOptions: any;
-    companyId = '';
     constructor(
         private dashboardService: DashboardsService,
         private authService: AuthService
     ) {}
 
     ngOnInit(): void {
-        this.companyId = this.authService.isLogIntType()?.companyid.toString();
         this.initAttendanceChart();
         this.applyFilters();
     }
@@ -219,9 +217,7 @@ export class WorkerGraphReport implements OnInit {
         const payload: DropdownParamter = {
             returnType: type,
             returnValue: value,
-            username: '',
-            option1: this.companyId,
-            option2: ''
+            username: ''
         };
         this.dashboardService.onGetReportDetails(payload).subscribe({
             next: (res) => {

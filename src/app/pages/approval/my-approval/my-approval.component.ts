@@ -44,7 +44,6 @@ export class MyApprovalComponent implements OnInit {
     newRateUnit: string = '';
     selectedRejectRow: any = null;
     selectedApproveRow: any = null;
-    companyId = '';
     typeOptions: any[] = [];
     requestOptions: any[] = [
         { label: 'APPROVED', value: 'APPROVED' },
@@ -54,20 +53,7 @@ export class MyApprovalComponent implements OnInit {
     projectNameOptions: any[] = [];
     groupLeaderOptions: any[] = [];
     workerOptions: any[] = [];
-    periodOptions: any[] = [
-         { label: 'JAN-26', value: 'JAN-26' },
-        { label: 'FEB-26', value: 'FEB-26' },
-        { label: 'MAR-26', value: 'MAR-26' },
-        { label: 'APR-26', value: 'APR-26' },
-        { label: 'MAY-26', value: 'MAY-26' },
-        { label: 'JUN-26', value: 'JUN-26' },
-        { label: 'JUL-26', value: 'JUL-26' },
-        { label: 'AUG-26', value: 'AUG-26' },
-        { label: 'SEP-26', value: 'SEP-26' },
-        { label: 'OCT-26', value: 'OCT-26' },
-        { label: 'NOV-26', value: 'NOV-26' },
-        { label: 'DEC-26', value: 'DEC-26' }
-    ];
+    periodOptions: any[] = [];
     products: any[] = [];
     filteredProducts: any[] = [];
 
@@ -94,9 +80,9 @@ export class MyApprovalComponent implements OnInit {
             groupleader: [''],
             period: ['']
         });
-        this.companyId = this.authService.isLogIntType()?.companyid.toString();
         this.loadDropdown('RULENAME', 'typeOptions');
         this.loadDropdown('ACTIVEPROJECT', 'projectNameOptions');
+        this.loadDropdown('PERIOD','periodOptions');
         this.loadDropdownMaster();
 
         this.approvalForm.get('p_type')?.valueChanges.subscribe((selectedRuleId) => {
@@ -141,7 +127,7 @@ export class MyApprovalComponent implements OnInit {
         return this.approvalForm.get('period')?.hasValidator(Validators.required) ?? false;
     }
 
-    loadDropdown(type: string, key: 'typeOptions' | 'projectNameOptions' | 'workerOptions') {
+    loadDropdown(type: string, key: 'typeOptions' | 'projectNameOptions' | 'workerOptions'|'periodOptions') {
         let value = '';
         let loginid = 0;
 
@@ -155,9 +141,7 @@ export class MyApprovalComponent implements OnInit {
         const payload: DropdownParamter = {
             returnType: type,
             returnValue: value.toString(),
-            username: loginid.toString(),
-           option1: this.companyId,
-            option2:''
+            username: loginid.toString()
         };
 
         this.setupService.onDropdownDetails(payload).subscribe({
@@ -178,8 +162,7 @@ export class MyApprovalComponent implements OnInit {
         const payload: any = {};
         const ddType = 'GROUP LEADER';
         const ddValue = null;
-        const companyId = this.companyId;
-        this.setupService.onGetDropdownMaster(payload, ddType, ddValue, companyId).subscribe({
+        this.setupService.onGetDropdownMaster(payload, ddType, ddValue).subscribe({
             next: (res: any) => {
                 this.groupLeaderOptions = res.data.data;
             }
@@ -198,9 +181,7 @@ export class MyApprovalComponent implements OnInit {
         const payload: DropdownParamter = {
             returnType: 'GETWAGEAPPROVAL', 
             returnValue: value.toString(),
-            username: loginid.toString(),
-           option1: this.companyId,
-            option2:''
+            username: loginid.toString()
         };
 
         this.setupService.onDropdownDetails(payload).subscribe({

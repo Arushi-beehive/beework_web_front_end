@@ -47,9 +47,41 @@ import { on } from '@ngrx/store';
             <!-- ═══════════════════════════ TOP BAR ═══════════════════════════ -->
             <div class="flex items-center justify-between mb-3">
                 <div class="flex gap-3">
-                    <p-dropdown [options]="projectNameOptions" [(ngModel)]="selectedProject" optionLabel="project_name" optionValue="project_id" placeholder="Project" (onChange)="onProjectChange()" styleClass="w-60 mb-4" [filter]="true" [showClear]="true" filterPlaceholder="Search Project" ></p-dropdown>
-                    <p-dropdown [options]="periodOptions" [(ngModel)]="selectedPeriod" optionLabel="label" optionValue="value" placeholder="Period" (onChange)="onFilterChange()" styleClass="w-60 mb-4" [filter]="true" [showClear]="true"></p-dropdown>
-                    <p-dropdown [options]="groupLeaderOptions" [(ngModel)]="selectedGroupLeader" optionLabel="dd_value" optionValue="dd_value" placeholder="Group Leader" (onChange)="onFilterChange()" styleClass="w-80 mb-4" [filter]="true" [showClear]="true" filterPlaceholder="Search Group Leader"></p-dropdown>
+                    <p-dropdown
+                        [options]="projectNameOptions"
+                        [(ngModel)]="selectedProject"
+                        optionLabel="project_name"
+                        optionValue="project_id"
+                        placeholder="Project"
+                        (onChange)="onProjectChange()"
+                        styleClass="w-60 mb-4"
+                        [filter]="true"
+                        [showClear]="true"
+                        filterPlaceholder="Search Project"
+                    ></p-dropdown>
+                    <p-dropdown
+                        [options]="periodOptions"
+                        [(ngModel)]="selectedPeriod"
+                        optionLabel="period_name"
+                        optionValue="period_id"
+                        placeholder="Period"
+                        (onChange)="onFilterChange()"
+                        styleClass="w-60 mb-4"
+                        [filter]="true"
+                        [showClear]="true"
+                    ></p-dropdown>
+                    <p-dropdown
+                        [options]="groupLeaderOptions"
+                        [(ngModel)]="selectedGroupLeader"
+                        optionLabel="dd_value"
+                        optionValue="dd_value"
+                        placeholder="Group Leader"
+                        (onChange)="onFilterChange()"
+                        styleClass="w-80 mb-4"
+                        [filter]="true"
+                        [showClear]="true"
+                        filterPlaceholder="Search Group Leader"
+                    ></p-dropdown>
                 </div>
             </div>
 
@@ -83,54 +115,38 @@ export class EcommerceDashboard implements OnInit {
     ) {}
     projectNameOptions: any[] = [];
     groupLeaderOptions: any[] = [];
-    companyId = '';
-    private isFilterUpdating = false; 
-    periodOptions = [
-        { label: 'January-26', value: 1 },
-        { label: 'February-26', value: 2 },
-        { label: 'March-26', value: 3 },
-        { label: 'April-26', value: 4 },
-        { label: 'May-26', value: 5 },
-        { label: 'June-26', value: 6 },
-        { label: 'July-26', value: 7 },
-        { label: 'August-26', value: 8 },
-        { label: 'September-26', value: 9 },
-        { label: 'October-26', value: 10 },
-        { label: 'November-26', value: 11 },
-        { label: 'December-26', value: 12 }
-    ];
+    private isFilterUpdating = false;
+    periodOptions: any[] = [];
     selectedPeriod: number = new Date().getMonth() + 1; // default current month
     selectedProject: any = null;
     selectedGroupLeader: any = null;
     activeFilters = { project: null, groupLeader: null, period: null as any };
 
-
-    ngOnInit(): void {      
+    ngOnInit(): void {
         this.activeFilters = {
-       project: null,
-        groupLeader: null,
-        period: new Date().getMonth()+1
-    };
-    this.companyId = this.authService.isLogIntType()?.companyid.toString();
-      this.loadDropdown('ACTIVEPROJECT', 'projectNameOptions','');
-       this.loadDropdownMaster();
+            project: null,
+            groupLeader: null,
+            period: new Date().getMonth() + 1
+        };
+
+        this.loadDropdown('ACTIVEPROJECT', 'projectNameOptions', '');
+        this.loadDropdown('PERIOD', 'periodOptions', '');
+        this.loadDropdownMaster();
     }
 
-    loadDropdown(type: string, key: 'projectNameOptions'|'groupLeaderOptions',value:string) {
+    loadDropdown(type: string, key: 'projectNameOptions' | 'groupLeaderOptions' | 'periodOptions', value: string) {
         const payload: DropdownParamter = {
             returnType: type,
             returnValue: value,
-            username: '',
-           option1: this.companyId, 
-            option2:''
+            username: ''
         };
         this.setupService.onDropdownDetails(payload).subscribe({
             next: (res) => {
                 this[key] = res.data;
-                 if (key === 'groupLeaderOptions' && this.isFilterUpdating) {
-                this.isFilterUpdating = false;  
-                this.onFilterChange();     
-            }
+                if (key === 'groupLeaderOptions' && this.isFilterUpdating) {
+                    this.isFilterUpdating = false;
+                    this.onFilterChange();
+                }
             }
         });
     }
@@ -138,15 +154,14 @@ export class EcommerceDashboard implements OnInit {
     loadDropdownMaster() {
         const payload: any = {};
         const ddType = 'GROUP LEADER';
-         const ddValue = null;
-        const companyId = this.companyId;
-        this.setupService.onGetDropdownMaster(payload, ddType, ddValue, companyId).subscribe({
+        const ddValue = null;
+        this.setupService.onGetDropdownMaster(payload, ddType, ddValue).subscribe({
             next: (res: any) => {
                 this.groupLeaderOptions = res.data.data;
                 if (this.isFilterUpdating) {
-                this.isFilterUpdating = false;  
-                this.onFilterChange();        
-            }
+                    this.isFilterUpdating = false;
+                    this.onFilterChange();
+                }
             }
         });
     }
@@ -154,19 +169,17 @@ export class EcommerceDashboard implements OnInit {
     onProjectChange() {
         this.selectedGroupLeader = null;
         this.isFilterUpdating = true;
-    if (this.selectedProject) {
-        this.loadDropdown('ACTIVEGROUPLEADER', 'groupLeaderOptions', this.selectedProject);
-    } else {
-        this.loadDropdownMaster();
+        if (this.selectedProject) {
+            this.loadDropdown('ACTIVEGROUPLEADER', 'groupLeaderOptions', this.selectedProject);
+        } else {
+            this.loadDropdownMaster();
+        }
     }
-
-   
-}
-onFilterChange(){
- this.activeFilters = {
-        project: this.selectedProject,
-        groupLeader: this.selectedGroupLeader,
-        period: this.selectedPeriod
-    };
-}
+    onFilterChange() {
+        this.activeFilters = {
+            project: this.selectedProject,
+            groupLeader: this.selectedGroupLeader,
+            period: this.selectedPeriod
+        };
+    }
 }

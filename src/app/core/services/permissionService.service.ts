@@ -21,12 +21,11 @@ export class PermissionService {
         if (this.permissionsCache$) return this.permissionsCache$;
         
         const userType = this.authService.isLogIntType().permissiontype;
-        const companyId = this.authService.isLogIntType()?.companyid.toString();
         const allPermissionPayload: DropdownParamter = {
-            returnType: 'ACCESSPERMISSION', returnValue: 'W', username: '',option1: companyId, option2:''
+            returnType: 'ACCESSPERMISSION', returnValue: 'W', username: ''
         };
         const accessControlPayload: DropdownParamter = {
-            returnType: 'ACCESSCONTROL', returnValue: userType, username: '',option1: companyId, option2:''
+            returnType: 'ACCESSCONTROL', returnValue: userType, username: ''
         };
 
         this.permissionsCache$ = forkJoin({

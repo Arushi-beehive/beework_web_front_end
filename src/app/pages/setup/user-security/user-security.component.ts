@@ -32,10 +32,9 @@ export class UserSecurityComponent {
     availablePermissions: any[] = [];
     restrictPermissions: any[] = [];
     selectedAccess:string = 'M';
-    companyId = '';
 
     ngOnInit() {
-        this.companyId = this.authService.isLogIntType()?.companyid.toString();
+
         this.loadDropdown('ACCESSPERMISSION', 'allPermissions', this.selectedAccess);
         this.loadDropdown('ACCESSUSERPROFILE', 'roleOptions', '');
         this.availablePermissions = JSON.parse(JSON.stringify(this.allPermissions));
@@ -51,9 +50,7 @@ export class UserSecurityComponent {
         const payload: DropdownParamter = {
             returnType: type,
             returnValue: value,
-            username: '',
-            option1: this.companyId, 
-            option2:''
+            username: ''
         };
 
         this.setupService.onDropdownDetails(payload).subscribe({
@@ -112,7 +109,7 @@ export class UserSecurityComponent {
     onSecuirtyPermission() {
         const userid = this.authService.isLogIntType()?.userid;
         const payload: SubmitSecurity = {
-            companyId: this.companyId,
+     
             profileId: this.selectedRole,
             permission: this.restrictPermissions.map(p=>p.permissionid),
             pType: this.selectedAccess,

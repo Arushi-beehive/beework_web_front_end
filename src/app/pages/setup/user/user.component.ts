@@ -44,7 +44,6 @@ export class UserComponent {
     exitLinkedUser: boolean = false;
     glTouched: boolean = false;
     glSameError: boolean = false;
-    companyId = '';
     userGroupMap = new Map<number, any[]>();
 
     exitForm = {
@@ -66,7 +65,7 @@ export class UserComponent {
         this.initForm();
         this.filteredUser = [...this.user];
         this.onGetUserList();
-        this.companyId = this.authService.isLogIntType()?.companyid.toString();
+
         this.loadDropdown('USERPROFILE', 'profileOptions');
         this.loadDropdown('ACTIVEPROJECT', 'projectOptions');
     }
@@ -106,9 +105,7 @@ export class UserComponent {
         const payload: DropdownParamter = {
             returnType: type,
             returnValue: '',
-            username: '',
-            option1: this.companyId,
-            option2: ''
+            username: '' 
         };
 
         this.setupService.onDropdownDetails(payload).subscribe({
@@ -160,8 +157,7 @@ export class UserComponent {
 
     onGetUserList() {
        const payload: UserType = {
-                   isActive: null,
-                   companyId: this.companyId
+                   isActive: null
                };
         this.setupService.onGetUser(payload).subscribe({
             next: (res) => {
@@ -198,7 +194,6 @@ export class UserComponent {
         const selectedProfile = this.profileOptions.find((p: any) => p.profileid === data.p_profile);
         const userid = this.authService.isLogIntType().userid;
         const payload: any = {
-            companyId: this.companyId,
             userId: this.editMode ? this.selectedUser.userid : 0,
             fname: data.p_name,
             lname: '',
@@ -261,8 +256,7 @@ export class UserComponent {
                 const payload: removeParamter = {
                     returnType: 'REMOVEUSER',
                     returnValue: data.userid,
-                    username: username,
-                    companyId: this.companyId
+                    username: username
                 };
                 this.setupService.onDeleteData(payload).subscribe({
                     next: (res) => {
@@ -306,8 +300,7 @@ export class UserComponent {
         const payload: any = {};
         const ddType = 'GROUP LEADER';
         const ddValue = null;
-        const companyId = this.companyId;
-        this.setupService.onGetDropdownMaster(payload, ddType, ddValue, companyId).subscribe({
+        this.setupService.onGetDropdownMaster(payload, ddType, ddValue).subscribe({
             next: (res) => {
                 this.groupLeaderOptions = (res.data.data || []).filter((gl: any) => gl.userid !== excludeUserId);
             }
@@ -353,7 +346,6 @@ export class UserComponent {
             }
 
             const payload: UpsertWorkerProfileExit = {
-                companyId: this.companyId,
                 userId: this.selectedUser.userid,
                 exitDate: exitDate,
                 remark: this.exitForm.remark,
@@ -367,7 +359,6 @@ export class UserComponent {
             api$ = this.setupService.upsertWorkerProfileExit(payload);
         } else {
             const payload: UpsertWorkerProfileExit = {
-                companyId: this.companyId,
                 userId: this.selectedUser.userid,
                 exitDate: exitDate,
                 remark: this.exitForm.remark,
@@ -403,7 +394,7 @@ export class UserComponent {
                 this.selectedUser = user;
                 const username = this.authService.isLogIntType().userid;
                 const payload: UpsertWorkerProfileExit = {
-                    companyId: this.companyId,
+                
                     userId: this.selectedUser.userid,
                     exitDate: '',
                     remark: '',

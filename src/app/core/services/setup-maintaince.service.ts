@@ -24,7 +24,7 @@ export class SetupMaintainceService {
         return this.shareService.post(API_ENDPOINTS.setup.removedataparameter, payload);
     }
 
-    onGetDropdownMaster(payload: DropdownMaster, ddType: string, ddValue: string | null, companyId: string) {
+    onGetDropdownMaster(payload: DropdownMaster, ddType: string, ddValue: string | null) {
         return this.shareService.getParamter(API_ENDPOINTS.setup.getdropdownmaster, ddType);
     }
 

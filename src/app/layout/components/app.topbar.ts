@@ -61,7 +61,6 @@ export class AppTopbar {
     @ViewChild('menubutton') menuButton!: ElementRef;
     companyName: string = 'OSO Construction';
     companyLogo: string = '/layout/images/BeeWork_with_Title_noBG.png';
-    companyId = '';
 
     public imageUrl: string = '';
     constructor(
@@ -71,7 +70,6 @@ export class AppTopbar {
     ) {}
     ngOnInit() {
         this.onGetData();
-        this.companyId = this.authservice.isLogIntType()?.companyid.toString();
     }
     onMenuButtonClick() {
         this.layoutService.onMenuToggle();
@@ -97,9 +95,7 @@ export class AppTopbar {
                   const payload: DropdownParamter = {
                       returnType: 'COMPANYPROFILE',
                       returnValue: companyId,
-                      username: userId,
-                     option1: this.companyId,
-                      option2:''
+                      username: userId
                   };
           
                   this.setupService.onDropdownDetails(payload).subscribe({

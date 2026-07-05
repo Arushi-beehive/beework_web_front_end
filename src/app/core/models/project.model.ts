@@ -1,5 +1,4 @@
 export interface ProjectModel {
-    companyId: string;
     projectId: number;
     projectName: string;
     location: string;
@@ -38,7 +37,7 @@ export interface RuleModel {
 }
 
 export interface RuleDetails {
-    companyId: string;
+  
     ruleId: number;
     ruleCreationId: number;
     levels: Levels[];

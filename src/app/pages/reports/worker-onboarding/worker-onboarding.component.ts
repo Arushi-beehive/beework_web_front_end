@@ -32,7 +32,6 @@ export class WorkerOnboardingComponent {
     supervisiorOptions: any[] = [];
     recordReport: any[] = [];
     originalReport: any[] = [];
-    companyId = '';
 
     constructor(
         private fb: FormBuilder,
@@ -54,7 +53,7 @@ export class WorkerOnboardingComponent {
             filterAadhar: [false],
             filterBank: [false]
         });
-        this.companyId = this.authService.isLogIntType()?.companyid.toString();
+
         this.loadDropdown('ACTIVEPROJECT', 'projectNameOptions', '');
         this.loadDropdownMaster();
         this.reportForm.get('projectName')?.valueChanges.subscribe((selected) => {
@@ -66,9 +65,7 @@ export class WorkerOnboardingComponent {
         const payload: DropdownParamter = {
             returnType: type,
             returnValue: value,
-            username: '',
-            option1: this.companyId,
-            option2: ''
+            username: '' 
         };
         this.setupService.onDropdownDetails(payload).subscribe({
             next: (res) => {
@@ -82,8 +79,7 @@ export class WorkerOnboardingComponent {
         const payload: any = {};
         const ddType = 'GROUP LEADER';
         const ddValue = null;
-        const companyId = this.companyId;
-        this.setupService.onGetDropdownMaster(payload, ddType, ddValue, companyId).subscribe({
+        this.setupService.onGetDropdownMaster(payload, ddType, ddValue).subscribe({
             next: (res: any) => {
                 this.groupLeaderOptions = res.data.data;
             }
@@ -101,9 +97,7 @@ export class WorkerOnboardingComponent {
         const payload: DropdownParamter = {
             returnType: 'REPORTDATAINCOMPLETE',
             returnValue: projectName,
-            username: loginid,
-            option1: this.companyId,
-            option2: ''
+            username: loginid 
         };
         this.reportService.onGetReportDetails(payload).subscribe({
             next: (res) => {

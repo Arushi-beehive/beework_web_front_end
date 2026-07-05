@@ -221,7 +221,6 @@ export class UserCreate {
     countries: any[] = [];
     states: any[] = [];
     cities: any[] = [];
-    companyId = '';
     public getUserDetails = {};
     public imageUrl: string | null = '';
     profileForm: FormGroup = this.fb.group({
@@ -230,12 +229,12 @@ export class UserCreate {
         companygstno: ['', [Validators.required, Validators.maxLength(30)]],
         companycontactperson: ['', Validators.maxLength(100)],
         companyaddress: ['', [Validators.required, Validators.maxLength(500)]],
-        companycontactphone: ['', Validators.pattern(/^[0-9]{10}$/)],
+        companycontactphone: ['', Validators.pattern(/^[6-9]{10}$/)],
         companycontactemail: ['', [Validators.email, Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/), Validators.maxLength(100)]],
         companycountry: ['', [Validators.required, Validators.required]],
         companystate: ['', [Validators.required, Validators.maxLength(50)]],
         companycity: ['', [Validators.required, Validators.maxLength(50)]],
-        companyphone: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
+        companyphone: ['', [Validators.required, Validators.pattern(/^[6-9]{10}$/)]],
         companypincode: ['', [Validators.required, Validators.maxLength(6)]],
         p_warehouse: ['', [Validators.required, Validators.maxLength(100)]],
         statecode: ['', [Validators.required, Validators.maxLength(5)]],
@@ -255,7 +254,6 @@ export class UserCreate {
         private setupService: SetupMaintainceService
     ) {}
     ngOnInit() {
-        this.companyId = this.authservice.isLogIntType()?.companyid.toString();
        this.loggedInRole= this.authservice.isLogIntType()?.usertype;
        console.log(this.loggedInRole)
                this.onGetData();
@@ -272,9 +270,7 @@ export class UserCreate {
           const payload: DropdownParamter = {
               returnType: type,
               returnValue: value,
-              username: userId,
-             option1: this.companyId, 
-            option2:''
+              username: userId
           };
   
           this.setupService.onDropdownDetails(payload).subscribe({
@@ -425,9 +421,7 @@ export class UserCreate {
           const payload: DropdownParamter = {
               returnType: 'COMPANYPROFILE',
               returnValue: companyId,
-              username: userId,
-             option1: this.companyId, 
-            option2:''
+              username: userId
           };
   
           this.setupService.onDropdownDetails(payload).subscribe({

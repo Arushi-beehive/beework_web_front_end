@@ -40,7 +40,6 @@ export class RuleDetailComponent {
     primaryRows: any[] = [];
     allGroupedRows: Map<number, any[]> = new Map();
     selectedUserRow: any = null;
-    companyId = '';
 
     constructor(
         private fb: FormBuilder,
@@ -53,7 +52,7 @@ export class RuleDetailComponent {
 
     ngOnInit() {
         this.initForm();
-        this.companyId = this.authService.isLogIntType()?.companyid.toString();
+
         this.loadDropdown('RULENAME', 'ruleOptions', '');
         this.loadDropdown('USERPROFILE', 'usernameOptions', '');
         this.loadDropdown('APPROVALLEVEL', 'user', '');
@@ -73,9 +72,7 @@ export class RuleDetailComponent {
         const payload: DropdownParamter = {
             returnType: type,
             returnValue: value,
-            username: loggedInUserName,
-           option1: this.companyId, 
-            option2:''
+            username: loggedInUserName
         };
 
         this.setupService.onDropdownDetails(payload).subscribe({
@@ -141,7 +138,6 @@ export class RuleDetailComponent {
         const loggedInUserId = this.authService.isLogIntType().userid;
         const ruleCreationId = this.editMode ? this.selectedUserRow?.rule_creation_id : 0;
         const payload: RuleDetails = {
-            companyId: this.companyId,
             ruleId: data.p_rule,
             ruleCreationId: ruleCreationId,
             created: loggedInUserId,
@@ -204,8 +200,7 @@ export class RuleDetailComponent {
                 const payload:removeParamter = {
                   returnType:'REMOVERULE',
                   returnValue:data.rule_creation_id,
-                  username: username,
-                  companyId: this.companyId
+                  username: username
                 };
                 this.setupService.onDeleteData(payload).subscribe({
                     next:(res)=>{

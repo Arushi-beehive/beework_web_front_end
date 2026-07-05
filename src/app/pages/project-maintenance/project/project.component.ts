@@ -37,7 +37,6 @@ export class ProjectComponent {
     siteIncharge: any[] = [];
     projectInchargeOptions: MobileOption[] = [];
     mobileOptions: MobileOption[] = [];
-    companyId ='';
 
     constructor(
         private fb: FormBuilder,
@@ -51,7 +50,6 @@ export class ProjectComponent {
     ngOnInit() {
         this.initForm();
         this.filteredUser = [...this.project];
-        this.companyId = this.authService.isLogIntType()?.companyid.toString();
         this.onGetProjectList();
         this.loadDropdown('PROJECTINCHARGE', 'projectInchargeOptions');
         this.loadDropdown('SITEADMIN', 'mobileOptions');
@@ -73,9 +71,7 @@ export class ProjectComponent {
         const payload: DropdownParamter = {
             returnType: type,
             returnValue: '',
-            username: '',
-            option1:this.companyId,
-            option2:''
+            username: ''
         };
 
         this.setupService.onDropdownDetails(payload).subscribe({
@@ -114,9 +110,7 @@ export class ProjectComponent {
         const payload: DropdownParamter = {
             returnType: 'PROJECTINCHARGE',
             returnValue: '',
-            username: '',
-           option1: this.companyId,
-            option2:''
+            username: ''
         };
         this.setupService.onDropdownDetails(payload).subscribe({
             next: (res) => {
@@ -140,9 +134,7 @@ export class ProjectComponent {
         const sitePayload: DropdownParamter = {
             returnType: 'PROJECTSITEADMIN',
             returnValue: this.selectedUser.project_id,
-            username: loginId,
-            option1: this.companyId,
-            option2:''
+            username: loginId
         };
         this.setupService.onDropdownDetails(sitePayload).subscribe({
             next: (res) => {
@@ -201,8 +193,7 @@ export class ProjectComponent {
 
     onGetProjectList() {
         const payload: UserType = {
-            isActive:'',
-            companyId: this.companyId
+            isActive:''
         };
         this.projectService.onGetProjectList(payload).subscribe({
             next: (res) => {
@@ -217,7 +208,6 @@ export class ProjectComponent {
 
     onUserCreation(data: any) {
         const payload: ProjectModel = {
-            companyId: this.companyId,
             projectId: this.editMode ? this.selectedUser.project_id : 0,
             projectName: data.p_pname,
             location: data.p_plocation,
@@ -285,8 +275,7 @@ export class ProjectComponent {
                 const payload: removeParamter = {
                     returnType: 'REMOVEPROJECT',
                     returnValue: data.project_id,
-                    username: username,
-                    companyId: this.companyId
+                    username: username
                 };
                 this.setupService.onDeleteData(payload).subscribe({
                     next: (res) => {
