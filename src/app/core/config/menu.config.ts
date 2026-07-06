@@ -143,9 +143,9 @@ export const MENU_MODEL: MenuItem[] = [
                 routerLink: ['/layout/reports/worker-payment'],
             },
             {
-                label: 'Worker Wages',
+                label: 'Worker Haziri',
                 icon: 'pi pi-fw pi-indian-rupee',
-                routerLink: ['/layout/reports/worker-wages'],
+                routerLink: ['/layout/reports/worker-haziri'],
             },
         ]
     },

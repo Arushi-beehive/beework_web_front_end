@@ -53,11 +53,11 @@ import { DashboardsService } from '@/core/services/dashboardCard.service';
         ConfirmDialogModule,
         CheckboxModule
     ],
-    templateUrl: './worker-wages.component.html',
-    styleUrl: './worker-wages.component.scss',
+    templateUrl: './worker-haziri.component.html',
+    styleUrl: './worker-haziri.component.scss',
     providers: [ConfirmationService, DatePipe]
 })
-export class WorkerWagesComponent {
+export class WorkerHaziriComponent {
     reportForm!: FormGroup;
     today: Date = new Date();
     columns: any[] = [];

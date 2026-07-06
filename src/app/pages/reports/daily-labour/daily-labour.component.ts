@@ -120,7 +120,6 @@ export class DailyLabourComponent {
     }
 
     onProjectChange(data: any) {
-        console.log(data);
         if (data.value) {
             this.loadDropdown('ACTIVEGROUPLEADER', 'groupLeaderOptions', data.value);
         } else {

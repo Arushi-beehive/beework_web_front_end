@@ -53,7 +53,7 @@ export class TotalWorkerOnboardingComponent {
     loadDropdown(type: string, key: 'projectNameOptions' | 'groupLeaderOptions' | 'periodOptions', value: string) {
         const payload: DropdownParamter = {
             returnType: type,
-            returnValue: '',
+            returnValue: value,
             username: ''
         };
         this.setupService.onDropdownDetails(payload).subscribe({
@@ -75,6 +75,7 @@ export class TotalWorkerOnboardingComponent {
     }
 
 onProjectChange(data: any) {
+    console.log(data.value)
         if (data.value) {
             this.loadDropdown('ACTIVEGROUPLEADER', 'groupLeaderOptions', data.value);
         } else {
