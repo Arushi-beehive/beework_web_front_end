@@ -7,7 +7,6 @@ export const environment = {
 
 baseurl: "https://api.hexahivepro.com/api",
 //  baseurl: "https://api-prod.hexahivepro.com/api",
-//  baseurl:"https://cm2.beehiveinfotech.com/api/v1",
 
 };
 

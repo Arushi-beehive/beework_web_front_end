@@ -5,7 +5,7 @@ export const environment = {
    
   baseurl: "https://api.hexahivepro.com/api",
   //  baseurl:"https://api-prod.hexahivepro.com/v1",
-  // baseurl:"https://cm2.beehiveinfotech.com/api/v1",
+ 
 //   SubDomain:window.location.protocol+ '//'+window.location.host
 };
 
