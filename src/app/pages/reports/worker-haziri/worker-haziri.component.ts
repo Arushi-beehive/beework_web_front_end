@@ -178,30 +178,37 @@ export class WorkerHaziriComponent {
         this.recordReport = [];
     }
 
-   downloadExcel() {
-          const exportData = this.recordReport.map((row) => {
-              const obj: any = {};
-              this.columns.forEach((col) => {
-                  obj[col.header] = row[col.field];
-              });
-              return obj;
-          });
-  
-          const ws = XLSX.utils.json_to_sheet(exportData);
-          const wb = XLSX.utils.book_new();
-          XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
-          const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-          const blob = new Blob([wbout], { type: 'application/octet-stream' });
-          const url = window.URL.createObjectURL(blob);
-  
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = 'Worker_Wages_Report.xlsx';
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          window.URL.revokeObjectURL(url);
-      }
+  downloadExcel() {
+    if (!this.recordReport.length || !this.columns.length) {
+        this.showSuccess('No data available to export.');
+        return;
+    }
+
+    // Build header row exactly in column order (no key collisions possible)
+    const headerRow = this.columns.map((col) => col.header);
+
+    // Build each data row in the SAME order as headerRow
+    const dataRows = this.recordReport.map((row) =>
+        this.columns.map((col) => row[col.field] ?? '')
+    );
+
+    const sheetData = [headerRow, ...dataRows];
+
+    const ws = XLSX.utils.aoa_to_sheet(sheetData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([wbout], { type: 'application/octet-stream' });
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'Worker_Haziri_Report.xlsx';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+}
 
     showSuccess(message: string) {
         this.messageService.add({ severity: 'success', summary: 'Success', detail: message });
