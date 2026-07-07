@@ -19,13 +19,11 @@ export class LoginService {
     ) {}
 
     getToken(): string | null {
-        console.log('token', this.TOKEN_KEY);
         return localStorage.getItem(this.TOKEN_KEY);
     }
 
     setToken(token: string): void {
         localStorage.setItem(this.TOKEN_KEY, token);
-        console.log('shdhs',token)
     }
 
     clearToken(): void {
@@ -33,7 +31,7 @@ export class LoginService {
         localStorage.removeItem(this.user_info);
     }
 
-    isLogged(loginBody: authLogin): Observable<authLogin> {
+    isLoggedBeework(loginBody: authLogin): Observable<authLogin> {
         const url = `${this.baseUrl}${API_ENDPOINTS.users.login}`;
         const headers = new HttpHeaders({
             mobilenumber: loginBody.clientcode,
@@ -41,5 +39,14 @@ export class LoginService {
             accept: 'application/json'
         });
         return this.http.get<authLogin>(url, { headers });
+    }
+    isLoggedCm2(loginBody:authLogin):Observable<any>{
+        const url = `${this.baseUrl}${API_ENDPOINTS.cm2.login}`;
+        const payload = {
+            usercode:loginBody.clientcode,
+            pwd:loginBody.pwd,
+            logintype:''
+        }
+        return this.http.post<any>(url,payload);
     }
 }

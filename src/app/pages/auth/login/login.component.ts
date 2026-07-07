@@ -153,7 +153,7 @@ export class LoginComponent implements OnInit {
             const { clientcode, pwd } = this.loginForm.value;
             this.sharedService.setClientCode(clientcode);
             this.saveCredentials(clientcode, pwd);
-            this.loginService.isLogged(this.loginForm.value).subscribe({
+            this.loginService.isLoggedBeework(this.loginForm.value).subscribe({
                 next: (res: any) => {
                     if (res.success == true) {
                         const token = res.data.usertoken;

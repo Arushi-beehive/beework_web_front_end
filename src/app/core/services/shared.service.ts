@@ -152,7 +152,7 @@ GetApi(payload:any):any|null{
   }
 
   // ✅ Check login status
-  isLoggedIn(): boolean {
+  isLoggedBeeworkIn(): boolean {
     const data = this.getUserData();
     return !!data?.usertoken;
   }

@@ -10,6 +10,12 @@ export const API_ENDPOINTS = {
     details: (id: number) => `/users/${id}`
 
   },
+  beework:{
+    login: '/beework/login'
+  },
+  cm2:{
+    login: '/cm2/login'
+  },
   inventory: {
     base: '/inventory',
     item: (id: number) => `/inventory/${id}`,
