@@ -17,29 +17,25 @@
         <ng-template pTemplate="header">
             <tr>
                 <th>Company Name</th>
-                <th>Phone</th>
-                <th>Email</th>
-                <th>GST No</th>
+                <th>Country</th>
+                <th>State</th>
                 <th>City</th>
+                <th>Phone</th>
                 <th class="text-center">Action</th>
             </tr>
         </ng-template>
         <ng-template pTemplate="body" let-user>
             <tr>
                 <td>{{ user.companyname }}</td>
+                <td>{{ user.country_name }}</td>
+                <td>{{ user.state_name }}</td>
+                <td>{{ user.city_name }}</td>
                 <td>{{ user.companyphone }}</td>
-                <td>{{ user.companyemail }}</td>
-                <td>{{ user.companygstno }}</td>
-                <td>{{ user.companycity }}</td>
                 <td>
                     <div class="flex gap-2 justify-center">
                         <i *ngIf="user.noneditable !== 'Y'"
                             class="pi pi-pencil cursor-pointer text-blue-500"
                             (click)="openEditDialog(user)">
-                        </i>
-                        <i *ngIf="user.noneditable !== 'Y'"
-                            class="pi pi-trash cursor-pointer text-red-500"
-                            (click)="deleteRow(user)">
                         </i>
                     </div>
                 </td>

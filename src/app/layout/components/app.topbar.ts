@@ -102,7 +102,7 @@ export class AppTopbar {
                       option2:''
                   };
           
-                  this.setupService.onDropdownDetails(payload).subscribe({
+                  this.setupService.onDropdownDetailsPublic(payload).subscribe({
                       next: (res) => {
                         if(res.data){
                         this.companyName = res.data[0].companyname;

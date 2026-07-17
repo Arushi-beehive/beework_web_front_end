@@ -14,23 +14,23 @@ export const MENU_MODEL: MenuItem[] = [
         ]
     },
     {
-        label: 'COMPANY',
+        label: 'SUPER USER ACCESS',
         icon: 'pi pi-building-columns',
         items: [
             {
-                label: 'Company Setup',
+                label: 'Company',
                 icon: 'pi pi-fw pi pi-building-columns',
                 routerLink: ['/layout/setup/overview'],
                 items: [
                     {
-                        label: 'Company Management',
+                        label: 'Company Setup',
                         icon: 'pi pi-fw pi-crown',
-                        routerLink: ['/layout/company-setup/company-management']
+                        routerLink: ['/layout/company-setup/company-setup']
                     },
                      {
-                        label: 'Company Subscription',
+                        label: 'Subscription',
                         icon: 'pi pi-fw pi-paypal',
-                        routerLink: ['/layout/company-setup/company-subscription']
+                        routerLink: ['/layout/company-setup/subscription']
                     }
                 ]
                 }

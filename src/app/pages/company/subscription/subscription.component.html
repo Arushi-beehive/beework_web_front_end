@@ -22,10 +22,10 @@
                 <th>Email</th>
                 <th>Module</th>
                 <th>Tenure</th>
+                <th>Days Left</th>
                 <th>Start date</th>
                 <th>End date</th>
                 <th>Status</th>
-                <th class="text-center">Action</th>
             </tr>
         </ng-template>
 
@@ -40,16 +40,14 @@
                         {{ row.module }}
                     </span>
                 </td>
-                <td>{{ row.tenureLbl }}</td>
-                <td>{{ row.startDate | date: 'dd MMM yyyy' }}</td>
-                <td>{{ row.endDate | date: 'dd MMM yyyy' }}</td>
+                <td>{{ row.tenure }}</td>
+                <td>{{ row.days_left }}</td>
+                <td>{{ row.start_date | date: 'dd MMM yyyy' }}</td>
+                <td>{{ row.end_date | date: 'dd MMM yyyy' }}</td>
                 <td>
                     <span class="px-3 py-1 border-round-xl text-xs font-semibold" style="background: #d4edda; color: #155724">
                         {{ row.status }}
                     </span>
-                </td>
-                <td class="text-center">
-                    <i class="pi pi-trash cursor-pointer text-red-500" (click)="deleteSubscriptionRow(row)"></i>
                 </td>
             </tr>
         </ng-template>
@@ -69,7 +67,7 @@
             <!-- Company Name -->
             <div class="flex flex-col">
                 <label class="font-medium"> Company name <span class="text-red-500">*</span> </label>
-                <input pInputText formControlName="companyName" placeholder="Company Name" class="w-full" [ngClass]="{ 'ng-invalid ng-dirty': cf['companyName'].invalid && cf['companyName'].touched }" />
+                <p-dropdown formControlName="companyName" [options]="companyOptions" optionLabel="companyname" value="companyid" placeholder="Company Name" filterPlaceholder="Search Company Name" appendTo="body" (onChange)="onComapnyChange($event)" [filter]="true" [showClear]="true" class="w-full" [ngClass]="{ 'ng-invalid ng-dirty': cf['companyName'].invalid && cf['companyName'].touched }" />
                 <small class="text-red-500" style="min-height: 16px; display: block">
                     <ng-container *ngIf="cf['companyName'].invalid && cf['companyName'].touched"> Company name is required </ng-container>
                 </small>
@@ -120,19 +118,7 @@
             <!-- Module -->
             <div class="flex flex-col">
                 <label class="font-medium"> Module <span class="text-red-500">*</span> </label>
-                <p-dropdown formControlName="module" [options]="moduleOptions" optionLabel="label" placeholder="Choose module" styleClass="w-full" appendTo="body" [ngClass]="{ 'ng-invalid ng-dirty': f['module'].invalid && f['module'].touched }">
-                    <ng-template pTemplate="selectedItem" let-item>
-                        <div class="flex items-center gap-2" *ngIf="item">
-                            <i [class]="item.icon" style="color: #f5c518"></i>
-                            <span>{{ item.label }}</span>
-                        </div>
-                    </ng-template>
-                    <ng-template pTemplate="item" let-item>
-                        <div class="flex items-center gap-2">
-                            <i [class]="item.icon" style="color: #f5c518"></i>
-                            <span>{{ item.label }}</span>
-                        </div>
-                    </ng-template>
+                <p-dropdown formControlName="module" [options]="moduleOptions" optionValue="module_id" optionLabel="module_code" placeholder="Module" [filter]="true" [showClear]="true" appendTo="body" filterPlaceholder="Search Module" (onChange)="onModuleChange($event)" [ngClass]="{ 'ng-invalid ng-dirty': f['module'].invalid && f['module'].touched }">
                 </p-dropdown>
                 <small class="text-red-500" style="min-height: 16px; display: block">
                     <ng-container *ngIf="f['module'].invalid && f['module'].touched"> Module is required </ng-container>
@@ -142,7 +128,7 @@
             <!-- Tenure -->
             <div class="flex flex-col">
                 <label class="font-medium"> Tenure <span class="text-red-500">*</span> </label>
-                <p-dropdown formControlName="tenure" [options]="tenureOptions" optionLabel="label" placeholder="Select" styleClass="w-full" appendTo="body" [ngClass]="{ 'ng-invalid ng-dirty': f['tenure'].invalid && f['tenure'].touched }" />
+                <p-dropdown formControlName="tenure" [options]="tenureOptions" optionLabel="label" placeholder="Tenure" filterPlaceholder="Search Tenure" appendTo="body" [filter]="true" [showClear]="true" class="w-full" [ngClass]="{ 'ng-invalid ng-dirty': f['tenure'].invalid && f['tenure'].touched }" />
                 <small class="text-red-500" style="min-height: 16px; display: block">
                     <ng-container *ngIf="f['tenure'].invalid && f['tenure'].touched"> Tenure is required </ng-container>
                 </small>
@@ -153,20 +139,12 @@
                 <label class="font-medium"> Start date <span class="text-red-500">*</span> </label>
                 <p-calendar
                     formControlName="startDate"
-                    placeholder="dd/mm/yyyy"
-                    dateFormat="dd/mm/yy"
+                    placeholder="yyyy-dd-mm"
                     [minDate]="minDate"
                     [showIcon]="true"
                     styleClass="w-full"
-                    (onShow)="onCalendarShow()"
-                    [ngClass]="{ 'ng-invalid ng-dirty': f['startDate'].invalid && f['startDate'].touched }"
+                    [disabled]="true"
                 />
-                <small class="text-red-500" style="min-height: 16px; display: block">
-                    <ng-container *ngIf="f['startDate'].touched">
-                        <ng-container *ngIf="f['startDate'].hasError('required')">Start date is required</ng-container>
-                        <ng-container *ngIf="f['startDate'].hasError('pastDate')">Must be after today</ng-container>
-                    </ng-container>
-                </small>
             </div>
 
             <!-- Add Button -->
@@ -195,7 +173,7 @@
                 <td>
                     <span class="inline-flex items-center gap-1 px-2 py-1 border-round text-xs font-medium" style="background: #fff3b0; color: #a07800; border: 1px solid #f5e070">
                         <i [class]="row.icon" style="font-size: 11px"></i>
-                        {{ row.module }}
+                        {{ row.moduleLabel }}
                     </span>
                 </td>
                 <td>{{ row.tenureLbl }}</td>
@@ -211,7 +189,7 @@
 
     <!-- Dialog Footer -->
     <ng-template pTemplate="footer">
-        <button pButton pRipple type="button" label="Cancel" class="p-button-secondary" (click)="closeDialog()"></button>
+        <button pButton pRipple type="button" label="Cancel" class="p-button-secondary"></button>
         <button pButton pRipple type="button" label="Submit" icon="pi pi-check" class="p-button-warning" (click)="submitDialog()" [disabled]="!innerRows.length"></button>
     </ng-template>
 </p-dialog>

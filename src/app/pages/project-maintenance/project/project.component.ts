@@ -80,7 +80,7 @@ export class ProjectComponent {
 
         this.setupService.onDropdownDetails(payload).subscribe({
             next: (res) => {
-                this[key] = res.data;
+                this[key] = res.message;
             }
         });
     }
@@ -206,7 +206,7 @@ export class ProjectComponent {
         };
         this.projectService.onGetProjectList(payload).subscribe({
             next: (res) => {
-                this.project = Array.isArray(res?.data.data) ? res.data.data : [];
+                this.project = Array.isArray(res?.message.data) ? res.message.data : [];
                 this.filteredUser = [...this.project];
             },
             error: (err) => {

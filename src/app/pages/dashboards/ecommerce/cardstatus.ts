@@ -108,11 +108,11 @@ export class CardStatus implements OnChanges, OnInit {
 
 ngOnInit() {
   this.usertype = this.authService.isLogIntType()?.usertype;
-  this.companyId = this.authService.isLogIntType()?.companyid.toString();
   this.projectname = this.authService.isLogIntType()?.projectname;
 }
 
     ngOnChanges(changes: SimpleChanges): void {
+       this.companyId = this.authService.isLogIntType()?.companyid.toString();
         if (changes['filters']) {
                 this.OnGettopBarCard();
         }
@@ -131,7 +131,7 @@ ngOnInit() {
         };
         this.dashboardService.onGetWorkerCards(payload).subscribe({
             next: (res) => {
-                const data = res.data.summary;
+                const data = res.message.summary;
                 
                 this.dashboardCards = [
                     {

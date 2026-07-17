@@ -112,7 +112,8 @@ export class WorkerWagesComponent {
             option1: this.companyId,
             option2: ''
         };
-        this.setupService.onDropdownDetails(payload).subscribe({
+        const $api = type==='ACTIVEPROJECT'? this.setupService.onDropdownDetailsPublic(payload) : this.setupService.onDropdownDetails(payload);
+        $api.subscribe({
             next: (res) => {
                 this[key] = res.data;
             }
@@ -126,7 +127,7 @@ export class WorkerWagesComponent {
         const companyId = this.companyId;
         this.setupService.onGetDropdownMaster(payload, ddType, ddValue, companyId).subscribe({
             next: (res: any) => {
-                this.groupLeaderOptions = res.data.data;
+                this.groupLeaderOptions = res.message.data;
             }
         });
     }

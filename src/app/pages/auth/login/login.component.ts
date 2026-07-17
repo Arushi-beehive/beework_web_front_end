@@ -1,7 +1,7 @@
 import { AppConfigurator } from '@/layout/components/app.configurator';
 import { LayoutService } from '@/layout/service/layout.service';
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -25,7 +25,7 @@ import { LoginService } from '@/core/services/login.service';
     styleUrl: './login.component.scss',
     imports: [CommonModule, FormsModule, AppConfigurator, ReactiveFormsModule, RouterModule, InputTextModule, CheckboxModule, PasswordModule, ButtonModule, CardModule, DividerModule, IconFieldModule, InputIconModule, MessageModule]
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit{
     public loginTypes = [
         { label: 'Admin', value: 'admin' },
         { label: 'Employee', value: 'employee' },
@@ -33,13 +33,13 @@ export class LoginComponent implements OnInit {
     ];
 
     modules = [
-        { label: 'Inventory', icon: 'pi pi-box', route: 'http://13.201.136.123/', isSelected: false },
-        { label: 'Workforce', icon: 'pi pi-users', route: '/layout', isSelected: false },
-        { label: 'Work Management', icon: 'pi pi-briefcase', route: 'http://YOUR_IP:PORT/dashboard', isSelected: false },
-        { label: 'Management Reporting', icon: 'pi pi-chart-bar', route: 'http://YOUR_IP:PORT/dashboard', isSelected: false },
-        { label: 'Human Resource', icon: 'pi pi-id-card', route: 'http://YOUR_IP:PORT/dashboard', isSelected: false },
-        { label: 'Accounting', icon: 'pi pi-wallet', route: 'http://YOUR_IP:PORT/dashboard', isSelected: false }
-    ];
+    { label: 'BeeWare', image: '/layout/images/BeeBare.jpeg', route: 'http://13.201.136.123/', isSelected: false },
+    { label: 'BeeWork', image: '/layout/images/BeeWork.png', route: '/layout', isSelected: false },
+    { label: 'BeeOps', image: '/layout/images/BeeOps.jpeg', route: 'http://YOUR_IP:PORT/dashboard', isSelected: false },
+    { label: 'BeeSight', image: '/layout/images/BeeSight.jpeg', route: 'http://YOUR_IP:PORT/dashboard', isSelected: false },
+    { label: 'BeeConnect', image: '/layout/images/BeeConnect.jpeg', route: 'http://YOUR_IP:PORT/dashboard', isSelected: false },
+    { label: 'BeeBook', image: '/layout/images/BeeBook.jpeg', route: 'http://YOUR_IP:PORT/dashboard', isSelected: false }
+];
 
     LayoutService = inject(LayoutService);
     isDarkTheme = computed(() => this.LayoutService.isDarkTheme());
@@ -153,32 +153,43 @@ export class LoginComponent implements OnInit {
             const { clientcode, pwd } = this.loginForm.value;
             this.sharedService.setClientCode(clientcode);
             this.saveCredentials(clientcode, pwd);
-            this.loginService.isLoggedBeework(this.loginForm.value).subscribe({
+            
+            const loginRequest$ = this.selectedModule.label ==='BeeWare'? this.loginService.isLoggedCm2(this.loginForm.value) : this.loginService.isLoggedBeework(this.loginForm.value);
+            loginRequest$.subscribe({
                 next: (res: any) => {
-                    if (res.success == true) {
+                    if (res.status === 'success' && res.data.userid ) {
                         const token = res.data.usertoken;
 
                         if (token) {
                             this.sharedService.setUserToken(token);
                             this.sharedService.setUserData(res.data);
                             this.showSuccess(res.message);
-                            // this.route.navigate(['/layout']);
+                           
                             if (this.selectedModule.route.startsWith('http')) {
-                                window.location.href = this.selectedModule.route;
+                                if(this.selectedModule.label === 'BeeWare'){
+                                    const params = new URLSearchParams({
+                                        clientcode: clientcode,
+                                        pwd: pwd
+                                    }).toString();
+                                window.location.href = `${this.selectedModule.route}?${params}`;
+                                }
+                                else{
+                                     window.location.href = `${this.selectedModule.route}?token=${token}`;
+                                }
                             } else {
                                 this.route.navigate([this.selectedModule.route]);
                             }
                         }
                     } else {
-                        this.errorSuccess(res.message);
+                        this.errorSuccess(res.data.msg);
                     }
                 },
                 error: (res) => {
-                    console.error('Login API error:', res);
+                    console.log(res, res.message)
                     this.messageService.add({
                         severity: 'error',
                         summary: 'Error',
-                        detail: 'Login failed. Please try again.'
+                        detail: res.error.message
                     });
                 }
             });

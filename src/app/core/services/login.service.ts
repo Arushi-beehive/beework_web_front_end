@@ -32,16 +32,17 @@ export class LoginService {
     }
 
     isLoggedBeework(loginBody: authLogin): Observable<authLogin> {
-        const url = `${this.baseUrl}${API_ENDPOINTS.users.login}`;
-        const headers = new HttpHeaders({
-            mobilenumber: loginBody.clientcode,
+        const url = `${this.baseUrl}${API_ENDPOINTS.beework.login}`;
+        const payload ={
+            mobileno: loginBody.clientcode,
             password: loginBody.pwd,
-            accept: 'application/json'
-        });
-        return this.http.get<authLogin>(url, { headers });
+            otp:''
+        };
+        return this.http.post<authLogin>(url, payload);
     }
     isLoggedCm2(loginBody:authLogin):Observable<any>{
-        const url = `${this.baseUrl}${API_ENDPOINTS.cm2.login}`;
+   
+        const url = `${this.baseUrl}${API_ENDPOINTS.beeware.login}`;
         const payload = {
             usercode:loginBody.clientcode,
             pwd:loginBody.pwd,

@@ -27,3 +27,22 @@ export interface UserHeader {
   p_companyLogo: string | null;
   "x-access-token"?: string;
 }
+
+// company-subscription.model.ts
+
+export interface SubscriptionModule {
+    moduleid: number;
+    startdate: string;   // 'YYYY-MM-DD'
+    enddate: string;      // 'YYYY-MM-DD'
+}
+
+export interface CompanySubscriptionUpsertParamter {
+    p_companyid: number;
+    p_companyname: string;
+    p_adminname: string;
+    p_adminmobile: string;
+    p_adminemail: string;
+    p_subscription_json: SubscriptionModule[];
+    p_loginuser: string;
+}
+

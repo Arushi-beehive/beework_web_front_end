@@ -65,8 +65,8 @@ export class UserComponent {
     ngOnInit() {
         this.initForm();
         this.filteredUser = [...this.user];
-        this.onGetUserList();
         this.companyId = this.authService.isLogIntType()?.companyid.toString();
+         this.onGetUserList();
         this.loadDropdown('USERPROFILE', 'profileOptions');
         this.loadDropdown('ACTIVEPROJECT', 'projectOptions');
     }
@@ -103,6 +103,7 @@ export class UserComponent {
     };
 
     loadDropdown(type: string, key: 'profileOptions' | 'projectOptions') {
+        
         const payload: DropdownParamter = {
             returnType: type,
             returnValue: '',
@@ -110,10 +111,10 @@ export class UserComponent {
             option1: this.companyId,
             option2: ''
         };
-
-        this.setupService.onDropdownDetails(payload).subscribe({
+         const $api = type==='ACTIVEPROJECT'? this.setupService.onDropdownDetailsPublic(payload) : this.setupService.onDropdownDetails(payload);
+        $api.subscribe({
             next: (res) => {
-                this[key] = res.data;
+               this[key] = type === 'ACTIVEPROJECT' ? res.data : res.message;         
             }
         });
     }
@@ -165,7 +166,7 @@ export class UserComponent {
                };
         this.setupService.onGetUser(payload).subscribe({
             next: (res) => {
-                const rawData = Array.isArray(res?.data.data) ? res.data.data : [];
+                const rawData = Array.isArray(res?.message.data) ? res.message.data : [];
                 this.userGroupMap = rawData.reduce((acc: any, user: any) => {
                     if (!acc.has(user.userid)) {
                         acc.set(user.userid, []);
@@ -202,7 +203,7 @@ export class UserComponent {
             userId: this.editMode ? this.selectedUser.userid : 0,
             fname: data.p_name,
             lname: '',
-            mobileNo: data.p_phone,
+            mobileNo: data.p_phone.toString(),
             password: data.p_pwd,
             emailId: data.p_email || '',
             userType: selectedProfile?.profilename,
@@ -309,7 +310,7 @@ export class UserComponent {
         const companyId = this.companyId;
         this.setupService.onGetDropdownMaster(payload, ddType, ddValue, companyId).subscribe({
             next: (res) => {
-                this.groupLeaderOptions = (res.data.data || []).filter((gl: any) => gl.userid !== excludeUserId);
+                this.groupLeaderOptions = (res.message.data || []).filter((gl: any) => gl.userid !== excludeUserId);
             }
         });
     }

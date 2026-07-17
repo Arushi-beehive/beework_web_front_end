@@ -14,7 +14,7 @@ import { RouterModule } from '@angular/router';
     >
        <div class="flex align-items-center w-full">
     <a [routerLink]="['/']" class="app-logo mx-auto">
-        <img src="/layout/images/BeeWork_with_Title_noBG.png" width="100" alt="Logo">
+        <img src="/layout/images/BeeWork.png" width="60" alt="Logo">
     </a>
     <button
         class="layout-sidebar-anchor p-link z-2"

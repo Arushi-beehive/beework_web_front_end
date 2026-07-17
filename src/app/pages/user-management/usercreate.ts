@@ -285,7 +285,7 @@ export class UserCreate {
             option2:''
           };
   
-          this.setupService.onDropdownDetails(payload).subscribe({
+          this.setupService.onDropdownDetailsPublic(payload).subscribe({
               next: (res) => {
                   this[key] = res.data;
                   if(key === 'states'){
@@ -334,6 +334,7 @@ export class UserCreate {
             }
         });
     }
+    
     onSubmit() {
         if (this.profileForm.invalid) {
             this.profileForm.markAllAsTouched();
@@ -438,7 +439,7 @@ export class UserCreate {
             option2:''
           };
   
-          this.setupService.onDropdownDetails(payload).subscribe({
+          this.setupService.onDropdownDetailsPublic(payload).subscribe({
               next: (res) => {
                 if(res.data){
                  this.patchFromData(res.data[0]);

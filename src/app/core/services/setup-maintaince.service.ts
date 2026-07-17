@@ -20,6 +20,10 @@ export class SetupMaintainceService {
         return this.shareService.post(API_ENDPOINTS.setup.getdropdowndetails, payload);
     }
 
+    onDropdownDetailsPublic(payload: DropdownParamter) {
+        return this.shareService.post(API_ENDPOINTS.setup.getparameterbased, payload);
+    }
+
     onDeleteData(payload: removeParamter) {
         return this.shareService.post(API_ENDPOINTS.setup.removedataparameter, payload);
     }

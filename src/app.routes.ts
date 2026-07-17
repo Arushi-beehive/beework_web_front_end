@@ -26,7 +26,7 @@ export const appRoutes: Routes = [
             {
                 path: 'company-setup',
                 canActivate:[permissionGuard],
-                loadChildren:()=> import('@/pages/company-setup/company-setup.router'),
+                loadChildren:()=> import('@/pages/company/company.router'),
             },
             {
                 path: 'setup',

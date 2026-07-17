@@ -15,6 +15,7 @@ import { SetupMaintainceService } from '@/core/services/setup-maintaince.service
 import { DropdownParamter, removeParamter } from '@/core/models/setup.model';
 import { AuthService } from '@/core/services/auth.service';
 import { ProfileService } from '@/core/services/profile.service';
+import { CompanyService } from '@/core/services/company.service';
 
 export function gstNumberValidator(control: AbstractControl): ValidationErrors | null {
     if (!control.value) return null;
@@ -25,10 +26,10 @@ export function gstNumberValidator(control: AbstractControl): ValidationErrors |
 }
 
 @Component({
-    selector: 'app-company-management',
+    selector: 'app-company-setup',
     standalone: true,
-    templateUrl: './company-management.component.html',
-    styleUrls: ['./company-management.component.scss'],
+    templateUrl: './company-setup.component.html',
+    styleUrls: ['./company-setup.component.scss'],
     imports: [
         CommonModule, FormsModule, ReactiveFormsModule,
         ButtonModule, DropdownModule, InputTextModule,
@@ -37,7 +38,7 @@ export function gstNumberValidator(control: AbstractControl): ValidationErrors |
     ],
     providers: [ConfirmationService]
 })
-export class CompanyManagementComponent {
+export class CompanySetupComponent {
     @ViewChild('fileUpload') fileUpload: any;
 
     companyForm!: FormGroup;
@@ -66,7 +67,7 @@ export class CompanyManagementComponent {
         private setupService: SetupMaintainceService,
         private messageService: MessageService,
         private authService: AuthService,
-        private profileService: ProfileService
+        private companyService: CompanyService
     ) {}
 
     ngOnInit() {
@@ -118,7 +119,8 @@ export class CompanyManagementComponent {
             option1: this.companyId,
             option2: ''
         };
-        this.setupService.onDropdownDetails(payload).subscribe({
+    
+        this.setupService.onDropdownDetailsPublic(payload).subscribe({
             next: (res) => {
                 (this as any)[key] = res.data;
                 callback?.();
@@ -156,49 +158,50 @@ export class CompanyManagementComponent {
         this.loadDropdown('COUNTRY', 'null', 'countries');
     }
 
-    openEditDialog(user: any) {
-        this.editMode = true;
-        this.selectedUser = user;
-        this.visibleDialog = true;
-
-        this.loadDropdown('COUNTRY', 'null', 'countries', () => {
-            const country = this.countries.find(c => c.country_id === user.companycountry);
-            const countryId = country ? country.country_id : user.companycountry;
-
-            this.companyForm.patchValue({
-                companyname:          user.companyname,
-                companyemail:         user.companyemail,
-                companygstno:         user.companygstno,
-                companycontactperson: user.companycontactperson,
-                companyaddress:       user.companyaddress,
-                companycontactphone:  user.companycontactphone,
-                companycontactemail:  user.companycontactemail,
-                companycountry:       countryId,
-                companyphone:         user.companyphone,
-                companypincode:       user.companypincode,
-                p_warehouse:          user.warehouse,
-                bankname:             user.bankname,
-                ifsc:                 user.ifsc,
-                branch:               user.branch,
-                pan:                  user.pan,
-                accountno:            user.accountno
-            });
-
-            this.imageUrl = this.base64ToBlobUrl(user.companylogo);
-
-            if (countryId) {
-                this.loadDropdown('STATE', countryId, 'states', () => {
-                    this.companyForm.patchValue({
-                        companystate: user.companystate,
-                        statecode: user.statecode
-                    });
-                    this.loadDropdown('CITY', user.companystate, 'cities', () => {
-                        this.companyForm.patchValue({ companycity: user.companycity });
-                    });
-                });
-            }
+   openEditDialog(user: any) {
+    this.editMode = true;
+    this.selectedUser = user;
+    this.visibleDialog = true;
+      console.log(user)
+    this.loadDropdown('COUNTRY', 'null', 'countries', () => {
+        const country = this.countries.find(c => String(c.country_id) === String(user.companycountry));
+        const countryId = country ? country.country_id : user.companycountry;
+        this.companyForm.patchValue({
+            companyname:          this.selectedUser.companyname,
+            companyemail:         user.companyemail,
+            companygstno:         user.companygstno,
+            companycontactperson: user.companycontactperson,
+            companyaddress:       user.companyaddress,
+            companycontactphone:  user.companycontactphone,
+            companycontactemail:  user.companycontactemail,
+            companycountry:       countryId,
+            companyphone:         user.companyphone,
+            companypincode:       user.companypincode,
+            p_warehouse:          user.warehouse,
+            bankname:             user.bankname,
+            ifsc:                 user.ifsc,
+            branch:               user.branch,
+            pan:                  user.pan,
+            accountno:            user.accountno
         });
-    }
+
+        this.imageUrl = this.base64ToBlobUrl(user.companylogo);
+
+        if (countryId) {
+            this.loadDropdown('STATE', countryId, 'states', () => {
+                const state = this.states.find(s => String(s.state_id) === String(user.companystate));
+                this.companyForm.patchValue({
+                    companystate: state ? state.state_id : user.companystate,
+                    statecode: user.statecode
+                });
+                this.loadDropdown('CITY', user.companystate, 'cities', () => {
+                    const city = this.cities.find(c => String(c.city_id) === String(user.companycity));
+                    this.companyForm.patchValue({ companycity: city ? city.city_id : user.companycity });
+                });
+            });
+        }
+    });
+}
 
     closeDialog() {
         this.visibleDialog = false;
@@ -275,84 +278,20 @@ export class CompanyManagementComponent {
 
     // ── API calls ─────────────────────────────────────────────
     onGetUserList() {
-        // const payload = { isActive: '', companyId: this.companyId };
-        // this.setupService.onUserTypeList(payload).subscribe({
-        //   next: (res) => {
-        //     this.user = Array.isArray(res?.data.data) ? res.data.data : [];
-        //     this.filteredUser = [...this.user];
-        //   },
-        //   error: (err) => console.error(err)
-        // });
-    }
-
-    onUserCreation(data: any) {
-        const username = this.authService.isLogIntType()?.userid.toString();
-        const payload: any = {
-            companyId:             this.editMode ? this.selectedUser.companyid : 0,
-            p_companyname:         data.companyname,
-            p_companyaddress:      data.companyaddress,
-            p_companycity:         data.companycity,
-            p_companystate:        data.companystate,
-            p_companycountry:      data.companycountry,
-            p_companypincode:      data.companypincode,
-            p_companyphone:        data.companyphone,
-            p_companyemail:        data.companyemail,
-            p_companygstno:        data.companygstno,
-            p_companycontactperson: data.companycontactperson,
-            p_companycontactphone: data.companycontactphone,
-            p_companycontactemail: data.companycontactemail,
-            p_statecode:           data.statecode,
-            p_bankname:            data.bankname,
-            p_branch:              data.branch,
-            p_ifsc:                data.ifsc,
-            p_accountno:           data.accountno,
-            p_pan:                 data.pan,
-            p_warehouse:           data.p_warehouse,
-            p_companyLogo:         this.logoBase64 || null,
-            p_loginuser:           username
+        const payload: DropdownParamter = {
+            returnType: 'COMPANYPROFILE',
+            returnValue: '',
+            username: '',
+            option1: this.companyId,
+            option2: ''
         };
-
-        this.setupService.onUserTypeInsert(payload).subscribe({
+        this.setupService.onDropdownDetailsPublic(payload).subscribe({
             next: (res) => {
-                this.visibleDialog = false;
-                this.selectedUser = null;
-                this.onGetUserList();
-                const severity = res.data.success ? 'success' : 'error';
-                const summary = res.data.success ? 'Success' : 'Failed';
-                this.showMessage(severity, summary, res.data.msg);
-            },
-            error: (err) => console.error('API error', err)
-        });
-    }
-
-    deleteRow(data: any) {
-        this.confirmationService.confirm({
-            header: 'Confirm',
-            message: 'Are you sure you want to delete this company?',
-            accept: () => {
-                const username = this.authService.isLogIntType().userid;
-                const payload: removeParamter = {
-                    returnType: 'REMOVECOMPANY',
-                    returnValue: data.companyname,
-                    username: username,
-                    companyId: this.companyId
-                };
-                this.setupService.onDeleteData(payload).subscribe({
-                    next: (res) => {
-                        if (res.data.status === 'FAILED') {
-                            this.showMessage('error', 'failed', res.data.message);
-                        } else {
-                            const index = this.user.indexOf(data);
-                            if (index !== -1) {
-                                this.user.splice(index, 1);
-                                this.filteredUser = [...this.user];
-                                this.showMessage('success', 'Success', res.data.message);
-                            }
-                        }
-                    }
-                });
+              this.user= res.data;
+              this.filteredUser= [...this.user];
             }
         });
+
     }
 
     onSubmit() {
@@ -360,9 +299,59 @@ export class CompanyManagementComponent {
             this.companyForm.markAllAsTouched();
             return;
         }
-        this.onUserCreation(this.companyForm.getRawValue());
+         this.confirmationService.confirm({
+            message: 'Are you sure you want to submit?',
+            header: 'Confirm',
+            acceptLabel: 'Yes',
+            rejectLabel: 'Cancel',
+            acceptButtonStyleClass: 'p-button-primary',
+            rejectButtonStyleClass: 'p-button-secondary',
+            accept: () => {
+                this.submitValue(this.companyForm.value);
+            }
+        });
     }
 
+     submitValue(form: any) {
+        let loggedIn = this.authService.isLogIntType()?.userid.toString();
+        const payload = {
+            p_companyid: this.editMode ? this.selectedUser.companyid : 0,
+            p_companyname: form.companyname,
+            p_companyaddress: form.companyaddress,
+            p_companycity: form.companycity,
+            p_companystate: form.companystate,
+            p_companycountry: form.companycountry,
+            p_companypincode: form.companypincode,
+            p_companyphone: form.companyphone,
+            p_companyemail: form.companyemail,
+            p_companygstno: form.companygstno,
+            p_companycontactperson: form.companycontactperson,
+            p_companycontactphone: form.companycontactphone,
+            p_companycontactemail: form.companycontactemail,
+            p_statecode: form.statecode,
+            p_bankname: form.bankname,
+            p_branch: form.branch,
+            p_ifsc: form.ifsc,
+            p_accountno: form.accountno,
+            p_pan: form.pan,
+            p_warehouse: form.p_warehouse,
+            p_companyLogo: this.logoBase64 || null,
+            p_loginuser: loggedIn
+        };
+
+        this.companyService.upsertCompanyDetails(payload).subscribe({
+            next: (res: any) => {
+               this.visibleDialog = false;
+                this.selectedUser = null;
+                this.onGetUserList();
+                const severity = res.status ? 'success' : 'error';
+                const summary = res.status ? 'Success' : 'Failed';
+                this.showMessage(severity, summary, res.data[0].msg);
+            },
+            error: (err) => console.error('API error', err)
+        });
+    }
+    
     applyGlobalFilterManual() {
         const value = this.globalFilter?.toLowerCase().trim();
         if (!value) {

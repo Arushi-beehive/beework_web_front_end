@@ -13,8 +13,8 @@ export const API_ENDPOINTS = {
   beework:{
     login: '/beework/login'
   },
-  cm2:{
-    login: '/cm2/login'
+  beeware:{
+    login: '/beeware/login'
   },
   inventory: {
     base: '/inventory',
@@ -47,49 +47,55 @@ export const API_ENDPOINTS = {
   },
 
   setup:{
-    getdropdowndetails:'/masterdata/get-data-parameter',
-    getdropdownmaster:'/masterdata/dropdown-master',
-    removedataparameter:'/masterdata/remove-data-parameter',
-    getusertypedetail:'/profilemaster/get',
-    getusertypeinsert:'/profilemaster/upsert',
-    getuserdetail:'/users/get-user-list',
-    getuserdetailinsert:'/users/upsert-user-master',
-    submitusersecurity:'/securitycontrol/upsert',
-    submitbulkattendance:'/securitycontrol/bulkCaptureAttendance',
-    upsertworkerprofileexit:'/profilemaster/upsert-worker-profile-exit'
+    getdropdowndetails:'/beework/masterdata/get-data-parameter',
+    getparameterbased:'/public/get-data-parameter',
+    getdropdownmaster:'/beework/masterdata/dropdown-master',
+    removedataparameter:'/beework/masterdata/remove-data-parameter',
+    getusertypedetail:'/beework/profilemaster/get',
+    getusertypeinsert:'/beework/profilemaster/upsert',
+    getuserdetail:'/beework/users/get-user-list',
+    getuserdetailinsert:'/beework/users/upsert-user-master',
+    submitusersecurity:'/beework/securitycontrol/upsert',
+    submitbulkattendance:'/beework/securitycontrol/bulkCaptureAttendance',
+    upsertworkerprofileexit:'/beework/profilemaster/upsert-worker-profile-exit'
   },
 
  project:{
-  getprojectlist:'/project/list',
-  getprojectupsert:'/project/upsert',
-  gettowerlist:'/tower/list',
-  gettowerupsert:'/tower/manage',
-  getruledetails:'/ruledetail/upsert'
+  getprojectlist:'/beework/project/list',
+  getprojectupsert:'/beework/project/upsert',
+  gettowerlist:'/beework/tower/list',
+  gettowerupsert:'/beework/tower/manage',
+  getruledetails:'/beework/ruledetail/upsert'
  },
 
 myapproval:{
-getapprovalsubmit:'/approval/request',
-getapprovalrequesthaziri:'/approval/create_approval_request_haziri',
+getapprovalsubmit:'/beework/approval/request',
+getapprovalrequesthaziri:'/beework/approval/create_approval_request_haziri',
 },
 
   user:{
-    getuserdetails:'/getuserdetails',
-     updateprofie:'/profilemaster/upsertprofile',
-     getchangepassword:'/changepassword/upsert'
+    getuserdetails:'/beework/getuserdetails',
+     updateprofie:'/beework/profilemaster/upsertprofile',
+     getchangepassword:'/beework/changepassword/upsert'
   },
 
   fund:{
-    savefundexcel:'/savefundexcel',
-    uploadApprovedAmount:'/fund/uploadApprovedAmount'
+    savefundexcel:'/beework/savefundexcel',
+    uploadApprovedAmount:'/beework/fund/uploadApprovedAmount'
   },
 
   report:{
- recordreport:'/report/get-report-data'
+ recordreport:'/beework/report/get-report-data'
   },
 
   dashboard:{
-  cardstatus:'/workerCards/upsert'
+  cardstatus:'/beework/workerCards/upsert'
+  },
+  company:{
+    upsertcompanydetails:'/public/companydetail/upsert',
+    upsertcompanysubscription:'/public/upsert_company_subscription'
   }
+
 
 };
 

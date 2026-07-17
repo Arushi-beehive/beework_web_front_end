@@ -225,28 +225,28 @@ export class WorkerGraphReport implements OnInit {
         };
         this.dashboardService.onGetReportDetails(payload).subscribe({
             next: (res) => {
-                this[key] = res.data.data;
+                this[key] = res.message.data;
                 if (key === 'groupwise') {
-                    this.groupwiseColumns = res.data.columns;
+                    this.groupwiseColumns = res.message.columns;
                     if (this.filters.groupLeader) {
                         const filterVal = this.filters.groupLeader.toLowerCase().trim();
-                        this[key] = (res.data.data ?? []).filter((row: any) => {
+                        this[key] = (res.message.data ?? []).filter((row: any) => {
                             const glName = row.group_leader?.toLowerCase().trim() ?? '';
                             return glName.includes(filterVal) || filterVal.includes(glName);
                         });
                     } else {
-                        this[key] = res.data.data ?? [];
+                        this[key] = res.message.data ?? [];
                     }
                 }
 
-                if (key === 'projectwise') this.projectwiseColumns = res.data.columns;
+                if (key === 'projectwise') this.projectwiseColumns = res.message.columns;
 
                 if (key === 'labourAttendance') {
-                    this.labourAttendanceColumns = res.data.columns;
+                    this.labourAttendanceColumns = res.message.columns;
                     if (value === null) {
-                        this.buildAttendanceChart(res.data.columns, res.data.data);
+                        this.buildAttendanceChart(res.message.columns, res.message.data);
                     } else {
-                        this.buildAttendanceChartByDate(res.data.columns, res.data.data);
+                        this.buildAttendanceChartByDate(res.message.columns, res.message.data);
                     }
                 }
             }

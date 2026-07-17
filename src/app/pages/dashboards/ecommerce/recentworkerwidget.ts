@@ -332,16 +332,16 @@ export class RecentWorkerWidget {
         };
         this.dashboardService.onGetReportDetails(payload).subscribe({
             next: (res) => {
-                this[key] = res.data.data ?? [];
-                if (key === 'attendanceBifurcation') this.attendanceBifurcationColumns = res.data.columns;
+                this[key] = res.message.data ?? [];
+                if (key === 'attendanceBifurcation') this.attendanceBifurcationColumns = res.message.columns;
                 if (key === 'recentActivity') {
-                    this.recentActivity = res.data.data ?? [];
+                    this.recentActivity = res.message.data ?? [];
                     this.isRefreshing = false;
                 }
 
                  if (key === 'labourOnboarding') {
-                    this.labourOnboardingColumn = res.data.columns;
-                      this.buildOnboardingChart(res.data.columns, res.data.data);
+                    this.labourOnboardingColumn = res.message.columns;
+                      this.buildOnboardingChart(res.message.columns, res.message.data);
                 }
                
             }

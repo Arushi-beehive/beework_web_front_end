@@ -124,7 +124,10 @@ export class EcommerceDashboard implements OnInit {
            option1: this.companyId, 
             option2:''
         };
-        this.setupService.onDropdownDetails(payload).subscribe({
+
+const $api = type==='ACTIVEPROJECT'? this.setupService.onDropdownDetailsPublic(payload) : this.setupService.onDropdownDetails(payload);
+
+        $api.subscribe({
             next: (res) => {
                 this[key] = res.data;
                  if (key === 'groupLeaderOptions' && this.isFilterUpdating) {
@@ -142,7 +145,7 @@ export class EcommerceDashboard implements OnInit {
         const companyId = this.companyId;
         this.setupService.onGetDropdownMaster(payload, ddType, ddValue, companyId).subscribe({
             next: (res: any) => {
-                this.groupLeaderOptions = res.data.data;
+                this.groupLeaderOptions = res.message.data;
                 if (this.isFilterUpdating) {
                 this.isFilterUpdating = false;  
                 this.onFilterChange();        
