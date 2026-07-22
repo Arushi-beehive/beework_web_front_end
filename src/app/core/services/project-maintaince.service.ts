@@ -15,7 +15,7 @@ export class ProjectMaintainceService{
     constructor(private http:HttpClient, public sharedService:ShareService){}
 
     onGetProjectList(payload:UserType){
-       return this.sharedService.get(API_ENDPOINTS.project.getprojectlist);
+       return this.sharedService.post(API_ENDPOINTS.project.getprojectlist,payload);
     }
 
     onProjectUpsert(payload:ProjectModel){
@@ -23,7 +23,7 @@ export class ProjectMaintainceService{
     }
 
     onGetTowerList(payload:UserType){
-        return this.sharedService.get(API_ENDPOINTS.project.gettowerlist);
+        return this.sharedService.post(API_ENDPOINTS.project.gettowerlist,payload);
     }
 
     onGetTowerUpsert(payload:TowerModel){

@@ -58,7 +58,7 @@ export class UserSecurityComponent {
 
         this.setupService.onDropdownDetails(payload).subscribe({
             next: (res) => {
-                this[key] = res.message;
+                this[key] = res.data;
                 if (type === 'ACCESSPERMISSION') {
                     this.availablePermissions = this.clonePermissions(this.allPermissions);
                     if (this.selectedRole) {
@@ -68,7 +68,7 @@ export class UserSecurityComponent {
                     }
                 }
                 if (type === 'ACCESSCONTROL') {
-                    this.restrictPermissions = this.allPermissions.filter((p) => res.message.some((a: any) => a.access_name === p.access_name)).map((p) => ({ ...p, selected: false }));
+                    this.restrictPermissions = this.allPermissions.filter((p) => res.data.some((a: any) => a.access_name === p.access_name)).map((p) => ({ ...p, selected: false }));
                     this.availablePermissions = this.allPermissions.filter((p) => !this.restrictPermissions.some((r) => r.access_name === p.access_name)).map((p) => ({ ...p, selected: false }));
                 }
             }

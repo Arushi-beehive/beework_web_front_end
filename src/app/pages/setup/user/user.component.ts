@@ -114,7 +114,7 @@ export class UserComponent {
          const $api = type==='ACTIVEPROJECT'? this.setupService.onDropdownDetailsPublic(payload) : this.setupService.onDropdownDetails(payload);
         $api.subscribe({
             next: (res) => {
-               this[key] = type === 'ACTIVEPROJECT' ? res.data : res.message;         
+               this[key] = type === 'ACTIVEPROJECT' ? res.data : res.data;         
             }
         });
     }
@@ -166,7 +166,7 @@ export class UserComponent {
                };
         this.setupService.onGetUser(payload).subscribe({
             next: (res) => {
-                const rawData = Array.isArray(res?.message.data) ? res.message.data : [];
+                const rawData = Array.isArray(res?.data.data) ? res.data.data : [];
                 this.userGroupMap = rawData.reduce((acc: any, user: any) => {
                     if (!acc.has(user.userid)) {
                         acc.set(user.userid, []);
@@ -310,7 +310,7 @@ export class UserComponent {
         const companyId = this.companyId;
         this.setupService.onGetDropdownMaster(payload, ddType, ddValue, companyId).subscribe({
             next: (res) => {
-                this.groupLeaderOptions = (res.message.data || []).filter((gl: any) => gl.userid !== excludeUserId);
+                this.groupLeaderOptions = (res.data.data || []).filter((gl: any) => gl.userid !== excludeUserId);
             }
         });
     }
@@ -384,10 +384,10 @@ export class UserComponent {
 
         api$.subscribe({
             next: (res) => {
-                if (res.data.data.success) {
-                    this.showMessage('success', 'Success', res.data.data.msg);
+                if (res.data.success) {
+                    this.showMessage('success', 'Success', res.data.msg);
                 } else {
-                    this.showMessage('error', 'Failed', res.data.data.msg);
+                    this.showMessage('error', 'Failed', res.data.msg);
                 }
                 this.onGetUserList();
                 this.showExitDialog = false;
@@ -417,11 +417,11 @@ export class UserComponent {
                 };
                 this.setupService.upsertWorkerProfileExit(payload).subscribe({
                     next: (res) => {
-                        if (res.data.data.success) {
+                        if (res.data.success) {
                             this.selectedUser.isactive = 'No';
-                            this.showMessage('success', 'Success', res.data.data.msg);
+                            this.showMessage('success', 'Success', res.data.msg);
                         } else {
-                            this.showMessage('error', 'Failed', res.data.data.msg);
+                            this.showMessage('error', 'Failed', res.data.msg);
                         }
                         this.onGetUserList();
                         this.showExitDialog = false;

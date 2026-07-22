@@ -47,8 +47,8 @@ export class TowerComponent {
     ngOnInit() {
         this.initForm();
         this.filteredTowers = [...this.towers];
+         this.companyId = this.authService.isLogIntType()?.companyid.toString();
         this.onGetTowerList();
-        this.companyId = this.authService.isLogIntType()?.companyid.toString();
         this.loadDropdown('TOWERINCHARGE', 'towerInchargeOption');
         this.loadDropdown('ACTIVEPROJECT', 'projectOption');
     }
@@ -75,7 +75,7 @@ export class TowerComponent {
         const $api = type==='ACTIVEPROJECT'? this.setupService.onDropdownDetailsPublic(payload) : this.setupService.onDropdownDetails(payload);
         $api.subscribe({
             next: (res) => {
-              this[key] = type === 'ACTIVEPROJECT' ? res.data : res.message;
+              this[key] = type === 'ACTIVEPROJECT' ? res.data : res.data;
             }
         });
     }
@@ -103,7 +103,7 @@ export class TowerComponent {
         };
         this.setupService.onDropdownDetails(payload).subscribe({
             next: (res) => {
-                this.towerInchargeOption = res.message;
+                this.towerInchargeOption = res.data;
                 if (row.project_id) {
                     const alreadyInList = this.towerInchargeOption.some((x) => x.userid === row.tower_incharge_id);
                     if (!alreadyInList) {
@@ -144,7 +144,7 @@ export class TowerComponent {
         };
         this.projectService.onGetTowerList(payload).subscribe({
             next: (res) => {
-                this.towers = Array.isArray(res?.message.data) ? res.message.data : [];
+                this.towers = Array.isArray(res?.data.data) ? res.data.data : [];
                 this.filteredTowers = [...this.towers];
             },
             error: (err) => {

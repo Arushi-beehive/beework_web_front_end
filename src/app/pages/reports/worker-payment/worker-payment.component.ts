@@ -67,20 +67,7 @@ export class WorkerPaymentComponent {
     originalReport: any[] = [];
     columnLeftOffsets: number[] = [];
     companyId = '';
-    periodOptions: any[] = [
-        { label: 'JAN-26', value: 'JAN-26' },
-        { label: 'FEB-26', value: 'FEB-26' },
-        { label: 'MAR-26', value: 'MAR-26' },
-        { label: 'APR-26', value: 'APR-26' },
-        { label: 'MAY-26', value: 'MAY-26' },
-        { label: 'JUN-26', value: 'JUN-26' },
-        { label: 'JUL-26', value: 'JUL-26' },
-        { label: 'AUG-26', value: 'AUG-26' },
-        { label: 'SEP-26', value: 'SEP-26' },
-        { label: 'OCT-26', value: 'OCT-26' },
-        { label: 'NOV-26', value: 'NOV-26' },
-        { label: 'DEC-26', value: 'DEC-26' }
-    ];
+    periodOptions: any[] = [];
 
     constructor(
         private fb: FormBuilder,
@@ -98,13 +85,14 @@ export class WorkerPaymentComponent {
         });
         this.companyId = this.authService.isLogIntType()?.companyid.toString();
         this.loadDropdown('ACTIVEPROJECT', 'projectNameOptions', '');
+        this.loadDropdown('PERIOD','periodOptions','');        
         this.loadDropdownMaster();
         this.reportForm.get('projectName')?.valueChanges.subscribe((selected) => {
             this.reportForm.patchValue({ groupleader: null });
         });
     }
 
-    loadDropdown(type: string, key: 'projectNameOptions' | 'groupLeaderOptions', value: string) {
+    loadDropdown(type: string, key: 'projectNameOptions' | 'groupLeaderOptions' |'periodOptions', value: string) {
         const payload: DropdownParamter = {
             returnType: type,
             returnValue: value,
@@ -112,7 +100,7 @@ export class WorkerPaymentComponent {
             option1: this.companyId,
             option2: ''
         };
-const $api = type==='ACTIVEPROJECT'? this.setupService.onDropdownDetailsPublic(payload) : this.setupService.onDropdownDetails(payload);
+const $api = type==='ACTIVEPROJECT' || 'PERIOD'? this.setupService.onDropdownDetailsPublic(payload) : this.setupService.onDropdownDetails(payload);
         $api.subscribe({
             next: (res) => {
                 this[key] = res.data;
@@ -127,7 +115,7 @@ const $api = type==='ACTIVEPROJECT'? this.setupService.onDropdownDetailsPublic(p
         const companyId = this.companyId;
         this.setupService.onGetDropdownMaster(payload, ddType, ddValue, companyId).subscribe({
             next: (res: any) => {
-                this.groupLeaderOptions = res.message.data;
+                this.groupLeaderOptions = res.data.data;
             }
         });
     }

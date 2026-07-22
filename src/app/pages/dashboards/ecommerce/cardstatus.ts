@@ -131,7 +131,7 @@ ngOnInit() {
         };
         this.dashboardService.onGetWorkerCards(payload).subscribe({
             next: (res) => {
-                const data = res.message.summary;
+                const data = res.data.summary;
                 
                 this.dashboardCards = [
                     {

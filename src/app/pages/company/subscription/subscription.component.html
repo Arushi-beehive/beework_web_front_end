@@ -118,7 +118,7 @@
             <!-- Module -->
             <div class="flex flex-col">
                 <label class="font-medium"> Module <span class="text-red-500">*</span> </label>
-                <p-dropdown formControlName="module" [options]="moduleOptions" optionValue="module_id" optionLabel="module_code" placeholder="Module" [filter]="true" [showClear]="true" appendTo="body" filterPlaceholder="Search Module" (onChange)="onModuleChange($event)" [ngClass]="{ 'ng-invalid ng-dirty': f['module'].invalid && f['module'].touched }">
+                <p-dropdown formControlName="module" [options]="moduleOptions" optionValue="module_id" optionLabel="module_code" placeholder="Module" [filter]="true" [showClear]="true" appendTo="body" filterPlaceholder="Search Module" (onChange)="onModuleChange($event)"  [disabled]="!cf['companyName']?.value" [ngClass]="{ 'ng-invalid ng-dirty': f['module'].invalid && f['module'].touched }">
                 </p-dropdown>
                 <small class="text-red-500" style="min-height: 16px; display: block">
                     <ng-container *ngIf="f['module'].invalid && f['module'].touched"> Module is required </ng-container>

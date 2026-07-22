@@ -328,20 +328,20 @@ export class RecentWorkerWidget {
             returnValue: value,
             username: username,
            option1: this.companyId, 
-            option2:''
+           option2:''
         };
         this.dashboardService.onGetReportDetails(payload).subscribe({
             next: (res) => {
-                this[key] = res.message.data ?? [];
-                if (key === 'attendanceBifurcation') this.attendanceBifurcationColumns = res.message.columns;
+                this[key] = res.data.data ?? [];
+                if (key === 'attendanceBifurcation') this.attendanceBifurcationColumns = res.data.columns;
                 if (key === 'recentActivity') {
-                    this.recentActivity = res.message.data ?? [];
+                    this.recentActivity = res.data.data ?? [];
                     this.isRefreshing = false;
                 }
 
                  if (key === 'labourOnboarding') {
-                    this.labourOnboardingColumn = res.message.columns;
-                      this.buildOnboardingChart(res.message.columns, res.message.data);
+                    this.labourOnboardingColumn = res.data.columns;
+                      this.buildOnboardingChart(res.data.columns, res.data.data);
                 }
                
             }
@@ -349,6 +349,7 @@ export class RecentWorkerWidget {
     }
 
     ngOnChanges(changes: SimpleChanges): void {
+        this.companyId = this.authService.isLogIntType()?.companyid.toString();
         if (changes['filters'] ) {
             this.applyFilters();
         }

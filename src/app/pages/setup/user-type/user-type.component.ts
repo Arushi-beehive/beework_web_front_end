@@ -83,12 +83,12 @@ export class UserTypeComponent {
     }
     onGetUserList() {
         const payload: UserType = {
-            isActive:'',
-            companyId: this.companyId
+            companyId: this.companyId,
+            isActive: null
         };
         this.setupService.onUserTypeList(payload).subscribe({
             next: (res) => {
-                this.user = Array.isArray(res?.message.data) ? res.message.data : [];
+                this.user = Array.isArray(res?.data.data) ? res.data.data : [];
                 this.filteredUser = [...this.user];
             },
             error: (err) => {

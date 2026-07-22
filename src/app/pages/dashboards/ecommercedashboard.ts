@@ -48,7 +48,7 @@ import { on } from '@ngrx/store';
             <div class="flex items-center justify-between mb-3">
                 <div class="flex gap-3">
                     <p-dropdown [options]="projectNameOptions" [(ngModel)]="selectedProject" optionLabel="project_name" optionValue="project_id" placeholder="Project" (onChange)="onProjectChange()" styleClass="w-60 mb-4" [filter]="true" [showClear]="true" filterPlaceholder="Search Project" ></p-dropdown>
-                    <p-dropdown [options]="periodOptions" [(ngModel)]="selectedPeriod" optionLabel="label" optionValue="value" placeholder="Period" (onChange)="onFilterChange()" styleClass="w-60 mb-4" [filter]="true" [showClear]="true"></p-dropdown>
+                    <p-dropdown [options]="periodOptions" [(ngModel)]="selectedPeriod" optionLabel="period_name" optionValue="period_name" placeholder="Period" (onChange)="onFilterChange()" styleClass="w-60 mb-4" [filter]="true" [showClear]="true"></p-dropdown>
                     <p-dropdown [options]="groupLeaderOptions" [(ngModel)]="selectedGroupLeader" optionLabel="dd_value" optionValue="dd_value" placeholder="Group Leader" (onChange)="onFilterChange()" styleClass="w-80 mb-4" [filter]="true" [showClear]="true" filterPlaceholder="Search Group Leader"></p-dropdown>
                 </div>
             </div>
@@ -85,20 +85,7 @@ export class EcommerceDashboard implements OnInit {
     groupLeaderOptions: any[] = [];
     companyId = '';
     private isFilterUpdating = false; 
-    periodOptions = [
-        { label: 'January-26', value: 1 },
-        { label: 'February-26', value: 2 },
-        { label: 'March-26', value: 3 },
-        { label: 'April-26', value: 4 },
-        { label: 'May-26', value: 5 },
-        { label: 'June-26', value: 6 },
-        { label: 'July-26', value: 7 },
-        { label: 'August-26', value: 8 },
-        { label: 'September-26', value: 9 },
-        { label: 'October-26', value: 10 },
-        { label: 'November-26', value: 11 },
-        { label: 'December-26', value: 12 }
-    ];
+    periodOptions = [];
     selectedPeriod: number = new Date().getMonth() + 1; // default current month
     selectedProject: any = null;
     selectedGroupLeader: any = null;
@@ -113,10 +100,11 @@ export class EcommerceDashboard implements OnInit {
     };
     this.companyId = this.authService.isLogIntType()?.companyid.toString();
       this.loadDropdown('ACTIVEPROJECT', 'projectNameOptions','');
+      this.loadDropdown('PERIOD','periodOptions','')
        this.loadDropdownMaster();
     }
 
-    loadDropdown(type: string, key: 'projectNameOptions'|'groupLeaderOptions',value:string) {
+    loadDropdown(type: string, key: 'projectNameOptions'|'groupLeaderOptions' | 'periodOptions' ,value:string) {
         const payload: DropdownParamter = {
             returnType: type,
             returnValue: value,
@@ -125,7 +113,7 @@ export class EcommerceDashboard implements OnInit {
             option2:''
         };
 
-const $api = type==='ACTIVEPROJECT'? this.setupService.onDropdownDetailsPublic(payload) : this.setupService.onDropdownDetails(payload);
+const $api = type==='ACTIVEPROJECT' || 'PERIOD' ? this.setupService.onDropdownDetailsPublic(payload) : this.setupService.onDropdownDetails(payload);
 
         $api.subscribe({
             next: (res) => {
@@ -145,7 +133,7 @@ const $api = type==='ACTIVEPROJECT'? this.setupService.onDropdownDetailsPublic(p
         const companyId = this.companyId;
         this.setupService.onGetDropdownMaster(payload, ddType, ddValue, companyId).subscribe({
             next: (res: any) => {
-                this.groupLeaderOptions = res.message.data;
+                this.groupLeaderOptions = res.data.data;
                 if (this.isFilterUpdating) {
                 this.isFilterUpdating = false;  
                 this.onFilterChange();        

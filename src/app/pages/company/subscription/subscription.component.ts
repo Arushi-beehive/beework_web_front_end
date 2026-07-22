@@ -70,6 +70,7 @@ export class SubscriptionComponent implements OnInit {
     ) {}
 
     ngOnInit() {
+        this.companyId = this.authService.isLogIntType().companyid.toString();
         this.initCompanyForm();
         this.initModuleForm();
         this.loadDropdown('MODULE', '', 'moduleOptions');
@@ -90,7 +91,7 @@ export class SubscriptionComponent implements OnInit {
 
     initModuleForm() {
         this.moduleForm = this.fb.group({
-            module: [null, Validators.required],
+            module: [{ value: null, disabled: true }, Validators.required],
             tenure: [null, Validators.required],
             startDate: [{ value: '', disabled: true }]
         });
@@ -183,7 +184,9 @@ export class SubscriptionComponent implements OnInit {
     }
 
     onComapnyChange(data: any) {
-        this.loadDropdown('PRIMARYCONTACT', data.value.companyid.toString(), 'primaryContact', (result) => {
+        if (data.value) {
+    this.moduleForm.get('module')?.enable();
+     this.loadDropdown('PRIMARYCONTACT', data.value.companyid.toString(), 'primaryContact', (result) => {
             if (result && result.length > 0) {
                 const contact = result[0];
                 this.companyForm.patchValue({
@@ -193,14 +196,29 @@ export class SubscriptionComponent implements OnInit {
                 });
             }
         });
+  } else {
+    this.moduleForm.get('module')?.reset();
+    this.moduleForm.get('module')?.disable();
+  }
     }
 
     onModuleChange(data: any) {
-        this.loadDropdown('MODULESTARTDATE', data.value.toString(), 'moduleStartDate', (result) => {
-            const nextStartDate = result?.[0]?.next_start_date;
+        const company = this.companyForm.get('companyName')?.value;
+        console.log(company)
+         const payload: DropdownParamter = {
+            returnType: 'MODULESTARTDATE',
+            returnValue: data.value.toString(),
+            username: this.authService.isLogIntType().userid.toString(),
+            option1: company.companyid || '',
+            option2: ''
+        };
+        this.setupService.onDropdownDetailsPublic(payload).subscribe({
+            next: (res) => {
+                const nextStartDate = res?.[0]?.next_start_date;
             this.moduleForm.patchValue({
                 startDate: nextStartDate ? new Date(nextStartDate) : this.today
             });
+            }
         });
     }
 
@@ -236,8 +254,10 @@ export class SubscriptionComponent implements OnInit {
         this.companyService.upsertCompanySubscription(payload).subscribe({
             next: (res) => {
                 this.visibleDialog = false;
-                this.loadDropdown('SUBSCRIPTIONTENURE', '', 'filteredSubscriptions');
-                this.messageService.add({ severity: res.status, summary: 'Success', detail: res.msg });
+               this.loadDropdown('SUBSCRIPTIONTENURE', '', 'filteredSubscriptions', (data) => {
+            this.flattenedRows = [...data];
+        });
+                this.messageService.add({ severity: res.status, summary: 'Success', detail: res.data.msg });
             },
             error: (err) => {
                 console.error('API error', err);

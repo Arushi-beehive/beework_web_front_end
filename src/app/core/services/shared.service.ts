@@ -34,13 +34,15 @@ export class ShareService {
   localStorage.removeItem(this.TOKEN_KEY);
 }
 
-  getParamter(endpoint:string , ddType:string) : Observable<any>{
+  getParamter(endpoint:string , ddType:string, ddValue:string|null, companyId:string) : Observable<any>{
     const url =`${this.baseUrl}${endpoint}`;
     const headers = new HttpHeaders()
     .set('accept', 'application/json')
     .set('Content-Type', 'application/json')
     .set('Authorization', this.getUserToken() || '')
-    .set('ddType', ddType);
+    .set('ddType', ddType)
+    .set('ddValue',ddValue ?? '')
+    .set('companyId',companyId)
       return this.http.get(url,{ headers });
   }
 

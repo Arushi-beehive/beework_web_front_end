@@ -29,20 +29,7 @@ export class TotalWorkerOnboardingComponent {
     recordReport: any[] = [];
     originalReport: any[] = [];
     companyId = '';
-    periodOptions: { label: string; value: string }[] = [
-    { label: 'Jan-26', value: 'JAN-26' },
-    { label: 'Feb-26', value: 'FEB-26' },
-    { label: 'Mar-26', value: 'MAR-26' },
-    { label: 'Apr-26', value: 'APR-26' },
-    { label: 'May-26', value: 'MAY-26' },
-    { label: 'Jun-26', value: 'JUN-26' },
-    { label: 'Jul-26', value: 'JUL-26' },
-    { label: 'Aug-26', value: 'AUG-26' },
-    { label: 'Sep-26', value: 'SEP-26' },
-    { label: 'Oct-26', value: 'OCT-26' },
-    { label: 'Nov-26', value: 'NOV-26' },
-    { label: 'Dec-26', value: 'DEC-26' },
-];
+    periodOptions: { label: string; value: string }[] = [];
 workerOptions: any[] = [];
 
     constructor(
@@ -60,9 +47,10 @@ workerOptions: any[] = [];
         });
         this.companyId = this.authService.isLogIntType()?.companyid.toString();
         this.loadDropdown('ALLWORKER','workerOptions');
+        this.loadDropdown('PERIOD','periodOptions')
     }
 
-    loadDropdown(type: string, key: 'workerOptions') {
+    loadDropdown(type: string, key: 'workerOptions' | 'periodOptions') {
         const payload: DropdownParamter = {
             returnType: type,
             returnValue: '',
@@ -70,7 +58,9 @@ workerOptions: any[] = [];
            option1: this.companyId, 
             option2:''
         };
-        this.setupService.onDropdownDetails(payload).subscribe({
+        const $api = type==='ACTIVEPROJECT'  || 'PERIOD'? this.setupService.onDropdownDetailsPublic(payload) : this.setupService.onDropdownDetails(payload);
+
+        $api.subscribe({
             next: (res) => {
                 this[key] = res.data;
             }

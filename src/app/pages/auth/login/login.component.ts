@@ -33,7 +33,7 @@ export class LoginComponent implements OnInit{
     ];
 
     modules = [
-    { label: 'BeeWare', image: '/layout/images/BeeBare.jpeg', route: 'http://13.201.136.123/', isSelected: false },
+    { label: 'BeeWare', image: '/layout/images/BeeBare.jpeg', route: 'http://13.127.7.166/', isSelected: false },
     { label: 'BeeWork', image: '/layout/images/BeeWork.png', route: '/layout', isSelected: false },
     { label: 'BeeOps', image: '/layout/images/BeeOps.jpeg', route: 'http://YOUR_IP:PORT/dashboard', isSelected: false },
     { label: 'BeeSight', image: '/layout/images/BeeSight.jpeg', route: 'http://YOUR_IP:PORT/dashboard', isSelected: false },
@@ -163,7 +163,7 @@ export class LoginComponent implements OnInit{
                         if (token) {
                             this.sharedService.setUserToken(token);
                             this.sharedService.setUserData(res.data);
-                            this.showSuccess(res.message);
+                            this.showSuccess(res.status);
                            
                             if (this.selectedModule.route.startsWith('http')) {
                                 if(this.selectedModule.label === 'BeeWare'){
@@ -181,15 +181,15 @@ export class LoginComponent implements OnInit{
                             }
                         }
                     } else {
-                        this.errorSuccess(res.data.msg);
+                        this.errorSuccess(res.error.data);
                     }
                 },
                 error: (res) => {
-                    console.log(res, res.message)
+                    console.log(res, res.data)
                     this.messageService.add({
                         severity: 'error',
                         summary: 'Error',
-                        detail: res.error.message
+                        detail: res.error.data
                     });
                 }
             });

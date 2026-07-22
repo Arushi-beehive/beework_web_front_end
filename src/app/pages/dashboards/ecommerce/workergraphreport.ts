@@ -209,6 +209,7 @@ export class WorkerGraphReport implements OnInit {
     }
 
     ngOnChanges(changes: SimpleChanges): void {
+        this.companyId = this.authService.isLogIntType()?.companyid.toString();
         if (changes['filters']) {
             this.applyFilters();
             this.loadDropdown('REPORTDLR3DAYPROJECT', '', 'projectwise');
@@ -225,28 +226,28 @@ export class WorkerGraphReport implements OnInit {
         };
         this.dashboardService.onGetReportDetails(payload).subscribe({
             next: (res) => {
-                this[key] = res.message.data;
+                this[key] = res.data.data;
                 if (key === 'groupwise') {
-                    this.groupwiseColumns = res.message.columns;
+                    this.groupwiseColumns = res.data.columns;
                     if (this.filters.groupLeader) {
                         const filterVal = this.filters.groupLeader.toLowerCase().trim();
-                        this[key] = (res.message.data ?? []).filter((row: any) => {
+                        this[key] = (res.data.data ?? []).filter((row: any) => {
                             const glName = row.group_leader?.toLowerCase().trim() ?? '';
                             return glName.includes(filterVal) || filterVal.includes(glName);
                         });
                     } else {
-                        this[key] = res.message.data ?? [];
+                        this[key] = res.data.data ?? [];
                     }
                 }
 
-                if (key === 'projectwise') this.projectwiseColumns = res.message.columns;
+                if (key === 'projectwise') this.projectwiseColumns = res.data.columns;
 
                 if (key === 'labourAttendance') {
-                    this.labourAttendanceColumns = res.message.columns;
+                    this.labourAttendanceColumns = res.data.columns;
                     if (value === null) {
-                        this.buildAttendanceChart(res.message.columns, res.message.data);
+                        this.buildAttendanceChart(res.data.columns, res.data.data);
                     } else {
-                        this.buildAttendanceChartByDate(res.message.columns, res.message.data);
+                        this.buildAttendanceChartByDate(res.data.columns, res.data.data);
                     }
                 }
             }

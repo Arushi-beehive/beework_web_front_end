@@ -49,7 +49,7 @@
     </p-table>
 
     <!-- ✳️ Add/Edit User Dialog -->
-    <p-dialog header="{{ editMode ? 'Edit User' : 'Add Profile' }}" [(visible)]="visibleDialog" [modal]="true" [style]="{ width: '60vw' }" [draggable]="false" [resizable]="false">
+    <p-dialog header="{{ editMode ? 'Edit User' : 'Add User' }}" [(visible)]="visibleDialog" [modal]="true" [style]="{ width: '60vw' }" [draggable]="false" [resizable]="false">
         <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="space-y-6">
             <div class="grid grid-cols-2 gap-x-6 gap-y-4">
                 <!-- Mobile -->

@@ -145,7 +145,7 @@ export class FundAllocationComponent {
         const companyId = this.companyId;
         this.setupService.onGetDropdownMaster(payload, ddType, ddValue, companyId).subscribe({
             next: (res: any) => {
-                this.groupLeaderOptions = res.message.data;
+                this.groupLeaderOptions = res.data.data;
             }
         });
     }

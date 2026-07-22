@@ -29,11 +29,11 @@ export class SetupMaintainceService {
     }
 
     onGetDropdownMaster(payload: DropdownMaster, ddType: string, ddValue: string | null, companyId: string) {
-        return this.shareService.getParamter(API_ENDPOINTS.setup.getdropdownmaster, ddType);
+        return this.shareService.getParamter(API_ENDPOINTS.setup.getdropdownmaster, ddType, ddValue, companyId);
     }
 
     onUserTypeList(payload: UserType) {
-        return this.shareService.get(API_ENDPOINTS.setup.getusertypedetail);
+        return this.shareService.post(API_ENDPOINTS.setup.getusertypedetail,payload);
     }
     onUserTypeInsert(payload: UserTypeInsert) {
         return this.shareService.post(API_ENDPOINTS.setup.getusertypeinsert, payload);

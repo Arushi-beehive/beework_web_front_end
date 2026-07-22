@@ -16,7 +16,6 @@ private baseUrl = environment.baseurl;
   constructor(private http: HttpClient,public shareservice:ShareService) { }
 
    OnUserHeaderCreate(payload:UserHeader):Observable<any>{
-      console.log(payload)
        let payloaddata=this.shareservice.GetApiBody(payload)
       let url=`${this.baseUrl}${API_ENDPOINTS.user.getuserdetails}`;
       return this.http.post<any>(url,payloaddata).pipe(catchError(error=>{
@@ -27,7 +26,6 @@ private baseUrl = environment.baseurl;
     }
 
     OnUserListHeaderCreate(payload:UserHeader):Observable<any>{
-      console.log(payload);
       let payloaddata = this.shareservice.GetApiBody(payload);
       let url=`${this.baseUrl}${API_ENDPOINTS.user.updateprofie}`;
       return this.http.post<any>(url,payloaddata).pipe(catchError(error=>{

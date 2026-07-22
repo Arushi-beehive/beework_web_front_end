@@ -35,11 +35,11 @@ export class PermissionService {
         }).pipe(
             map(({ allPermissions, userAccess }) => {
                 const excluded = new Set(
-                    userAccess.message
+                    userAccess.data
                         .filter((i: any) => i.permission_type === 'W')
                         .map((i: any) => i.access_name)
                 );
-                return allPermissions.message
+                return allPermissions.data
                     .filter((i: any) => !excluded.has(i.access_name))
                     .map((i: any) => i.access_name);
             }),

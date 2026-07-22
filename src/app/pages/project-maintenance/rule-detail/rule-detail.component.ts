@@ -184,6 +184,7 @@ export class RuleDetailComponent {
                             summary = 'Failed';
                         }
                             this.showMessage(severity, summary, res.data.message);
+                             this.loadDropdown('APPROVALLEVEL', 'user', '');
                 this.buildDisplayRows();
                 this.visibleDialog = false;
                 this.selectedUserRow = null;

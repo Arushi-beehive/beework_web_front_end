@@ -19,7 +19,7 @@
                 <!-- Period -->
                 <div class="flex flex-col">
                     <label class="font-medium mb-1">Period <span class="text-red-500">*</span></label>
-                    <p-dropdown [options]="periodOptions" optionLabel="label" optionValue="value" [filter]="true" [showClear]="true" filterPlaceholder="Select Period" formControlName="period" placeholder="Period" class="w-full"> </p-dropdown>
+                    <p-dropdown [options]="periodOptions" optionLabel="period_name" optionValue="period_id" [filter]="true" [showClear]="true" filterPlaceholder="Select Period" formControlName="period" placeholder="Period" class="w-full"> </p-dropdown>
                     <small class="text-red-500 mt-1" *ngIf="reportForm.get('period')?.touched && reportForm.get('period')?.invalid"> Period is required </small>
                 </div>
 

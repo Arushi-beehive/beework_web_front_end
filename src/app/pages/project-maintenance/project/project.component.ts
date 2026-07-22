@@ -80,7 +80,7 @@ export class ProjectComponent {
 
         this.setupService.onDropdownDetails(payload).subscribe({
             next: (res) => {
-                this[key] = res.message;
+                this[key] = res.data;
             }
         });
     }
@@ -200,13 +200,15 @@ export class ProjectComponent {
     }
 
     onGetProjectList() {
+        console.log('company',this.companyId)
         const payload: UserType = {
             isActive:'',
             companyId: this.companyId
         };
         this.projectService.onGetProjectList(payload).subscribe({
             next: (res) => {
-                this.project = Array.isArray(res?.message.data) ? res.message.data : [];
+                console.log(payload);
+                this.project = Array.isArray(res?.data.data) ? res.data.data : [];
                 this.filteredUser = [...this.project];
             },
             error: (err) => {
