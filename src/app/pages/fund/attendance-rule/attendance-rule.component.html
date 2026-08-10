@@ -13,24 +13,24 @@
                 <label for="workerWise" class="cursor-pointer">Workerwise</label>
             </div>
         </div>
-        <!-- Project -->
+        <!-- Site -->
         <div class="mb-4 flex items-center gap-3">
-            <label class="font-semibold">Project <span class="text-red-500">*</span></label>
+            <label class="font-semibold">Site <span class="text-red-500">*</span></label>
             <div class="flex flex-col">
                 <p-dropdown
                     [options]="projectOptions"
                     optionLabel="project_name"
                     optionValue="project_id"
                     [(ngModel)]="selectedProject"
-                    placeholder="Select Project"
+                    placeholder="Select Site"
                     [filter]="true"
-                    filterPlaceholder="Search Project"
+                    filterPlaceholder="Search Site"
                     (onChange)="onProjectChange()"
                     styleClass="w-64"
                     #projectRef="ngModel"
                     required>
                 </p-dropdown>
-                <small class="text-red-500 mt-1" *ngIf="projectRef.invalid && projectRef.touched">Project is required.</small>
+                <small class="text-red-500 mt-1" *ngIf="projectRef.invalid && projectRef.touched">Site is required.</small>
             </div>
         </div>
 

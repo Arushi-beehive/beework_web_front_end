@@ -29,7 +29,7 @@
                 <td>{{ user.web_access }}</td>
                <td>
     <div class="flex gap-2">
-        <i *ngIf="user.noneditable !== 'Y'"
+        <i
             class="pi pi-pencil cursor-pointer text-blue-500"
             (click)="openEditDialog(user)">
         </i>
@@ -41,7 +41,7 @@
             </tr>
         </ng-template>
         <ng-template pTemplate="paginatorleft">
-            <div class="text-gray-600 ms-2">Total Users: {{ filteredUser?.length || 0 }}</div>
+            <div class="text-gray-600 ms-2">Total User Types: {{ filteredUser?.length || 0 }}</div>
         </ng-template>
     </p-table>
 

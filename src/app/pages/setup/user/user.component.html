@@ -21,7 +21,7 @@
                 <th>Mobile</th>
                 <th>Email</th>
                 <th>Active</th>
-                <th>Project Mapping</th>
+                <th>Site Mapping</th>
                 <th class="text-center">Action</th>
             </tr>
         </ng-template>
@@ -102,18 +102,18 @@
                     <small class="text-red-500 mt-1" *ngIf="userForm.get('p_name')?.touched && userForm.get('p_name')?.invalid"> Full Name is required </small>
                 </div>
 
-                <!-- Project Name -->
+                <!-- Site Name -->
                 <div class="flex flex-col">
-                    <label class="font-medium mb-1">Project <span class="text-red-500">*</span></label>
+                    <label class="font-medium mb-1">Site <span class="text-red-500">*</span></label>
                     <p-multiSelect
                         [options]="projectOptions"
                         optionLabel="project_name"
                         optionValue="project_id"
                         [filter]="true"
                         [showClear]="true"
-                        filterPlaceholder="Search Project"
+                        filterPlaceholder="Search Site"
                         formControlName="projectname"
-                        placeholder="Select Project"
+                        placeholder="Select Site"
                         class="w-full"
                         appendTo="body"
                         [selectionLimit]="isSiteAdmin ? 1 : null"

@@ -19,13 +19,13 @@
                 <!-- Period -->
                 <div class="flex flex-col">
                     <label class="font-medium mb-1">Period <span class="text-red-500">*</span></label>
-                    <p-dropdown [options]="periodOptions" optionLabel="period_name" optionValue="period_id" [filter]="true" [showClear]="true" filterPlaceholder="Select Period" formControlName="period" placeholder="Period" class="w-full"> </p-dropdown>
+                    <p-dropdown [options]="periodOptions" optionLabel="period_name" optionValue="period_name" [filter]="true" [showClear]="true" filterPlaceholder="Select Period" formControlName="period" placeholder="Period" class="w-full"> </p-dropdown>
                     <small class="text-red-500 mt-1" *ngIf="reportForm.get('period')?.touched && reportForm.get('period')?.invalid"> Period is required </small>
                 </div>
 
-                <!-- Project Name -->
+                <!-- Site Name -->
                 <div class="flex flex-col">
-                    <label class="font-medium mb-1">Project <span class="text-red-500">*</span></label>
+                    <label class="font-medium mb-1">Site <span class="text-red-500">*</span></label>
                     <p-dropdown
                         [options]="projectNameOptions"
                         optionLabel="project_name"
@@ -33,13 +33,13 @@
                         [filter]="true"
                         [showClear]="true"
                         (onChange)="onProjectChange($event)"
-                        filterPlaceholder="Select Project Name"
+                        filterPlaceholder="Select Site Name"
                         formControlName="projectName"
-                        placeholder="Project Name"
+                        placeholder="Site Name"
                         class="w-full"
                     >
                     </p-dropdown>
-                    <small class="text-red-500 mt-1" *ngIf="reportForm.get('projectName')?.touched && reportForm.get('projectName')?.invalid"> Project Name is required </small>
+                    <small class="text-red-500 mt-1" *ngIf="reportForm.get('projectName')?.touched && reportForm.get('projectName')?.invalid"> Site Name is required </small>
                 </div>
 
                 <!-- Group Leader - Full width on mobile, half on desktop -->

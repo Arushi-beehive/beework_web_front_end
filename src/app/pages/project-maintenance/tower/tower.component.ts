@@ -72,7 +72,7 @@ export class TowerComponent {
            option1: this.companyId, 
             option2:''
         };
-        const $api = type==='ACTIVEPROJECT'? this.setupService.onDropdownDetailsPublic(payload) : this.setupService.onDropdownDetails(payload);
+        const $api = (type==='ACTIVEPROJECT') ? this.setupService.onDropdownDetailsPublic(payload) : this.setupService.onDropdownDetails(payload);
         $api.subscribe({
             next: (res) => {
               this[key] = type === 'ACTIVEPROJECT' ? res.data : res.data;

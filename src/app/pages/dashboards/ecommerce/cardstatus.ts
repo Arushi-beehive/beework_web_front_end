@@ -135,7 +135,7 @@ ngOnInit() {
                 
                 this.dashboardCards = [
                     {
-                        label: 'Total Projects',
+                        label: 'Total Sites',
                         icon: 'pi pi-briefcase',
                         iconBg: 'bg-blue-100',
                         iconColor: 'text-blue-600',

@@ -28,7 +28,7 @@ import { DropdownParamter } from '@/core/models/setup.model';
                 <img
                     [src]="companyLogo"
                     alt="logo"
-                    class="w-[40px] h-[40px]
+                    class="w-[60px] h-[60px]
          object-contain"
                 />
                 <p class="text-2xl font-bold text-primary">{{ companyName }}</p>

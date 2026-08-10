@@ -37,7 +37,7 @@ export class ProjectComponent {
     siteIncharge: any[] = [];
     projectInchargeOptions: MobileOption[] = [];
     mobileOptions: MobileOption[] = [];
-    companyId ='';
+    companyId = '';
 
     constructor(
         private fb: FormBuilder,
@@ -61,8 +61,9 @@ export class ProjectComponent {
         this.projectForm = this.fb.group({
             p_pname: ['', [Validators.required, Validators.maxLength(100)]],
             p_plocation: ['', Validators.required],
+            p_deliverylocation: [''],
             p_pincharge: [''],
-           p_cordinates: ['', Validators.pattern(/^-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?$/)],
+            p_cordinates: ['', Validators.pattern(/^-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?$/)],
             p_range: ['', [Validators.pattern(/^[0-9]{1,4}$/)]],
             p_admincharges: [''],
             checked: [true]
@@ -74,8 +75,8 @@ export class ProjectComponent {
             returnType: type,
             returnValue: '',
             username: '',
-            option1:this.companyId,
-            option2:''
+            option1: this.companyId,
+            option2: ''
         };
 
         this.setupService.onDropdownDetails(payload).subscribe({
@@ -105,18 +106,18 @@ export class ProjectComponent {
     }
 
     openEditDialog(user: any) {
-        console.log('user',user)
+        console.log('user', user);
         this.visibleDialog = true;
         this.editMode = true;
         this.selectedUser = user;
-        this.siteIncharge=[];
+        this.siteIncharge = [];
         const loginId = this.authService.isLogIntType().userid;
         const payload: DropdownParamter = {
             returnType: 'PROJECTINCHARGE',
             returnValue: '',
             username: '',
-           option1: this.companyId,
-            option2:''
+            option1: this.companyId,
+            option2: ''
         };
         this.setupService.onDropdownDetails(payload).subscribe({
             next: (res) => {
@@ -136,13 +137,13 @@ export class ProjectComponent {
                 }
             }
         });
- this.loadDropdown('SITEADMIN', 'mobileOptions');
+        this.loadDropdown('SITEADMIN', 'mobileOptions');
         const sitePayload: DropdownParamter = {
             returnType: 'PROJECTSITEADMIN',
             returnValue: this.selectedUser.project_id,
             username: loginId,
             option1: this.companyId,
-            option2:''
+            option2: ''
         };
         this.setupService.onDropdownDetails(sitePayload).subscribe({
             next: (res) => {
@@ -152,7 +153,7 @@ export class ProjectComponent {
                         psiteinchargename: item.staff_name,
                         psiteinchargemobile: item.staff_mobile
                     }));
-                   
+
                     setTimeout(() => {
                         res.data.forEach((item: any) => {
                             const alreadyExists = this.mobileOptions.some((m: any) => m.userid === item.staff_id);
@@ -177,6 +178,7 @@ export class ProjectComponent {
         this.projectForm.patchValue({
             p_pname: user.project_name,
             p_plocation: user.location,
+            p_deliverylocation: user.delivery_location,
             p_pincharge: user.project_incharge_id,
             p_cordinates: user.project_coordinates,
             p_range: user.range,
@@ -186,10 +188,10 @@ export class ProjectComponent {
         this.projectForm.updateValueAndValidity();
     }
 
-   getAvailableMobileOptions(currentRow:any):MobileOption[]{
-    const selectedIds = this.siteIncharge.filter((row:any)=> row !== currentRow && row.userid != null).map((row:any)=>row.userid);
-    return this.mobileOptions.filter((option: MobileOption) => !selectedIds.includes(option.userid));
-   }
+    getAvailableMobileOptions(currentRow: any): MobileOption[] {
+        const selectedIds = this.siteIncharge.filter((row: any) => row !== currentRow && row.userid != null).map((row: any) => row.userid);
+        return this.mobileOptions.filter((option: MobileOption) => !selectedIds.includes(option.userid));
+    }
 
     closeDialog() {
         this.visibleDialog = false;
@@ -200,9 +202,9 @@ export class ProjectComponent {
     }
 
     onGetProjectList() {
-        console.log('company',this.companyId)
+        console.log('company', this.companyId);
         const payload: UserType = {
-            isActive:'',
+            isActive: '',
             companyId: this.companyId
         };
         this.projectService.onGetProjectList(payload).subscribe({
@@ -223,6 +225,7 @@ export class ProjectComponent {
             projectId: this.editMode ? this.selectedUser.project_id : 0,
             projectName: data.p_pname,
             location: data.p_plocation,
+            deliveryLocation: data.p_deliverylocation,
             isActive: data.checked ? 'Y' : 'N',
             projectRange: data.p_range,
             projectInchargeId: data.p_pincharge,
@@ -257,16 +260,15 @@ export class ProjectComponent {
                 } else {
                     this.project.push(newProject);
                 }
-                 let severity, summary;
-                if(res.data.success === true){
+                let severity, summary;
+                if (res.data.success === true) {
                     severity = 'success';
                     summary = 'Success';
-                }
-                else{
+                } else {
                     severity = 'error';
                     summary = 'failed';
                 }
-                this.showMessage(severity,summary, res.data.msg);
+                this.showMessage(severity, summary, res.data.msg);
                 this.filteredUser = [...this.project];
                 this.visibleDialog = false;
                 this.selectedUser = null;
@@ -301,11 +303,11 @@ export class ProjectComponent {
                             severity = 'success';
                             summary = 'Success';
                         }
-                            this.showMessage(severity, summary, res.data.message);
-                            const index = this.project.indexOf(data);
-                            if (index !== -1) {
-                                this.project.splice(index, 1);
-                                this.filteredUser = [...this.project];
+                        this.showMessage(severity, summary, res.data.message);
+                        const index = this.project.indexOf(data);
+                        if (index !== -1) {
+                            this.project.splice(index, 1);
+                            this.filteredUser = [...this.project];
                         }
                     }
                 });

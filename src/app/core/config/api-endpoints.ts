@@ -61,8 +61,8 @@ export const API_ENDPOINTS = {
   },
 
  project:{
-  getprojectlist:'/beework/project/list',
-  getprojectupsert:'/beework/project/upsert',
+  getprojectlist:'/beework/project/get_project_list',
+  getprojectupsert:'/beework/project/upsert_project',
   gettowerlist:'/beework/tower/list',
   gettowerupsert:'/beework/tower/manage',
   getruledetails:'/beework/ruledetail/upsert'
@@ -75,13 +75,15 @@ getapprovalrequesthaziri:'/beework/approval/create_approval_request_haziri',
 
   user:{
     getuserdetails:'/beework/getuserdetails',
-     updateprofie:'/beework/profilemaster/upsertprofile',
+     updateprofie:'/public/companydetail/upsert',
      getchangepassword:'/beework/changepassword/upsert'
   },
 
   fund:{
     savefundexcel:'/beework/savefundexcel',
-    uploadApprovedAmount:'/beework/fund/uploadApprovedAmount'
+    uploadApprovedAmount:'/beework/fund/uploadApprovedAmount',
+    uploadPaymentGroupLeader:'/beework/fund/uploadPaymentGroupLeader',
+    uploadPaymentWorker:'/beework/fund/uploadPaymentWorker'
   },
 
   report:{

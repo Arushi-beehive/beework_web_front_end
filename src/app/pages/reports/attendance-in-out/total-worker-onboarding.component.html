@@ -23,7 +23,7 @@
         <p-dropdown
             [options]="periodOptions"
             optionLabel="period_name"
-            optionValue="period_id"
+            optionValue="period_name"
             [filter]="true"
             [showClear]="true"
             filterPlaceholder="Search Period"
@@ -37,25 +37,31 @@
         </small>
     </div>
 
-    <!-- Worker -->
-    <div class="flex flex-col">
-        <label class="font-medium mb-1">Worker <span class="text-red-500">*</span></label>
-        <p-dropdown
-            [options]="workerOptions"
-            optionLabel="worker_name"
-            optionValue="profileid"
-            [filter]="true"
-            [showClear]="true"
-            filterPlaceholder="Search Worker"
-            formControlName="worker"
-            placeholder="Select Worker"
-            class="w-full"
-        ></p-dropdown>
-         <small class="text-red-500 mt-1"
-            *ngIf="reportForm.get('worker')?.touched && reportForm.get('worker')?.invalid">
-            Worker is required
-        </small>
-    </div>
+   <!-- Project Name -->
+                <div class="flex flex-col">
+                    <label class="font-medium mb-1">Site <span class="text-red-500">*</span></label>
+                    <p-dropdown
+                        [options]="projectNameOptions"
+                        optionLabel="project_name"
+                        optionValue="project_id"
+                        [filter]="true"
+                        [showClear]="true"
+                        (onChange)="onProjectChange($event)"
+                        filterPlaceholder="Search Site"
+                        formControlName="projectName"
+                        placeholder="Site"
+                        class="w-full"
+                    >
+                    </p-dropdown>
+                    <small class="text-red-500 mt-1" *ngIf="reportForm.get('projectName')?.touched && reportForm.get('projectName')?.invalid"> Project Name is required </small>
+                </div>
+
+                <!-- Group Leader - Full width on mobile, half on desktop -->
+                <div class="flex flex-col">
+                    <label class="font-medium mb-1">Group Leader</label>
+                    <p-dropdown [options]="groupLeaderOptions" optionLabel="dd_value" optionValue="id" [filter]="true" [showClear]="true" filterPlaceholder="Search Group Leader" formControlName="groupleader" placeholder="Group Leader" class="w-full">
+                    </p-dropdown>
+                </div>
 
 </div>
         </div>

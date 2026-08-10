@@ -147,7 +147,7 @@ export class MyApprovalComponent implements OnInit {
             option2:''
         };
 
-        const $api = type==='ACTIVEPROJECT' || 'PERIOD'? this.setupService.onDropdownDetailsPublic(payload) : this.setupService.onDropdownDetails(payload);
+        const $api = (type==='ACTIVEPROJECT' || type==='PERIOD') ? this.setupService.onDropdownDetailsPublic(payload) : this.setupService.onDropdownDetails(payload);
 
         $api.subscribe({
             next: (res) => {

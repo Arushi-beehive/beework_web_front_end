@@ -77,6 +77,25 @@ export function gstNumberValidator(control: AbstractControl): ValidationErrors |
                             <input formControlName="companyphone" type="text" pInputText fluid placeholder="Company Phone" maxlength="10" (keypress)="allowOnlyDigits($event)" />
                             <small class="text-red-500 mt-1" *ngIf="profileForm.get('companyphone')?.touched && profileForm.get('companyphone')?.invalid"> Enter a valid 10-digit mobile number </small>
                         </div>
+
+                        <div class="col-span-12 md:col-span-4">
+                            <label class="font-medium mb-1">Industry Type <span class="text-red-500">*</span></label>
+                            <p-dropdown
+                                formControlName="industrytype"
+                                [options]="industryTypeOptions"
+                                optionLabel="industry_type_name"
+                                optionValue="industry_type_id"
+                                [filter]="true"
+                                [showClear]="true"
+                                placeholder="Select Industry Type"
+                                styleClass="w-full"
+                            ></p-dropdown>
+                        </div>
+
+                        <div class="col-span-12 md:col-span-4">
+                            <label class="font-medium mb-1">Time Zone <span class="text-red-500">*</span></label>
+                            <p-dropdown formControlName="timezone" [options]="timeZoneOptions" optionLabel="label" optionValue="label" [filter]="true" [showClear]="true" placeholder="Select Time Zone" styleClass="w-full"></p-dropdown>
+                        </div>
                     </div>
                 </div>
                 <div class="card">
@@ -229,13 +248,16 @@ export class UserCreate {
     countries: any[] = [];
     states: any[] = [];
     cities: any[] = [];
+    industryTypeOptions: any[] = [];
+    timeZoneOptions: any[] = [{ label: 'Asia/Kolkata' }];
+    private readonly alwaysDisabled = ['industrytype', 'timezone', 'companygstno', 'statecode'];
     companyId = '';
     public getUserDetails = {};
     public imageUrl: string | null = '';
     profileForm: FormGroup = this.fb.group({
         companyname: ['', [Validators.required, Validators.maxLength(100)]],
         companyemail: ['', [Validators.required, Validators.email, Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/), Validators.maxLength(100)]],
-        companygstno: ['', [Validators.required, gstNumberValidator]],
+        companygstno: [{ value: '', disabled: true }, [Validators.required, gstNumberValidator]],
         companycontactperson: ['', Validators.maxLength(100)],
         companyaddress: ['', [Validators.required, Validators.maxLength(500)]],
         companycontactphone: ['', Validators.pattern(/[6-9]\d{9}$/)],
@@ -246,12 +268,14 @@ export class UserCreate {
         companyphone: ['', [Validators.required, Validators.pattern(/[6-9]\d{9}$/)]],
         companypincode: ['', [Validators.required, Validators.maxLength(6)]],
         p_warehouse: ['', [Validators.required, Validators.maxLength(100)]],
-        statecode: ['', [Validators.required, Validators.maxLength(5)]],
+        statecode: [{ value: '', disabled: true }, [Validators.required, Validators.maxLength(5)]],
         bankname: ['', [Validators.required, Validators.maxLength(100)]],
         accountno: ['', [Validators.required, Validators.maxLength(25)]],
         pan: ['', [Validators.required, Validators.maxLength(25)]],
         ifsc: ['', [Validators.required, Validators.maxLength(25)]],
-        branch: ['', [Validators.required, Validators.maxLength(100)]]
+        branch: ['', [Validators.required, Validators.maxLength(100)]],
+        industrytype: [{ value: '', disabled: true }, Validators.required],
+        timezone: [{ value: '', disabled: true }, Validators.required]
     });
 
     constructor(
@@ -265,8 +289,8 @@ export class UserCreate {
     ngOnInit() {
         this.companyId = this.authservice.isLogIntType()?.companyid.toString();
        this.loggedInRole= this.authservice.isLogIntType()?.usertype;
-       console.log(this.loggedInRole)
-               this.onGetData();
+        this.onGetData();
+        this.loadDropdown('INDUSTRY', '', 'industryTypeOptions');
     }
     allowOnlyDigits(event: KeyboardEvent) {
         const char = event.key;
@@ -275,7 +299,7 @@ export class UserCreate {
         }
     }
 
-  loadDropdown(type: string, value:string, key: 'countries'|'states'|'cities',callback?:()=>void) {
+  loadDropdown(type: string, value:string, key: 'countries'|'states'|'cities'|'industryTypeOptions'|'timeZoneOptions',callback?:()=>void) {
     const userId = this.authservice.isLogIntType()?.userid;
           const payload: DropdownParamter = {
               returnType: type,
@@ -322,7 +346,9 @@ export class UserCreate {
             p_pan: form.pan,
             p_warehouse: form.p_warehouse,
             p_companyLogo: this.logoBase64 || null,
-            p_loginuser: loggedIn
+            p_loginuser: loggedIn,
+             p_industry: form.industrytype,
+            p_timezone: 'Asia/Kolkata'
         };
 
         this.profileService.onUserListHeaderCreate(payload).subscribe({
@@ -348,7 +374,7 @@ export class UserCreate {
             acceptButtonStyleClass: 'p-button-primary',
             rejectButtonStyleClass: 'p-button-secondary',
             accept: () => {
-                this.submitValue(this.profileForm.value);
+                this.submitValue(this.profileForm.getRawValue());
             }
         });
     }
@@ -382,13 +408,14 @@ export class UserCreate {
         this.logoBase64 = null;
     }
 
-  convertToBase64(file: File) {
+ convertToBase64(file: File) {
     const maxWidth = 300;
     const maxHeight = 200;
-    const quality = 0.7; // 70% quality
+    const quality = 0.7;
 
     const img = new Image();
     const objectUrl = URL.createObjectURL(file);
+    const isPng = file.type === 'image/png';
 
     img.onload = () => {
         URL.revokeObjectURL(objectUrl);
@@ -408,12 +435,19 @@ export class UserCreate {
         canvas.height = height;
 
         const ctx = canvas.getContext('2d')!;
+
+        if (!isPng) {
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, width, height);
+        }
+
         ctx.drawImage(img, 0, 0, width, height);
 
-        // Compress to JPEG
-        this.logoBase64 = canvas.toDataURL('image/jpeg', quality);
+        this.logoBase64 = isPng
+            ? canvas.toDataURL('image/png')
+            : canvas.toDataURL('image/jpeg', quality);
+
         this.imageUrl = this.base64ToBlobUrl(this.logoBase64);
-        console.log('Compressed Base64 ready, size:', Math.round(this.logoBase64.length / 1024), 'KB');
     };
 
     img.onerror = () => console.error('Image load error');
@@ -441,9 +475,15 @@ export class UserCreate {
   
           this.setupService.onDropdownDetailsPublic(payload).subscribe({
               next: (res) => {
-                if(res.data){
-                 this.patchFromData(res.data[0]);
-              }
+                if (res.data) {
+                    this.patchFromData(res.data[0]);
+                    if (this.loggedInRole !== 'Administrator') {
+                        this.profileForm.disable();
+                    } else {
+                        this.profileForm.enable();
+                        this.alwaysDisabled.forEach((name) => this.profileForm.get(name)?.disable());
+                    }
+                }
             }
           });
     }
@@ -521,7 +561,9 @@ export class UserCreate {
             pan: data.pan,
             companypincode: data.companypincode,
             p_warehouse: data.warehouse,
-            accountno: data.accountno
+            accountno: data.accountno,
+             industrytype: data.industry_type_id,
+            timezone: data.timezone
         });
         this.imageUrl = this.base64ToBlobUrl(data.companylogo);
         if (countryId) {

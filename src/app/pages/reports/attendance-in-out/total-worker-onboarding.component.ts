@@ -11,7 +11,6 @@ import { MessageService } from 'primeng/api';
 import { AuthService } from '@/core/services/auth.service';
 import { DropdownParamter } from '@/core/models/setup.model';
 import { SetupMaintainceService } from '@/core/services/setup-maintaince.service';
-import { MobileOption } from '@/core/models/project.model';
 import * as XLSX from 'xlsx';
 import { DashboardsService } from '@/core/services/dashboardCard.service';
 
@@ -28,9 +27,10 @@ export class TotalWorkerOnboardingComponent {
     columns: any[] = [];
     recordReport: any[] = [];
     originalReport: any[] = [];
+    periodOptions: any[] = [];
+    projectNameOptions: any[] = [];
+    groupLeaderOptions: any[] = [];
     companyId = '';
-    periodOptions: { label: string; value: string }[] = [];
-workerOptions: any[] = [];
 
     constructor(
         private fb: FormBuilder,
@@ -42,24 +42,24 @@ workerOptions: any[] = [];
 
     ngOnInit(): void {
         this.reportForm = this.fb.group({
-          period:      ['', Validators.required],
-            worker:      ['', Validators.required]
+            period: ['', Validators.required],
+            projectName: ['', [Validators.required]],
+            groupleader: ['']
         });
-        this.companyId = this.authService.isLogIntType()?.companyid.toString();
-        this.loadDropdown('ALLWORKER','workerOptions');
-        this.loadDropdown('PERIOD','periodOptions')
+        this.companyId = this.authService.isLogIntType().companyid.toString();
+        this.loadDropdown('ACTIVEPROJECT', 'projectNameOptions', '');
+        this.loadDropdown('PERIOD', 'periodOptions', '');
     }
 
-    loadDropdown(type: string, key: 'workerOptions' | 'periodOptions') {
+    loadDropdown(type: string, key: 'projectNameOptions' | 'groupLeaderOptions' | 'periodOptions', value: string) {
         const payload: DropdownParamter = {
             returnType: type,
-            returnValue: '',
+            returnValue: value,
             username: '',
-           option1: this.companyId, 
-            option2:''
+            option1: this.companyId,
+            option2: null
         };
-        const $api = type==='ACTIVEPROJECT'  || 'PERIOD'? this.setupService.onDropdownDetailsPublic(payload) : this.setupService.onDropdownDetails(payload);
-
+        const $api = (type==='ACTIVEPROJECT' || type==='PERIOD')? this.setupService.onDropdownDetailsPublic(payload) : this.setupService.onDropdownDetails(payload);
         $api.subscribe({
             next: (res) => {
                 this[key] = res.data;
@@ -67,30 +67,61 @@ workerOptions: any[] = [];
         });
     }
 
-  display(): void {
-    const { period, worker } = this.reportForm.value;
-
-    const payload: DropdownParamter = {
-        returnType:  'INOUTREPORT',
-        returnValue: period,
-        username:  worker,
-       option1: this.companyId, 
-        option2:''
-    };
-
-    this.reportService.onGetReportDetails(payload).subscribe({
-        next: (res) => {
-            this.columns       = res.data.columns;
-            this.originalReport = res.data.data;
-            this.recordReport = [...this.originalReport];
-
-            if (this.recordReport.length === 0) {
-                this.showSuccess('No data available for the selected filters.');
+    loadDropdownMaster() {
+        const payload: any = {};
+        const ddType = 'GROUP LEADER';
+        const ddValue = null;
+        this.setupService.onGetDropdownMaster(payload, ddType, ddValue, this.companyId).subscribe({
+            next: (res: any) => {
+                this.groupLeaderOptions = res.data.data;
             }
-            console.log(this.recordReport)
+        });
+    }
+
+    onProjectChange(data: any) {
+        console.log(data.value);
+        if (data.value) {
+            this.loadDropdown('ACTIVEGROUPLEADER', 'groupLeaderOptions', data.value);
+        } else {
+            this.loadDropdownMaster();
         }
-    });
-}
+    }
+
+    display(): void {
+        const projectName = this.reportForm.controls['projectName'].value;
+        const period = this.reportForm.controls['period'].value;
+        const groupLeader = this.reportForm.controls['groupleader'].value;
+
+        const payload: DropdownParamter = {
+            returnType: 'INOUTREPORT',
+            returnValue: period,
+            username: projectName.toString(),
+            option1: this.companyId,
+            option2: ''
+        };
+
+        this.reportService.onGetReportDetails(payload).subscribe({
+            next: (res) => {
+                this.columns = res.data.columns;
+                this.originalReport = res.data.data;
+                this.recordReport = [...this.originalReport];
+                let filtered = [...this.originalReport];
+
+                if (groupLeader) {
+                    const selectedOption = this.groupLeaderOptions.find((g) => g.id === groupLeader);
+                    if (selectedOption) {
+                        filtered = filtered.filter((r) => r.group_leader === selectedOption.dd_value);
+                    }
+                }
+
+                this.recordReport = [...filtered];
+                if (this.recordReport.length === 0) {
+                    this.showSuccess('No data available for the selected filters.');
+                }
+                console.log(this.recordReport);
+            }
+        });
+    }
     onReportChange(event: any) {
         const projectName = event.value;
         if (!projectName) {
@@ -100,11 +131,11 @@ workerOptions: any[] = [];
 
     reset() {
         this.reportForm.reset({
-        period:      '',
-        worker:      ''
-    });
-    this.recordReport  = [];
-    this.columns       = [];
+            period: '',
+            worker: ''
+        });
+        this.recordReport = [];
+        this.columns = [];
     }
 
     downloadExcel() {
@@ -120,16 +151,16 @@ workerOptions: any[] = [];
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
         const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-    const blob = new Blob([wbout], { type: 'application/octet-stream' });
-    const url = window.URL.createObjectURL(blob);
+        const blob = new Blob([wbout], { type: 'application/octet-stream' });
+        const url = window.URL.createObjectURL(blob);
 
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'Worker_Onboarding_Report.xlsx';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'Worker_Onboarding_Report.xlsx';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
     }
 
     showSuccess(message: string) {

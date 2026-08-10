@@ -5,8 +5,30 @@
 
         <!-- Buttons - Hidden on mobile, shown in header on desktop -->
         <div class="hidden md:flex gap-4">
+            <div class="flex gap-6 mt-2">
+                <label class="flex item-center gap-2 cursor-pointer font-medium text-gray-700">
+                    <input type="radio" [checked]="!isPaymentReport" (change)="onReportTypeChange('demand')" value="demand" class="accent-yellow-500 w-4 h-6" />
+                    Demand
+                </label>
+                <label class="flex item-center gap-2 cursor-pointer font-medium text-gray-700">
+                    <input type="radio" [checked]="isPaymentReport" (change)="onReportTypeChange('payment')" value="payment" class="accent-yellow-500 w-4 h-6" />
+                    Payment
+                </label>
+            </div>
             <!-- <a (click)="link($event)" class="text-yellow-500 underline cursor-pointer hover:text-yellow-600 font-large mt-2">Fund Allocation Template</a> -->
-            <p-dropdown [options]="requestOptions" optionValue="fieldid" optionLabel="fieldname" [filter]="true" [showClear]="true" filterPlaceholder="Search Request" [(ngModel)]="selectedStatus" [ngModelOptions]="{ standalone: true }" placeholder="Request" (onChange)="onRequestChange($event)"> </p-dropdown>
+            <p-dropdown
+                [options]="requestOptions"
+                optionValue="fieldid"
+                optionLabel="fieldname"
+                [filter]="true"
+                [showClear]="true"
+                filterPlaceholder="Search Request"
+                [(ngModel)]="selectedStatus"
+                [ngModelOptions]="{ standalone: true }"
+                placeholder="Request"
+                (onChange)="onRequestChange($event)"
+            >
+            </p-dropdown>
             <input type="file" accept=".xlsx, .xls" (change)="onFileUpload($event)" hidden #fileInput />
             <button pButton type="button" label="Upload" icon="pi pi-upload" iconPos="right" class="p-button-warning" (click)="fileInput.click()"></button>
             <button pButton type="button" label="Download" icon="pi pi-download" iconPos="right" class="p-button-warning" (click)="downloadExcel()"></button>
@@ -19,8 +41,33 @@
         <div class="space-y-6">
             <!-- Report Type - Full width -->
             <div class="grid grid-cols-1 md:grid-cols-5 gap-6 w-full">
+
+ <div class="flex flex-col" *ngIf="isPaymentReport">
+                    <label class="font-medium mb-1">Payment For <span class="text-red-500">*</span></label>
+                    <p-dropdown [options]="paymentForOptions" optionLabel="label" optionValue="value" formControlName="paymentFor" placeholder="Select Report Type" (onChange)="onPaymentForChange()" class="w-full"> </p-dropdown>
+                    <small class="text-red-500 ms-1 mt-1" *ngIf="fundForm.get('paymentFor')?.touched && fundForm.get('paymentFor')?.errors?.['required']"> Payment For is required </small>
+                </div>
+
+<div class="flex flex-col">
+                    <label class="font-medium mb-1">Site <span class="text-red-500" *ngIf="isPaymentReport">*</span></label>
+                    <p-dropdown
+                        [options]="projectNameOptions"
+                        optionLabel="project_name"
+                        optionValue="project_id"
+                        [filter]="true"
+                        [showClear]="true"
+                        filterPlaceholder="Select Site Name"
+                        formControlName="projectName"
+                        placeholder="Site Name"
+                        (onChange)="onProjectChange($event)"
+                        class="w-full"
+                    >
+                    </p-dropdown>
+                    <small class="text-red-500 ms-3 mt-1" *ngIf="fundForm.get('projectName')?.touched && fundForm.get('projectName')?.errors?.['required']">Site is required</small>
+                </div>
+
                 <!-- Start Date -->
-                <div class="flex flex-col">
+                <div class="flex flex-col" *ngIf="!isPaymentReport">
                     <label class="font-medium mb-1">Start Date</label>
                     <p-datepicker fluid formControlName="startDate" dateFormat="dd/mm/yy" [showIcon]="true" placeholder="From Date"></p-datepicker>
                     <small class="text-red-500 ms-3 mt-1" *ngIf="fundForm.get('startDate')?.touched">
@@ -29,7 +76,7 @@
                 </div>
 
                 <!-- End Date -->
-                <div class="flex flex-col">
+                <div class="flex flex-col" *ngIf="!isPaymentReport">
                     <label class="font-medium mb-1">End Date</label>
                     <p-datepicker fluid formControlName="endDate" dateFormat="dd/mm/yy" [showIcon]="true" placeholder="To Date" [maxDate]="today"></p-datepicker>
                     <small class="text-red-500 ms-3 mt-1" *ngIf="fundForm.get('endDate')?.touched">
@@ -38,26 +85,43 @@
                     </small>
                 </div>
 
-                <div class="flex flex-col">
-                    <label class="font-medium mb-1">Project</label>
+                <div class="flex flex-col" *ngIf="isPaymentReport">
+                    <label class="font-medium mb-1">Period <span class="text-red-500" *ngIf="isPaymentReport">*</span></label>
+                    <p-dropdown [options]="periodOptions" optionLabel="period_name" optionValue="period_id" [showClear]="true" formControlName="period" placeholder="Select Period" class="w-full"> </p-dropdown>
+                    <small class="text-red-500 ms-3 mt-1" *ngIf="fundForm.get('period')?.touched && fundForm.get('period')?.errors?.['required']">Period is required</small>
+                </div>
+
+                <!-- Group Leader / Worker filter -->
+                <div class="flex flex-col" *ngIf="!isPaymentReport || selectedPaymentFor !== 'WORKER'">
+                    <label class="font-medium mb-1">Group Leader</label>
                     <p-dropdown
-                        [options]="projectNameOptions"
-                        optionLabel="project_name"
-                        optionValue="project_name"
+                        [options]="groupLeaderOptions"
+                        optionLabel="dd_value"
+                        optionValue="dd_value"
                         [filter]="true"
                         [showClear]="true"
-                        filterPlaceholder="Select Project Name"
-                        formControlName="projectName"
-                        placeholder="Project Name"
+                        filterPlaceholder="Search Group Leader"
+                        formControlName="groupleader"
+                        placeholder="Group Leader"
                         class="w-full"
                     >
                     </p-dropdown>
                 </div>
 
-                <!-- Group Leader - Full width on mobile, half on desktop -->
-                <div class="flex flex-col">
-                    <label class="font-medium mb-1">Group Leader</label>
-                    <p-dropdown [options]="groupLeaderOptions" optionLabel="dd_value" optionValue="dd_value" [filter]="true" [showClear]="true" filterPlaceholder="Search Group Leader" formControlName="groupleader" placeholder="Group Leader" class="w-full">
+                <div class="flex flex-col" *ngIf="isPaymentReport && selectedPaymentFor === 'WORKER'">
+                    <label class="font-medium mb-1">Worker Name</label>
+                    <p-dropdown
+                        [options]="workerOptions"
+                        optionLabel="worker_name"
+                        optionValue="profileid"
+                        [filter]="true"
+                        [showClear]="true"
+                        filterPlaceholder="Search Worker Name"
+                        formControlName="workerProfile"
+                        (onChange)="onWorkerFilterChange()"
+                        placeholder="Worker Name"
+                        class="w-full"
+                    >
                     </p-dropdown>
                 </div>
 
@@ -69,7 +133,19 @@
 
         <!-- Action Buttons - Visible only on mobile, below form fields -->
         <div class="flex md:hidden justify-center gap-2 mt-6">
-            <p-dropdown [options]="requestOptions" optionValue="fieldid" optionLabel="fieldname" [filter]="true" [showClear]="true" filterPlaceholder="Search Request" [(ngModel)]="selectedStatus" [ngModelOptions]="{ standalone: true }" placeholder="Request" (onChange)="onRequestChange($event)"> </p-dropdown>
+            <p-dropdown
+                [options]="requestOptions"
+                optionValue="fieldid"
+                optionLabel="fieldname"
+                [filter]="true"
+                [showClear]="true"
+                filterPlaceholder="Search Request"
+                [(ngModel)]="selectedStatus"
+                [ngModelOptions]="{ standalone: true }"
+                placeholder="Request"
+                (onChange)="onRequestChange($event)"
+            >
+            </p-dropdown>
             <!-- <a (click)="link($event)" class="text-yellow-500 underline cursor-pointer hover:text-yellow-600" mt-5>Fund Allocation Template</a> -->
             <button pButton type="button" label="Upload" icon="pi pi-upload" iconPos="right" class="p-button-warning" (click)="fileInput.click()"></button>
             <button pButton type="button" label="Download" class="p-button-warning flex-1" (click)="downloadExcel()"></button>
@@ -78,62 +154,120 @@
 
         <!-- Product Table with Pagination -->
         <div>
-           <p-table
-    [value]="recordReport"
-    [tableStyle]="{ 'min-width': '50rem' }"
-    [paginator]="true"
-    [rows]="10"
-    [rowsPerPageOptions]="[10, 20, 50]"
-    [responsiveLayout]="'scroll'"
-    class="p-datatable-gridlines mt-6 item-report"
->
-    <ng-template #header>
-       <tr class="bg-yellow-400" *ngIf="!isExcelUploaded">
-  <th>Requisition Id</th>
-  <th>Project Name</th>
-  <th>Group Leader Name</th>
-  <th>Requisition Date</th>
-  <th>Requisition For</th>
-  <th>No of Worker</th>
-  <th>Amount</th>
-  <th>Approved Amount</th>
-  <th>Status</th>
-</tr>
+            <p-table [value]="recordReport" [tableStyle]="{ 'min-width': '50rem' }" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10, 20, 50]" [responsiveLayout]="'scroll'" class="p-datatable-gridlines mt-6 item-report">
+                <ng-template pTemplate="header">
+                    <!-- Demand report -->
+                    <tr class="bg-yellow-400" *ngIf="!isExcelUploaded && !isPaymentReport">
+                        <th>Requisition Id</th>
+                        <th>Site Name</th>
+                        <th>Group Leader Name</th>
+                        <th>Requisition Date</th>
+                        <th>Requisition For</th>
+                        <th>No of Worker</th>
+                        <th>Amount</th>
+                        <th>Approved Amount</th>
+                        <th>Status</th>
+                    </tr>
 
-        <tr class="bg-yellow-400" *ngIf="isExcelUploaded">
-            <th style="width: 4rem"><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
-            <th *ngFor="let col of excelColumns">{{ col }}</th>
-            <th>Approved Date</th>
-        </tr>
-    </ng-template>
+                    <!-- Payment report - Group Leader -->
+                    <tr class="bg-yellow-400" *ngIf="!isExcelUploaded && isPaymentReport && selectedPaymentFor === 'GROUP_LEADER'">
+                        <th>Payment Id</th>
+                        <th>Period Name</th>
+                        <th>Site Name</th>
+                        <th>Payment For</th>
+                        <th>Group Leader Name</th>
+                        <th>Amount</th>
+                        <th>Approved Amount</th>
+                        <th>Payment Status</th>
+                        <th class="remark-col">Remark</th>
+                        <th class="action-col">Action</th>
+                    </tr>
 
-    <ng-template pTemplate="body" let-row>
-       <tr *ngIf="!isExcelUploaded">
-  <td>{{ row['requisition_id'] }}</td>
-  <td>{{ row['project_name'] }}</td>
-  <td>{{ row['group_leader_name'] }}</td>
-  <td>{{ row['requested_on'] | date:'dd/MM/yy' }}</td>
-  <td>{{ row['requisition_for'] }}</td>
-  <td>{{ row['worker_count'] }}</td>
-  <td>{{ row['amount'] }}</td>
-  <td>{{ row['approved_amount'] }}</td>
-  <td>{{ row['requisition_status'] }}</td>
-</tr>
+                     <!-- Payment report - Worker -->
+                    <tr class="bg-yellow-400" *ngIf="!isExcelUploaded && isPaymentReport && selectedPaymentFor === 'WORKER'">
+                        <th>Payment Id</th>
+                        <th>Period Name</th>
+                        <th>Site Name</th>
+                        <th>Payment For</th>
+                        <th>Group Leader Name</th>
+                        <th>Worker Code</th>
+                        <th>Worker Name</th>
+                        <th>Aadhaar No</th>
+                        <th>Amount</th>
+                        <th>Approved Amount</th>
+                        <th>Payment Status</th>
+                        <th class="remark-col">Remark</th>
+                        <th class="action-col">Action</th>
+                    </tr>
 
-        <tr *ngIf="isExcelUploaded">
-            <td><p-tableCheckbox [value]="row"></p-tableCheckbox></td>
-            <td *ngFor="let col of excelColumns">{{ row[col] }}</td>
-            <td>{{ row['Approved Date'] }}</td>
-        </tr>
-    </ng-template>
+                    <tr class="bg-yellow-400" *ngIf="isExcelUploaded">
+                        <th style="width: 4rem"><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
+                        <th *ngFor="let col of excelColumns">{{ col }}</th>
+                        <th>Approved Date</th>
+                    </tr>
+                </ng-template>
 
-    <ng-template pTemplate="paginatorleft">
-        <div class="total-items text-gray-600 ms-2">
-            Total Items: {{ recordReport?.length || 0 }}
-        </div>
-    </ng-template>
-</p-table>
+                <ng-template pTemplate="body" let-row>
+                    <!-- Demand report -->
+                    <tr *ngIf="!isExcelUploaded && !isPaymentReport">
+                        <td>{{ row['requisition_id'] }}</td>
+                        <td>{{ row['project_name'] }}</td>
+                        <td>{{ row['group_leader_name'] }}</td>
+                        <td>{{ row['requested_on'] | date: 'dd/MM/yy' }}</td>
+                        <td>{{ row['requisition_for'] }}</td>
+                        <td>{{ row['worker_count'] }}</td>
+                        <td>{{ row['amount'] }}</td>
+                        <td>{{ row['approved_amount'] }}</td>
+                        <td>{{ row['requisition_status'] }}</td>
+                    </tr>
+
+                    <!-- Payment report - Group Leader -->
+                    <tr *ngIf="!isExcelUploaded && isPaymentReport && selectedPaymentFor === 'GROUP_LEADER'">
+                        <td>{{ row['requisition_id'] }}</td>
+                        <td>{{ row['periodname'] }}</td>
+                        <td>{{ row['project_name'] }}</td>
+                        <td>{{ row['requisition_for'] }}</td>
+                        <td>{{ row['group_leader_name'] }}</td>
+                        <td>{{ row['amount'] }}</td>
+                        <td>{{ row['approved_amount'] }}</td>
+                        <td>{{ row['requisition_status'] }}</td>
+                        <td class="remark-col">{{ row['remarks'] }}</td>
+                        <td class="action-col">
+                            <button pButton type="button" icon="pi pi-trash" class="p-button-danger p-button-text p-button-sm" *ngIf="isPaymentReport" pTooltip="Delete"></button>
+                        </td>
+                    </tr>
+
+                    <!-- Payment report - Worker -->
+                    <tr *ngIf="!isExcelUploaded && isPaymentReport && selectedPaymentFor === 'WORKER'">
+                        <td>{{ row['requisition_id'] }}</td>
+                        <td>{{ row['periodname'] }}</td>
+                        <td>{{ row['project_name'] }}</td>
+                        <td>{{ row['requisition_for'] }}</td>
+                        <td>{{ row['group_leader_name'] }}</td>
+                        <td>{{ row['worker_code'] }}</td>
+                        <td>{{ row['worker_name'] }}</td>
+                        <td>{{ row['aadhaar_no'] }}</td>
+                        <td>{{ row['amount'] }}</td>
+                        <td>{{ row['approved_amount'] }}</td>
+                        <td>{{ row['requisition_status'] }}</td>
+                        <td class="remark-col">{{ row['remarks'] }}</td>
+                        <td class="action-col">
+                            <button pButton type="button" icon="pi pi-trash" class="p-button-danger p-button-text p-button-sm" *ngIf="isPaymentReport" pTooltip="Delete"></button>
+                        </td>
+                    </tr>
+
+                    <tr *ngIf="isExcelUploaded">
+                        <td><p-tableCheckbox [value]="row"></p-tableCheckbox></td>
+                        <td *ngFor="let col of excelColumns">{{ row[col] }}</td>
+                        <td>{{ row['Approved Date'] }}</td>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="paginatorleft">
+                    <div class="total-items text-gray-600 ms-2">Total Items: {{ recordReport.length || 0 }}</div>
+                </ng-template>
+            </p-table>
         </div>
     </form>
-     <p-confirmDialog></p-confirmDialog>
+    <p-confirmDialog></p-confirmDialog>
 </div>

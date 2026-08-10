@@ -100,7 +100,7 @@ export class WorkerPaymentComponent {
             option1: this.companyId,
             option2: ''
         };
-const $api = type==='ACTIVEPROJECT' || 'PERIOD'? this.setupService.onDropdownDetailsPublic(payload) : this.setupService.onDropdownDetails(payload);
+const $api = (type==='ACTIVEPROJECT' || type==='PERIOD') ? this.setupService.onDropdownDetailsPublic(payload) : this.setupService.onDropdownDetails(payload);
         $api.subscribe({
             next: (res) => {
                 this[key] = res.data;
@@ -121,7 +121,6 @@ const $api = type==='ACTIVEPROJECT' || 'PERIOD'? this.setupService.onDropdownDet
     }
 
     onProjectChange(data: any) {
-        console.log(data);
         if (data.value) {
             this.loadDropdown('ACTIVEGROUPLEADER', 'groupLeaderOptions', data.value);
         } else {
@@ -131,12 +130,12 @@ const $api = type==='ACTIVEPROJECT' || 'PERIOD'? this.setupService.onDropdownDet
 
     display() {
         const projectName = this.reportForm.controls['projectName'].value;
-        const period = this.reportForm.controls['period'].value;
+        const periodName = this.periodOptions.find((period: any) => period.period_id === this.reportForm.get('period')?.value)?.period_name;
         const groupLeader = this.reportForm.controls['groupleader'].value;
         let payload: DropdownParamter;
             payload = {
                 returnType: 'PAYMENTREPORT',
-                returnValue: period,
+                returnValue: periodName,
                 username: projectName.toString(),
                 option1: this.companyId,
                 option2: ''

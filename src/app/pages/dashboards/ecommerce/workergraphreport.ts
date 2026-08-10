@@ -55,10 +55,10 @@ interface Week {
                 <a class="view-link mt-2">View attendance</a>
             </div>
 
-            <!-- Project Wised -->
+            <!-- Site Wised -->
             <div class="card-panel">
                 <div class="flex items-center justify-between mb-3">
-                    <h3 class="panel-title mb-0">Project Wise DLR</h3>
+                    <h3 class="panel-title mb-0">Site Wise DLR</h3>
                     <a class="view-link mb-0" (click)="downloadExcel('projectwise')">Download</a>
                 </div>
                 <p-table [value]="projectwise || []" styleClass="approval-table" [scrollable]="true" scrollHeight="300px">
@@ -377,8 +377,8 @@ export class WorkerGraphReport implements OnInit {
             projectwise: {
                 data: this.projectwise,
                 columns: this.projectwiseColumns,
-                sheetName: 'Project Wise DLR',
-                fileName: 'Project-Wise-DLR.xlsx'
+                sheetName: 'Site Wise DLR',
+                fileName: 'Site-Wise-DLR.xlsx'
             }
         };
 

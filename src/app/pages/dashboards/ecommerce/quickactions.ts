@@ -65,7 +65,7 @@ export class QuickActions implements OnInit {
      // ── Quick Actions ───────────────────────────────────
     allActions = [
         { label: 'User', icon: 'pi pi-user-plus', bgClass: 'bg-teal-500', routes:'/layout/setup/user', permissionKey:'USER' },
-        { label: 'Project Creation', icon: 'pi pi-folder', bgClass: 'bg-orange-400', routes:'/layout/project-maintenance/project', permissionKey:'PROJECT' },
+        { label: 'Site Creation', icon: 'pi pi-folder', bgClass: 'bg-orange-400', routes:'/layout/project-maintenance/project', permissionKey:'PROJECT' },
         { label: 'My Approval', icon: 'pi pi-check-square', bgClass: 'bg-pink-500', routes:'/layout/approval/my-approval', permissionKey:'MY_APPROVAL' },
         { label: 'Daily Labour Report', icon: 'pi pi-calendar-clock', bgClass: 'bg-blue-500', routes:'/layout/reports/daily-labour', permissionKey:'DAILY_LABOUR_REPORT' },
         { label: 'Onboarding Reports', icon: 'pi pi-user-plus', bgClass: 'bg-indigo-500', routes:'/layout/reports/worker-onboarding', permissionKey:'WORKER_ONBOARDING' }

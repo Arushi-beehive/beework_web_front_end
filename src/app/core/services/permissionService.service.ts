@@ -34,16 +34,16 @@ export class PermissionService {
             userAccess: this.setupService.onDropdownDetails(accessControlPayload)
         }).pipe(
             map(({ allPermissions, userAccess }) => {
-                const excluded = new Set(
+                const allowedFromRole = new Set(
                     userAccess.data
                         .filter((i: any) => i.permission_type === 'W')
                         .map((i: any) => i.access_name)
                 );
                 return allPermissions.data
-                    .filter((i: any) => !excluded.has(i.access_name))
+                    .filter((i: any) => !allowedFromRole.has(i.access_name))
                     .map((i: any) => i.access_name);
             }),
-            tap(permissions => this.loadedPermissions = permissions), // store sync snapshot
+            tap(permissions =>this.loadedPermissions = permissions), // store sync snapshot
             shareReplay(1)
         );
 

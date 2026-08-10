@@ -28,7 +28,7 @@ import { ChartModule } from 'primeng/chart';
 
 <!-- Labour Onboarded Bar Chart -->
             <div class="card-panel col-span-2">
-                <h3 class="panel-title">Labour Onboarded (Project wise)</h3>
+                <h3 class="panel-title">Labour Onboarded (Site wise)</h3>
                 <p-chart type="bar" [data]="labourChartData" [options]="labourChartOptions" height="400px"></p-chart>
                 <a class="view-link">View full report</a>
             </div>
@@ -167,6 +167,46 @@ import { ChartModule } from 'primeng/chart';
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
         }
 
+     .approval-table {
+            .p-datatable-thead > tr > th {
+                background: #f8fafc !important;
+                color: #6b7280 !important;
+                font-size: 11px !important;
+                font-weight: 600 !important;
+                padding: 6px 8px !important;
+                border-bottom: 1px solid #e5e7eb !important;
+            }
+
+            .p-datatable-tbody > tr > td {
+                padding: 6px 8px !important;
+                border-bottom: 1px solid #f3f4f6 !important;
+                color: #374151 !important;
+            }
+
+            .p-datatable-tbody > tr:hover > td {
+                background: #f8fafc !important;
+            }
+        }
+
+        .table-th {
+            background: #f8fafc;
+            color: #6b7280;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 6px 8px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .table-td {
+            padding: 6px 8px;
+            border-bottom: 1px solid #f3f4f6;
+            color: #374151;
+            vertical-align: middle;
+        }
+
+        .table-row:hover td {
+            background: #f8fafc;
+        }
         .panel-title {
             font-size: 14px;
             font-weight: 600;
@@ -243,6 +283,8 @@ import { ChartModule } from 'primeng/chart';
             }
         }
 
+   
+
         // ✅ Spin animation on refresh
         @keyframes spin {
             from {
@@ -273,26 +315,14 @@ export class RecentWorkerWidget {
     companyId= '';
 
     // ── Fund Allocation Table ───────────────────────────
-    fundAllocations = [
-        { leader: 'Group Leader A', allocated: '6,00,000', utilized: '4,25,000', balance: '1,75,000' },
-        { leader: 'Group Leader B', allocated: '5,50,000', utilized: '3,80,000', balance: '1,70,000' },
-        { leader: 'Group Leader C', allocated: '4,75,000', utilized: '3,60,000', balance: '1,15,000' },
-        { leader: 'Group Leader D', allocated: '4,00,000', utilized: '2,95,000', balance: '1,05,000' },
-        { leader: 'Group Leader E', allocated: '3,50,000', utilized: '2,10,000', balance: '1,40,000' }
-    ];
+    fundAllocations = [];
 
     // ── Recent Activity ─────────────────────────────────
     recentActivity: any[] = [];
     isRefreshing = false;
 
     // ── Approvals Table ─────────────────────────────────
-    approvals = [
-        { type: 'Advance Payment', details: 'Advance for 15 workers', by: 'Group Leader A', date: '28 May 2025', priority: 'High', priorityClass: 'badge-high' },
-        { type: 'Kharchi Distribution', details: 'Kharchi for 32 workers', by: 'Group Leader B', date: '28 May 2025', priority: 'Medium', priorityClass: 'badge-medium' },
-        { type: 'Mobilization Kharchi', details: 'Mobilization for Project B', by: 'Site Admin', date: '27 May 2025', priority: 'High', priorityClass: 'badge-high' },
-        { type: 'Attendance Regulation', details: 'Regularization request', by: 'Supervisor C', date: '27 May 2025', priority: 'Low', priorityClass: 'badge-low' },
-        { type: 'Advance Payment', details: 'Advance for 10 workers', by: 'Group Leader D', date: '27 May 2025', priority: 'Medium', priorityClass: 'badge-medium' }
-    ];
+    approvals = [];
 
      // ── Payment Donut ───────────────────────────────────
     paymentChartData: any;

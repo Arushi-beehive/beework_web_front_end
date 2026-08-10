@@ -9,7 +9,7 @@ const ROUTE_PERMISSION_MAP: Record<string, string> = {
     '/layout/setup/user':                       'USER',
     '/layout/setup/user-type':                  'USER_TYPE',
     '/layout/setup/user-security':              'SECURITY_CONTROL',
-    '/layout/project-maintenance/project':      'PROJECT',
+    '/layout/project-maintenance/project':      'SITE',
     '/layout/project-maintenance/tower':        'TOWER',
     '/layout/project-maintenance/rule-detail':  'RULE_DETAIL',
     '/layout/approval/my-approval':             'MY_APPROVAL',

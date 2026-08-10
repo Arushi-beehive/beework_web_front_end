@@ -33,8 +33,6 @@ export class AppMenu {
     companyId = '';
     public role:string=''
     constructor(
-        public userservice:AuthService,
-        private setupService: SetupMaintainceService,
         private permissionService: PermissionService,
         private authService: AuthService
     ){
@@ -42,7 +40,7 @@ export class AppMenu {
     }
 
     ngOnInit() {
-       const userType:any = this.userservice.isLogIntType().permissiontype; 
+       const userType:any = this.authService.isLogIntType().permissiontype; 
        this.companyId = this.authService.isLogIntType()?.companyid.toString();
     const allPermissionPayload: DropdownParamter = {
         returnType: 'ACCESSPERMISSION',

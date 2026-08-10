@@ -17,6 +17,7 @@
         <ng-template pTemplate="header">
             <tr>
                 <th>Company Name</th>
+                <th>Industry Type</th>
                 <th>Country</th>
                 <th>State</th>
                 <th>City</th>
@@ -27,6 +28,7 @@
         <ng-template pTemplate="body" let-user>
             <tr>
                 <td>{{ user.companyname }}</td>
+                <td>{{ user.industry_type_name }}</td>
                 <td>{{ user.country_name }}</td>
                 <td>{{ user.state_name }}</td>
                 <td>{{ user.city_name }}</td>
@@ -91,6 +93,38 @@
                     <input pInputText formControlName="companyphone" placeholder="Phone No" maxlength="10" (keypress)="allowOnlyDigits($event)" />
                     <small class="text-red-500 mt-1" style="min-height:16px;display:block"
                         *ngIf="cf['companyphone'].touched && cf['companyphone'].invalid">Enter a valid 10-digit number</small>
+                </div>
+
+                 <div class="flex flex-col">
+                    <label class="font-medium mb-1">Industry Type <span class="text-red-500">*</span></label>
+                    <p-dropdown
+                        formControlName="industrytype"
+                        [options]="industryTypeOptions"
+                        optionLabel="industry_type_name"
+                        optionValue="industry_type_id"
+                        [filter]="true"
+                        [showClear]="true"
+                        placeholder="Select Industry Type"
+                        styleClass="w-full"
+                    ></p-dropdown>
+                    <small class="text-red-500 mt-1" style="min-height:16px;display:block"
+                        *ngIf="cf['industrytype'].touched && cf['industrytype'].invalid">Industry Type is required</small>
+                </div>
+
+                <div class="flex flex-col">
+                    <label class="font-medium mb-1">Time Zone <span class="text-red-500">*</span></label>
+                    <p-dropdown
+                        formControlName="timezone"
+                        [options]="timeZoneOptions"
+                        optionLabel="label"
+                        optionValue="label"
+                        [filter]="true"
+                        [showClear]="true"
+                        placeholder="Select Time Zone"
+                        styleClass="w-full"
+                    ></p-dropdown>
+                    <small class="text-red-500 mt-1" style="min-height:16px;display:block"
+                        *ngIf="cf['timezone'].touched && cf['timezone'].invalid">Time Zone is required</small>
                 </div>
             </div>
 

@@ -60,6 +60,10 @@ export class CompanySetupComponent {
     countries: any[] = [];
     states: any[] = [];
     cities: any[] = [];
+    industryTypeOptions: any[]= [];
+    timeZoneOptions:any[] = [
+        {label:'Asia/Kolkata'}
+    ]
 
     constructor(
         private fb: FormBuilder,
@@ -75,6 +79,7 @@ export class CompanySetupComponent {
         this.companyId = this.authService.isLogIntType()?.companyid.toString();
         this.filteredUser = [...this.user];
         this.onGetUserList();
+        this.loadDropdown('INDUSTRY','','industryTypeOptions');
     }
 
     initForm() {
@@ -89,6 +94,7 @@ export class CompanySetupComponent {
             companycountry:       ['', Validators.required],
             companystate:         ['', Validators.required],
             companycity:          ['', Validators.required],
+            industrytype:         ['', Validators.required],
             companyphone:         ['', [Validators.required, Validators.pattern(/[6-9]\d{9}$/)]],
             companypincode:       ['', [Validators.required, Validators.maxLength(6)]],
             p_warehouse:          ['', [Validators.required, Validators.maxLength(100)]],
@@ -97,7 +103,8 @@ export class CompanySetupComponent {
             accountno:            ['', [Validators.required, Validators.maxLength(25)]],
             pan:                  ['', [Validators.required, Validators.maxLength(25)]],
             ifsc:                 ['', [Validators.required, Validators.maxLength(25)]],
-            branch:               ['', [Validators.required, Validators.maxLength(100)]]
+            branch:               ['', [Validators.required, Validators.maxLength(100)]],
+            timezone:             ['', Validators.required]  
         });
     }
 
@@ -110,7 +117,7 @@ export class CompanySetupComponent {
     }
 
     // ── Dropdown loading ─────────────────────────────────────
-    loadDropdown(type: string, value: string, key: 'countries' | 'states' | 'cities', callback?: () => void) {
+    loadDropdown(type: string, value: string, key: 'countries' | 'states' | 'cities' | 'industryTypeOptions', callback?: () => void) {
         const userId = this.authService.isLogIntType()?.userid;
         const payload: DropdownParamter = {
             returnType: type,
@@ -182,7 +189,9 @@ export class CompanySetupComponent {
             ifsc:                 user.ifsc,
             branch:               user.branch,
             pan:                  user.pan,
-            accountno:            user.accountno
+            accountno:            user.accountno,
+            industrytype:         user.industry_type_id,
+            timezone:             user.timezone
         });
 
         this.imageUrl = this.base64ToBlobUrl(user.companylogo);
@@ -229,40 +238,51 @@ export class CompanySetupComponent {
         this.logoBase64 = null;
     }
 
-    convertToBase64(file: File) {
-        const maxWidth = 300;
-        const maxHeight = 200;
-        const quality = 0.7;
+  convertToBase64(file: File) {
+    const maxWidth = 300;
+    const maxHeight = 200;
+    const quality = 0.7;
 
-        const img = new Image();
-        const objectUrl = URL.createObjectURL(file);
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+    const isPng = file.type === 'image/png';
 
-        img.onload = () => {
-            URL.revokeObjectURL(objectUrl);
+    img.onload = () => {
+        URL.revokeObjectURL(objectUrl);
 
-            let width = img.width;
-            let height = img.height;
+        // Calculate scaled dimensions
+        let width = img.width;
+        let height = img.height;
 
-            if (width > maxWidth || height > maxHeight) {
-                const ratio = Math.min(maxWidth / width, maxHeight / height);
-                width = Math.round(width * ratio);
-                height = Math.round(height * ratio);
-            }
+        if (width > maxWidth || height > maxHeight) {
+            const ratio = Math.min(maxWidth / width, maxHeight / height);
+            width = Math.round(width * ratio);
+            height = Math.round(height * ratio);
+        }
 
-            const canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
 
-            const ctx = canvas.getContext('2d')!;
-            ctx.drawImage(img, 0, 0, width, height);
+        const ctx = canvas.getContext('2d')!;
 
-            this.logoBase64 = canvas.toDataURL('image/jpeg', quality);
-            this.imageUrl = this.base64ToBlobUrl(this.logoBase64);
-        };
+        if (!isPng) {
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, width, height);
+        }
 
-        img.onerror = () => console.error('Image load error');
-        img.src = objectUrl;
-    }
+        ctx.drawImage(img, 0, 0, width, height);
+
+        this.logoBase64 = isPng
+            ? canvas.toDataURL('image/png')
+            : canvas.toDataURL('image/jpeg', quality);
+
+        this.imageUrl = this.base64ToBlobUrl(this.logoBase64);
+    };
+
+    img.onerror = () => console.error('Image load error');
+    img.src = objectUrl;
+}
 
     base64ToBlobUrl(base64: string | null | undefined): string | null {
         if (!base64 || !base64.includes(',')) return null;
@@ -336,7 +356,9 @@ export class CompanySetupComponent {
             p_pan: form.pan,
             p_warehouse: form.p_warehouse,
             p_companyLogo: this.logoBase64 || null,
-            p_loginuser: loggedIn
+            p_loginuser: loggedIn,
+            p_industry: form.industrytype,
+            p_timezone: form.timezone
         };
 
         this.companyService.upsertCompanyDetails(payload).subscribe({

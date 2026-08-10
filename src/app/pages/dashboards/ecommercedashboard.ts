@@ -47,7 +47,7 @@ import { on } from '@ngrx/store';
             <!-- ═══════════════════════════ TOP BAR ═══════════════════════════ -->
             <div class="flex items-center justify-between mb-3">
                 <div class="flex gap-3">
-                    <p-dropdown [options]="projectNameOptions" [(ngModel)]="selectedProject" optionLabel="project_name" optionValue="project_id" placeholder="Project" (onChange)="onProjectChange()" styleClass="w-60 mb-4" [filter]="true" [showClear]="true" filterPlaceholder="Search Project" ></p-dropdown>
+                    <p-dropdown [options]="projectNameOptions" [(ngModel)]="selectedProject" optionLabel="project_name" optionValue="project_id" placeholder="Site" (onChange)="onProjectChange()" styleClass="w-60 mb-4" [filter]="true" [showClear]="true" filterPlaceholder="Search Project" ></p-dropdown>
                     <p-dropdown [options]="periodOptions" [(ngModel)]="selectedPeriod" optionLabel="period_name" optionValue="period_name" placeholder="Period" (onChange)="onFilterChange()" styleClass="w-60 mb-4" [filter]="true" [showClear]="true"></p-dropdown>
                     <p-dropdown [options]="groupLeaderOptions" [(ngModel)]="selectedGroupLeader" optionLabel="dd_value" optionValue="dd_value" placeholder="Group Leader" (onChange)="onFilterChange()" styleClass="w-80 mb-4" [filter]="true" [showClear]="true" filterPlaceholder="Search Group Leader"></p-dropdown>
                 </div>
@@ -113,7 +113,7 @@ export class EcommerceDashboard implements OnInit {
             option2:''
         };
 
-const $api = type==='ACTIVEPROJECT' || 'PERIOD' ? this.setupService.onDropdownDetailsPublic(payload) : this.setupService.onDropdownDetails(payload);
+const $api = (type==='ACTIVEPROJECT' || type ==='PERIOD') ? this.setupService.onDropdownDetailsPublic(payload) : this.setupService.onDropdownDetails(payload);
 
         $api.subscribe({
             next: (res) => {

@@ -3,10 +3,11 @@ export interface ProjectModel {
     projectId: number;
     projectName: string;
     location: string;
+    deliveryLocation: string;
     isActive: string;
     userId: number;
     projectOrdinates: string;
-    projectRange:number;
+    projectRange:number | null;
     projectInchargeId: number;
     adminCharges:number;
     staffJson: StaffModel[];

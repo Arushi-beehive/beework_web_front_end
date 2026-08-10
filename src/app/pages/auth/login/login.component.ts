@@ -159,7 +159,10 @@ export class LoginComponent implements OnInit{
                 next: (res: any) => {
                     if (res.status === 'success' && res.data.userid ) {
                         const token = res.data.usertoken;
-
+                        if(!res.data.webaccess) {
+                            this.errorSuccess('Cannot have permission to access the web.');
+                            return;
+                        }
                         if (token) {
                             this.sharedService.setUserToken(token);
                             this.sharedService.setUserData(res.data);

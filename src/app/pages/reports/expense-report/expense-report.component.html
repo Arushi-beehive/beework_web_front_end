@@ -1,0 +1,143 @@
+<div class="card p-6">
+	<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+		<span class="block text-surface-900 font-bold text-2xl">Expense Report</span>
+        <div class="hidden md:flex gap-4">
+			<button pButton type="submit" label="Display" class="p-button-warning" [disabled]="expenseReportForm.invalid" (click)="display()"></button>
+             <button pButton type="button" label="Download" icon="pi pi-download" iconPos="right" class="p-button-warning" (click)="downloadExcel()"></button>
+            <button pButton type="button" label="Reset" class="p-button-secondary" (click)="reset()"></button>
+		</div>
+	</div>
+
+	<form [formGroup]="expenseReportForm" (ngSubmit)="onSubmit()" class="space-y-6">
+		<div class="grid grid-cols-1 md:grid-cols-4 gap-6 w-full">
+
+			<div class="flex flex-col">
+				<label class="font-medium mb-1">Period <span class="text-red-500">*</span></label>
+				<p-dropdown
+					[options]="periodOptions"
+					optionLabel="period_name"
+					optionValue="period_id"
+					formControlName="period"
+					placeholder="Select Period"
+					class="w-full"
+				>
+				</p-dropdown>
+				<small class="text-red-500 ms-1 mt-1" *ngIf="expenseReportForm.get('period')?.touched && expenseReportForm.get('period')?.errors?.['required']">
+					Period is required
+				</small>
+			</div>
+
+            <div class="flex flex-col">
+				<label class="font-medium mb-1">Site <span class="text-red-500">*</span></label>
+				<p-dropdown
+					[options]="projectOptions"
+					optionLabel="project_name"
+					optionValue="project_id"
+					formControlName="site"
+                    (onChange)="onProjectChange($event)"
+					[filter]="true"
+					[showClear]="true"
+					filterPlaceholder="Search Site"
+					placeholder="Select Site"
+					class="w-full"
+				>
+				</p-dropdown>
+				<small class="text-red-500 ms-1 mt-1" *ngIf="expenseReportForm.get('site')?.touched && expenseReportForm.get('site')?.errors?.['required']">
+					Site is required
+				</small>
+			</div>
+
+			<div class="flex flex-col">
+				<label class="font-medium mb-1">Report Type <span class="text-red-500">*</span></label>
+				<p-dropdown
+					[options]="reportTypeOptions"
+					optionLabel="label"
+					optionValue="value"
+					formControlName="reportType"
+					placeholder="Select Report Type"
+					(onChange)="onReportTypeChange()"
+					class="w-full"
+				>
+				</p-dropdown>
+				<small class="text-red-500 ms-1 mt-1" *ngIf="expenseReportForm.get('reportType')?.touched && expenseReportForm.get('reportType')?.errors?.['required']">
+					Report Type is required
+				</small>
+			</div>
+
+			<div class="flex flex-col" *ngIf="isGroupLeaderSelected">
+				<label class="font-medium mb-1">Group Leader Name</label>
+				<p-multiSelect
+					[options]="groupLeaderOptions"
+					optionLabel="dd_value"
+					optionValue="dd_value"
+					formControlName="groupLeaderName"
+					[filter]="true"
+					[showClear]="true"
+					filterPlaceholder="Search Group Leader"
+					placeholder="Select Group Leaders"
+					appendTo="body"
+					class="w-full"
+				>
+				</p-multiSelect>
+			</div>
+
+			<div class="flex flex-col" *ngIf="isWorkerSelected">
+				<label class="font-medium mb-1">Worker Name</label>
+				<p-multiSelect
+					[options]="workerOptions"
+					optionLabel="worker_name"
+					optionValue="profileid"
+					formControlName="workerName"
+					[filter]="true"
+					[showClear]="true"
+					filterPlaceholder="Search Worker"
+					placeholder="Select Workers"
+					appendTo="body"
+					class="w-full"
+				>
+				</p-multiSelect>
+			</div>
+		</div>
+
+		<div class="flex md:hidden justify-center gap-2 mt-6">
+			<button pButton type="button" label="Display" class="p-button-warning" [disabled]="expenseReportForm.invalid" (click)="display()"></button>
+			<button pButton type="button" label="Download" class="p-button-warning" (click)="downloadExcel()"></button>
+			<button pButton type="button" label="Reset" class="p-button-secondary" (click)="reset()"></button>
+		</div>
+
+		<div>
+			<p-table
+				[value]="recordReport"
+				[columns]="columns"
+				[scrollable]="true"
+				[paginator]="true"
+				[rows]="10"
+				[rowsPerPageOptions]="[10, 20, 50]"
+				scrollDirection="horizontal"
+				responsiveLayout="scroll"
+				class="p-datatable-gridlines mt-6 item-report"
+				[tableStyle]="{ 'min-width': '1500px' }"
+			>
+				<ng-template pTemplate="header" let-columns>
+					<tr class="bg-yellow-400">
+						<th *ngFor="let col of columns" [style.width]="col.width + 'px'">
+							{{ col.header }}
+						</th>
+					</tr>
+				</ng-template>
+
+				<ng-template pTemplate="body" let-row let-columns="columns">
+					<tr>
+						<td *ngFor="let col of columns">
+							{{ row[col.field] }}
+						</td>
+					</tr>
+				</ng-template>
+
+				<ng-template pTemplate="paginatorleft" appendTo="body">
+					<div class="total-items text-gray-600 ms-2">Total Items: {{ recordReport.length }}</div>
+				</ng-template>
+			</p-table>
+		</div>
+	</form>
+</div>

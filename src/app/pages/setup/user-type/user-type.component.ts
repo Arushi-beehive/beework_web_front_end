@@ -70,11 +70,18 @@ export class UserTypeComponent {
     openEditDialog(user: any) {
         this.editMode = true;
         this.selectedUser = user;
+        this.profileForm.get('p_pname')?.enable();
+        this.profileForm.get('checked')?.enable();
+        this.profileForm.get('webaccess')?.enable();
         this.profileForm.patchValue({
             p_pname: user.profilename,
             checked: user.isactive === 'Y',
             webaccess: user.web_access ==='Y'
         });
+        if (user.noneditable === 'Y') {
+            this.profileForm.get('p_pname')?.disable();
+            this.profileForm.get('checked')?.disable();
+        }
         this.visibleDialog = true;
     }
 
