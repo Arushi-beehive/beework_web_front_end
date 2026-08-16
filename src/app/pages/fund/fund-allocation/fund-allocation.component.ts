@@ -124,7 +124,6 @@ export class FundAllocationComponent {
         this.companyId = this.authService.isLogIntType()?.companyid.toString();
         this.loadDropdown('ACTIVEPROJECT', '', '', 'projectNameOptions');
         this.loadDropdown('PERIOD', '', '', 'periodOptions');
-        this.loadDropdownMaster();
     }
 
    onReportTypeChange(type: 'demand' | 'payment') {
@@ -256,18 +255,6 @@ export class FundAllocationComponent {
         });
     }
 
-    loadDropdownMaster() {
-        const payload: any = {};
-        const ddType = 'GROUP LEADER';
-        const ddValue = null;
-        const companyId = this.companyId;
-        this.setupService.onGetDropdownMaster(payload, ddType, ddValue, companyId).subscribe({
-            next: (res: any) => {
-                this.groupLeaderOptions = res.data.data;
-            }
-        });
-    }
-
     private getReportRequestParams(mode: 'search' | 'download' = 'search'): { returnType: string; returnValue: string | null; username?: string; option2: string } | null {
         if (!this.isPaymentReport) {
             return { returnType: 'REQINPUT', returnValue: null, option2: '' };
@@ -314,7 +301,7 @@ export class FundAllocationComponent {
         this.fundForm.get('groupleader')?.reset('');
         this.fundForm.get('workerProfile')?.reset('');
         this.recordReport = [];
-
+       
         if (!this.isPaymentReport) {
             this.hasDemandSearchExecuted = false;
         }
@@ -322,6 +309,16 @@ export class FundAllocationComponent {
         if (this.isPaymentReport) {
             this.loadDropdown('PROJECTBASEDWORKER', data.value, '', 'workerOptions');
         }
+         const payload: DropdownParamter = {
+              returnType: 'ACTIVEGROUPLEADER',
+              returnValue: data.value.toString(),
+              username:'',
+              option1: this.companyId,
+              option2: ''
+          };
+          this.setupService.onDropdownDetails(payload).subscribe({
+            next:(res)=> this.groupLeaderOptions = res.data
+          })
     }
 
     onPaymentForChange(): void {
@@ -711,8 +708,9 @@ export class FundAllocationComponent {
         this.fundForm.reset({
             startDate: this.today,
             endDate: this.today,
-            workerProfile: ''
+            workerProfile: '',
         });
+        this.groupLeaderOptions = [];
         this.recordReport = [];
         this.filteredProducts = [];
         this.allRecord = [];

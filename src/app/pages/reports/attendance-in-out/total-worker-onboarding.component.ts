@@ -67,24 +67,8 @@ export class TotalWorkerOnboardingComponent {
         });
     }
 
-    loadDropdownMaster() {
-        const payload: any = {};
-        const ddType = 'GROUP LEADER';
-        const ddValue = null;
-        this.setupService.onGetDropdownMaster(payload, ddType, ddValue, this.companyId).subscribe({
-            next: (res: any) => {
-                this.groupLeaderOptions = res.data.data;
-            }
-        });
-    }
-
     onProjectChange(data: any) {
-        console.log(data.value);
-        if (data.value) {
             this.loadDropdown('ACTIVEGROUPLEADER', 'groupLeaderOptions', data.value);
-        } else {
-            this.loadDropdownMaster();
-        }
     }
 
     display(): void {
@@ -134,6 +118,7 @@ export class TotalWorkerOnboardingComponent {
             period: '',
             worker: ''
         });
+        this.groupLeaderOptions = [];
         this.recordReport = [];
         this.columns = [];
     }

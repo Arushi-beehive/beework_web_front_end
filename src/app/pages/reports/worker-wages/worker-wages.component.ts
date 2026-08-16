@@ -86,7 +86,6 @@ export class WorkerWagesComponent {
         this.companyId = this.authService.isLogIntType()?.companyid.toString();
         this.loadDropdown('ACTIVEPROJECT', 'projectNameOptions', '');
         this.loadDropdown('PERIOD','periodOptions','');
-        this.loadDropdownMaster();
         this.reportForm.get('projectName')?.valueChanges.subscribe((selected) => {
             this.reportForm.patchValue({ groupleader: null });
         });
@@ -108,25 +107,8 @@ export class WorkerWagesComponent {
         });
     }
 
-    loadDropdownMaster() {
-        const payload: any = {};
-        const ddType = 'GROUP LEADER';
-        const ddValue = null;
-        const companyId = this.companyId;
-        this.setupService.onGetDropdownMaster(payload, ddType, ddValue, companyId).subscribe({
-            next: (res: any) => {
-                this.groupLeaderOptions = res.data.data;
-            }
-        });
-    }
-
     onProjectChange(data: any) {
-        console.log(data);
-        if (data.value) {
             this.loadDropdown('ACTIVEGROUPLEADER', 'groupLeaderOptions', data.value);
-        } else {
-            this.loadDropdownMaster();
-        }
     }
 
     display() {
@@ -181,6 +163,7 @@ export class WorkerWagesComponent {
             projectName: '',
             groupleader: ''
         });
+        this.groupLeaderOptions = [];
         this.columns = [];
         this.originalReport = [];
         this.recordReport = [];

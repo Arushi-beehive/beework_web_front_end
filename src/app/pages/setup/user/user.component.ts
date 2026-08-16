@@ -304,11 +304,15 @@ export class UserComponent {
     }
 
     loadGroupLeaderDropdown(excludeUserId?: number) {
-        const payload: any = {};
-        const ddType = 'GROUP LEADER';
-        const ddValue = null;
-        const companyId = this.companyId;
-        this.setupService.onGetDropdownMaster(payload, ddType, ddValue, companyId).subscribe({
+        // console.log('Loading group leader dropdown, excluding user ID:', excludeUserId, this.selectedUser);
+       const payload: DropdownParamter = {
+              returnType: 'ACTIVEGROUPLEADER',
+              returnValue: this.selectedUser.project_id,
+              username:'',
+              option1: this.companyId,
+              option2: ''
+          };
+        this.setupService.onDropdownDetails(payload).subscribe({
             next: (res) => {
                 this.groupLeaderOptions = (res.data.data || []).filter((gl: any) => gl.userid !== excludeUserId);
             }

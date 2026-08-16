@@ -51,7 +51,6 @@ ngOnInit() {
     });
     this.loadDropdown('PERIOD', 'periodOptions', '');
     this.loadDropdown('ACTIVEPROJECT', 'projectOptions', '');
-    this.loadDropdown('GROUP LEADER', 'groupLeaderOptions', '');
     this.loadDropdown('WORKER', 'workerOptions', '');
   }
 

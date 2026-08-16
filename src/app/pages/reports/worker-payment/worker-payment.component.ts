@@ -110,7 +110,7 @@ const $api = (type==='ACTIVEPROJECT' || type==='PERIOD') ? this.setupService.onD
 
     loadDropdownMaster() {
         const payload: any = {};
-        const ddType = 'GROUP LEADER';
+        const ddType = '';
         const ddValue = null;
         const companyId = this.companyId;
         this.setupService.onGetDropdownMaster(payload, ddType, ddValue, companyId).subscribe({

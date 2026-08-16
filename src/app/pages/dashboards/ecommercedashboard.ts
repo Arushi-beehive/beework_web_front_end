@@ -101,7 +101,6 @@ export class EcommerceDashboard implements OnInit {
     this.companyId = this.authService.isLogIntType()?.companyid.toString();
       this.loadDropdown('ACTIVEPROJECT', 'projectNameOptions','');
       this.loadDropdown('PERIOD','periodOptions','')
-       this.loadDropdownMaster();
     }
 
     loadDropdown(type: string, key: 'projectNameOptions'|'groupLeaderOptions' | 'periodOptions' ,value:string) {
@@ -126,30 +125,12 @@ const $api = (type==='ACTIVEPROJECT' || type ==='PERIOD') ? this.setupService.on
         });
     }
 
-    loadDropdownMaster() {
-        const payload: any = {};
-        const ddType = 'GROUP LEADER';
-         const ddValue = null;
-        const companyId = this.companyId;
-        this.setupService.onGetDropdownMaster(payload, ddType, ddValue, companyId).subscribe({
-            next: (res: any) => {
-                this.groupLeaderOptions = res.data.data;
-                if (this.isFilterUpdating) {
-                this.isFilterUpdating = false;  
-                this.onFilterChange();        
-            }
-            }
-        });
-    }
-
     onProjectChange() {
         this.selectedGroupLeader = null;
         this.isFilterUpdating = true;
     if (this.selectedProject) {
         this.loadDropdown('ACTIVEGROUPLEADER', 'groupLeaderOptions', this.selectedProject);
-    } else {
-        this.loadDropdownMaster();
-    }
+    } 
 
    
 }

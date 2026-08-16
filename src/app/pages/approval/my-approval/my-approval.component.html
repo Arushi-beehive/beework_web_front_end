@@ -34,6 +34,7 @@
                     formControlName="projectName"
                     placeholder="Site Name"
                     class="w-full"
+                    (onChange)="onProjectNameChange($event)"
                 >
                 </p-dropdown>
                 <small class="text-red-500 mt-1" *ngIf="approvalForm.get('projectName')?.touched && approvalForm.get('projectName')?.invalid"> Site Name is required </small>

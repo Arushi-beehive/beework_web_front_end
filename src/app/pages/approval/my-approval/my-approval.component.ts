@@ -85,8 +85,7 @@ export class MyApprovalComponent implements OnInit {
         this.loadDropdown('RULENAME', 'typeOptions');
         this.loadDropdown('ACTIVEPROJECT', 'projectNameOptions');
         this.loadDropdown('PERIOD', 'periodOptions')
-        this.loadDropdownMaster();
-
+    
         this.approvalForm.get('p_type')?.valueChanges.subscribe((selectedRuleId) => {
             this.updatePeriodValidator(selectedRuleId);
         });
@@ -163,16 +162,17 @@ export class MyApprovalComponent implements OnInit {
         });
     }
 
-    loadDropdownMaster() {
-        const payload: any = {};
-        const ddType = 'GROUP LEADER';
-        const ddValue = null;
-        const companyId = this.companyId;
-        this.setupService.onGetDropdownMaster(payload, ddType, ddValue, companyId).subscribe({
-            next: (res: any) => {
-                this.groupLeaderOptions = res.data.data;
-            }
-        });
+    onProjectNameChange(event: any) {
+          const payload: DropdownParamter = {
+              returnType: 'ACTIVEGROUPLEADER',
+              returnValue: event.value.toString(),
+              username:'',
+              option1: this.companyId,
+              option2: ''
+          };
+          this.setupService.onDropdownDetails(payload).subscribe({
+            next:(res)=> this.groupLeaderOptions = res.data
+          })
     }
 
     display() {
@@ -256,7 +256,7 @@ export class MyApprovalComponent implements OnInit {
             groupleader: '',
             period: null
         });
-       
+       this.groupLeaderOptions=[];
         this.approvalForm.get('period')?.clearValidators();
         this.approvalForm.get('period')?.updateValueAndValidity();
     }

@@ -53,7 +53,6 @@ export class WorkerOnboardingComponent {
         });
         this.companyId = this.authService.isLogIntType()?.companyid.toString();
         this.loadDropdown('ACTIVEPROJECT', 'projectNameOptions', '');
-        this.loadDropdownMaster();
         this.reportForm.get('projectName')?.valueChanges.subscribe((selected) => {
             this.reportForm.patchValue({ groupleader: null });
         });
@@ -71,18 +70,6 @@ export class WorkerOnboardingComponent {
         $api.subscribe({
             next: (res) => {
                 this[key] = res.data;
-            }
-        });
-    }
-
-    loadDropdownMaster() {
-        const payload: any = {};
-        const ddType = 'GROUP LEADER';
-        const ddValue = null;
-        const companyId = this.companyId;
-        this.setupService.onGetDropdownMaster(payload, ddType, ddValue, companyId).subscribe({
-            next: (res: any) => {
-                this.groupLeaderOptions = res.data.data;
             }
         });
     }
@@ -149,11 +136,7 @@ export class WorkerOnboardingComponent {
     }
 
     projectChange(data: any) {
-        if (data.value) {
-            this.loadDropdown('ACTIVEGROUPLEADER', 'groupLeaderOptions', data.value);
-        } else {
-            this.loadDropdownMaster();
-        }
+        this.loadDropdown('ACTIVEGROUPLEADER', 'groupLeaderOptions', data.value);
     }
 
     reset() {
@@ -162,6 +145,7 @@ export class WorkerOnboardingComponent {
             filterAadhar: false,
             filterBank: false
         });
+        this.groupLeaderOptions= [];
         this.recordReport = [];
         this.columns = [];
     }
