@@ -86,7 +86,6 @@ export class WorkerPaymentComponent {
         this.companyId = this.authService.isLogIntType()?.companyid.toString();
         this.loadDropdown('ACTIVEPROJECT', 'projectNameOptions', '');
         this.loadDropdown('PERIOD','periodOptions','');        
-        this.loadDropdownMaster();
         this.reportForm.get('projectName')?.valueChanges.subscribe((selected) => {
             this.reportForm.patchValue({ groupleader: null });
         });
@@ -108,24 +107,8 @@ const $api = (type==='ACTIVEPROJECT' || type==='PERIOD') ? this.setupService.onD
         });
     }
 
-    loadDropdownMaster() {
-        const payload: any = {};
-        const ddType = '';
-        const ddValue = null;
-        const companyId = this.companyId;
-        this.setupService.onGetDropdownMaster(payload, ddType, ddValue, companyId).subscribe({
-            next: (res: any) => {
-                this.groupLeaderOptions = res.data.data;
-            }
-        });
-    }
-
     onProjectChange(data: any) {
-        if (data.value) {
             this.loadDropdown('ACTIVEGROUPLEADER', 'groupLeaderOptions', data.value);
-        } else {
-            this.loadDropdownMaster();
-        }
     }
 
     display() {

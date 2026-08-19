@@ -143,7 +143,7 @@ export class DailyLabourComponent {
             next: (res) => {
                 this.columns = res?.data?.columns ?? [];
                 this.computeStickyOffsets();
-                this.originalReport = Array.isArray(res?.dat?.data) ? res.data.data : [];
+                this.originalReport = Array.isArray(res?.data?.data) ? res.data.data : [];
 
                 let filtered = [...this.originalReport];
 
