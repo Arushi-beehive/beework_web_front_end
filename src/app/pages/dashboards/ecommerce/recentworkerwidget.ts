@@ -19,6 +19,7 @@ import { AuthService } from '@/core/services/auth.service';
 import { RecordReportService } from '@/core/services/reportService';
 import { DashboardsService } from '@/core/services/dashboardCard.service';
 import { ChartModule } from 'primeng/chart';
+import { Router } from '@angular/router';
 @Component({
     standalone: true,
     selector: 'app-recent-worker-widget',
@@ -33,10 +34,30 @@ import { ChartModule } from 'primeng/chart';
                 <a class="view-link">View full report</a>
             </div>
 
+               <!-- Payment Distribution Donut -->
+
+            <div *ngIf="this.permissionType === 'Administrator'" class="card-panel flex flex-col items-center">
+                <h3 class="panel-title w-full">Payment Distribution Summary</h3>
+                <div class="relative flex items-center justify-center" style="width:180px;height:180px">
+                    <p-chart type="doughnut" [data]="paymentChartData" [options]="paymentChartOptions" width="180px" height="180px"></p-chart>
+                    <div class="absolute flex flex-col items-center pointer-events-none">
+                        <span class="text-base font-bold text-gray-800">₹ 28.75L</span>
+                        <span class="text-xs text-gray-500">Total Disbursed</span>
+                    </div>
+                </div>
+                <div class="w-full mt-3 space-y-1">
+                    <div class="legend-row"><span class="dot" style="background:#3b82f6"></span><span class="legend-label">Monthly Payment</span><span class="legend-val">₹12,45,000 (43.30%)</span></div>
+                    <div class="legend-row"><span class="dot" style="background:#f59e0b"></span><span class="legend-label">Kharchi</span><span class="legend-val">₹7,80,000 (27.13%)</span></div>
+                    <div class="legend-row"><span class="dot" style="background:#10b981"></span><span class="legend-label">Advance Payment</span><span class="legend-val">₹6,25,000 (21.74%)</span></div>
+                    <div class="legend-row"><span class="dot" style="background:#8b5cf6"></span><span class="legend-label">Mobilization Advance</span><span class="legend-val">₹2,25,000 (7.83%)</span></div>
+                </div>
+                <a class="view-link mt-2" (click)="viewPayments()">View payments</a>
+            </div>
+
  <!-- My Approval -->
-            <div class="card-panel">
+            <!-- <div class="card-panel">
                 <div class="flex items-center justify-between mb-3">
-                    <h3 class="panel-title mb-0">My Approval <span class="text-blue-500 font-medium">(12 Pending)</span></h3>
+                    <h3 class="panel-title mb-0">My Approval <span class="text-blue-500 font-medium"></span></h3>
                     <a class="view-link mb-0">View all</a>
                 </div>
                 <p-table [value]="approvals || []" styleClass="approval-table" [scrollable]="false">
@@ -61,11 +82,10 @@ import { ChartModule } from 'primeng/chart';
                     </ng-template>
                 </p-table>
                 <a class="view-link mt-3 block">Go to My Approval</a>
-            </div>
-</div>
- <div class="grid grid-cols-3 gap-4 mb-6">
+            </div> -->
+
  <!-- Fund Allocation -->
-            <div class="card-panel">
+            <div *ngIf="this.permissionType === 'Administrator'" class="card-panel">
                 <div class="flex items-center justify-between mb-3">
                     <h3 class="panel-title mb-0">Fund Allocation to Group Leaders</h3>
                     <a class="view-link mb-0">View all</a>
@@ -89,25 +109,6 @@ import { ChartModule } from 'primeng/chart';
                     </ng-template>
                 </p-table>
                 <a class="view-link mt-3 block">Manage Fund Allocation</a>
-            </div>
-
-               <!-- Payment Distribution Donut -->
-            <div class="card-panel flex flex-col items-center">
-                <h3 class="panel-title w-full">Payment Distribution Summary</h3>
-                <div class="relative flex items-center justify-center" style="width:180px;height:180px">
-                    <p-chart type="doughnut" [data]="paymentChartData" [options]="paymentChartOptions" width="180px" height="180px"></p-chart>
-                    <div class="absolute flex flex-col items-center pointer-events-none">
-                        <span class="text-base font-bold text-gray-800">₹ 28.75L</span>
-                        <span class="text-xs text-gray-500">Total Disbursed</span>
-                    </div>
-                </div>
-                <div class="w-full mt-3 space-y-1">
-                    <div class="legend-row"><span class="dot" style="background:#3b82f6"></span><span class="legend-label">Monthly Payment</span><span class="legend-val">₹12,45,000 (43.30%)</span></div>
-                    <div class="legend-row"><span class="dot" style="background:#f59e0b"></span><span class="legend-label">Kharchi</span><span class="legend-val">₹7,80,000 (27.13%)</span></div>
-                    <div class="legend-row"><span class="dot" style="background:#10b981"></span><span class="legend-label">Advance Payment</span><span class="legend-val">₹6,25,000 (21.74%)</span></div>
-                    <div class="legend-row"><span class="dot" style="background:#8b5cf6"></span><span class="legend-label">Mobilization Advance</span><span class="legend-val">₹2,25,000 (7.83%)</span></div>
-                </div>
-                <a class="view-link mt-2">View payments</a>
             </div>
 
               <!-- Recent Activity -->
@@ -138,7 +139,7 @@ import { ChartModule } from 'primeng/chart';
             </div>
 
              <!-- Attendance Bification -->
-            <div class="card-panel">
+            <!-- <div class="card-panel">
                 <div class="flex items-center justify-between mb-3">
                     <h3 class="panel-title mb-0">Attendance Bifurcation</h3>
                     <a class="view-link mb-0" (click)="downloadExcel('attendanceBifurcation')">Download</a>
@@ -155,7 +156,7 @@ import { ChartModule } from 'primeng/chart';
                         </tr>
                     </ng-template>
                 </p-table>
-            </div>
+            </div> -->
         </div>
     `,
     styles: `
@@ -313,6 +314,8 @@ export class RecentWorkerWidget {
     labourOnboarding: any[] = [];
     labourOnboardingColumn: any[] = [];
     companyId= '';
+    userId = '';
+    permissionType = '';
 
     // ── Fund Allocation Table ───────────────────────────
     fundAllocations = [];
@@ -335,28 +338,24 @@ export class RecentWorkerWidget {
     constructor(
         private setupService: SetupMaintainceService,
         private authService: AuthService,
-        private dashboardService: DashboardsService
+        private dashboardService: DashboardsService,
+        private router: Router
     ) {}
 
     ngOnInit(): void {
         this.companyId = this.authService.isLogIntType()?.companyid.toString();
+        this.userId = this.authService.isLogIntType()?.userid.toString();
+        this.permissionType = this.authService.isLogIntType()?.permissiontype.toString();
            this.initLabourChart();
            this.initPaymentChart();
         this.applyFilters();
     }
 
-    loadDropdown(type: string, value: string, key:  'labourOnboarding' |'recentActivity' | 'attendanceBifurcation') {
-        let username;
-        if(key==='labourOnboarding'){
-             username = ''; 
-        }
-        else{
-          username = this.authService.isLogIntType().userid;
-        }
+    loadDropdown(type: string, value: string | null, key:  'labourOnboarding' |'recentActivity' | 'attendanceBifurcation') {
         const payload: DropdownParamter = {
             returnType: type,
             returnValue: value,
-            username: username,
+            username: this.userId,
            option1: this.companyId, 
            option2:''
         };
@@ -380,13 +379,14 @@ export class RecentWorkerWidget {
 
     ngOnChanges(changes: SimpleChanges): void {
         this.companyId = this.authService.isLogIntType()?.companyid.toString();
+        this.userId = this.authService.isLogIntType()?.userid.toString();
         if (changes['filters'] ) {
             this.applyFilters();
         }
     }
 
     applyFilters() {
-        const value = String(this.filters.project ?? '0');
+        const value = String(this.filters.project ?? '');
         this.loadDropdown('REPORTACTIVITYLOG', value, 'recentActivity');
         this.loadDropdown('REPORTATTENDANCESUMMARY', value, 'attendanceBifurcation');
         this.loadDropdown('REPORTLABOURONBOARDED', '', 'labourOnboarding');
@@ -397,6 +397,9 @@ export class RecentWorkerWidget {
         this.isRefreshing = true;
         const value = String(this.filters.project ?? '0');
         this.loadDropdown('REPORTACTIVITYLOG', value, 'recentActivity');
+    }
+    viewPayments() {
+        this.router.navigate(['/layout/reports/worker-payment']);
     }
 
      buildOnboardingChart(columns: any[], data: any[]) {

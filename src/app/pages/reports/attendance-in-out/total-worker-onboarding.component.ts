@@ -47,19 +47,19 @@ export class TotalWorkerOnboardingComponent {
             groupleader: ['']
         });
         this.companyId = this.authService.isLogIntType().companyid.toString();
-        this.loadDropdown('ACTIVEPROJECT', 'projectNameOptions', '');
+        this.loadDropdown('PROJECTLIST', 'projectNameOptions', this.authService.isLogIntType().userid.toString(), this.authService.isLogIntType().userid.toString());
         this.loadDropdown('PERIOD', 'periodOptions', '');
     }
 
-    loadDropdown(type: string, key: 'projectNameOptions' | 'groupLeaderOptions' | 'periodOptions', value: string) {
+    loadDropdown(type: string, key: 'projectNameOptions' | 'groupLeaderOptions' | 'periodOptions', value: string, p_username?: string) {
         const payload: DropdownParamter = {
             returnType: type,
             returnValue: value,
-            username: '',
+            username: p_username ?? '',
             option1: this.companyId,
             option2: null
         };
-        const $api = (type==='ACTIVEPROJECT' || type==='PERIOD')? this.setupService.onDropdownDetailsPublic(payload) : this.setupService.onDropdownDetails(payload);
+        const $api = (type==='PROJECTLIST' || type==='PERIOD')? this.setupService.onDropdownDetailsPublic(payload) : this.setupService.onDropdownDetails(payload);
         $api.subscribe({
             next: (res) => {
                 this[key] = res.data;

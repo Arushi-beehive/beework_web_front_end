@@ -2,7 +2,7 @@ import { Component, inject, Input, OnChanges, OnInit, SimpleChanges } from '@ang
 import { CommonModule } from '@angular/common';
 import { KnobModule } from 'primeng/knob';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { DashboardService } from '@/core/services/dashboard.service';
 import { AuthService } from '@/core/services/auth.service';
 import { SkeletonModule } from 'primeng/skeleton';
@@ -17,15 +17,15 @@ import { DashboardsService } from '@/core/services/dashboardCard.service';
     template: `
        <div class="grid grid-cols-5 gap-4 mb-6">
            <!-- <ng-container *ngIf="usertype || projectname"> -->
-        <div class="stat-card" *ngFor="let card of dashboardCards">
+        <div class="stat-card" *ngFor="let card of dashboardCards" (click)="onCardClick(card)">
           <div class="stat-icon" [ngClass]="card.iconBg">
             <i [class]="card.icon + ' text-xl'" [ngClass]="card.iconColor"></i>
           </div>
           <div class="stat-body">
             <span class="stat-label">{{ card.label }}</span>
             <span class="stat-value" [class.text-lg]="card.isLarge">{{ card.prefix }}{{ card.value | number }}</span>
-            <!-- <span *ngIf="card.sub" class="stat-sub" [ngClass]="card.subColor">{{ card.sub }}</span>
-            <span *ngIf="card.link" class="stat-sub text-blue-500 cursor-pointer hover:underline" (click)="card.onLinkClick && card.onLinkClick()">{{ card.link }}</span> -->
+            <!-- <span *ngIf="card.sub" class="stat-sub" [ngClass]="card.subColor">{{ card.sub }}</span> -->
+            <span *ngIf="card.link" class="stat-sub text-blue-500 cursor-pointer hover:underline" (click)="card.onLinkClick && card.onLinkClick()">{{ card.link }}</span>
           </div>
         </div>
            <!-- </ng-container> -->
@@ -104,7 +104,7 @@ export class CardStatus implements OnChanges, OnInit {
     skeletonItems = [1, 2, 3, 4];
     dashboardCards: any = [];
     
-    constructor(private dashboardService: DashboardsService) {}
+    constructor(private dashboardService: DashboardsService, private router: Router) {}
 
 ngOnInit() {
   this.usertype = this.authService.isLogIntType()?.usertype;
@@ -116,6 +116,12 @@ ngOnInit() {
         if (changes['filters']) {
                 this.OnGettopBarCard();
         }
+    }
+
+    onCardClick(card: any) {
+      if (card.route) {
+          this.router.navigate([card.route]);
+      }
     }
 
     OnGettopBarCard() {
@@ -167,7 +173,8 @@ ngOnInit() {
                         iconBg: 'bg-violet-100',
                         iconColor: 'text-violet-600',
                         value: data.pending_approvals,
-                        link: 'View all'
+                        link: 'View all',
+                        route: '/layout/approval/my-approval',
                     },
                     {
                         label: 'Total Fund Allocated',
@@ -177,7 +184,7 @@ ngOnInit() {
                         value: data.total_fund_allocated,
                         prefix: '₹ ',
                         isLarge: true,
-                        link: 'View details'
+                        // link: 'View details'
                     }
                 ];
                 this.loading = false;

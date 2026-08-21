@@ -50,7 +50,7 @@ ngOnInit() {
       workerName: [[]]
     });
     this.loadDropdown('PERIOD', 'periodOptions', '');
-    this.loadDropdown('ACTIVEPROJECT', 'projectOptions', '');
+    this.loadDropdown('PROJECTLIST', 'projectOptions', this.authService.isLogIntType()?.userid.toString(), this.authService.isLogIntType()?.userid.toString() );
     this.loadDropdown('WORKER', 'workerOptions', '');
   }
 
@@ -68,15 +68,15 @@ ngOnInit() {
     return Number.isFinite(numericId) ? numericId : 0;
   }
 
-    loadDropdown(type: string, key: 'groupLeaderOptions' | 'periodOptions' | 'workerOptions' | 'projectOptions', value: string) {
+    loadDropdown(type: string, key: 'groupLeaderOptions' | 'periodOptions' | 'workerOptions' | 'projectOptions', value: string, p_username?: string) {
           const payload: DropdownParamter = {
               returnType: type,
               returnValue: value,
-              username: '',
+              username: p_username ?? '', 
               option1: this.authService.isLogIntType()?.companyid.toString(),
               option2: ''
           };
-    const $api = (type === 'PERIOD' || type === 'ACTIVEPROJECT') ? this.setupService.onDropdownDetailsPublic(payload) : this.setupService.onDropdownDetails(payload);
+    const $api = (type === 'PERIOD' || type === 'PROJECTLIST') ? this.setupService.onDropdownDetailsPublic(payload) : this.setupService.onDropdownDetails(payload);
           $api.subscribe({
               next: (res) => {
             this[key] = Array.isArray(res?.data) ? res.data : [];

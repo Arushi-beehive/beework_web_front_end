@@ -52,7 +52,7 @@ interface Week {
             <div class="card-panel">
                 <h3 class="panel-title">Daily Attendance</h3>
                 <p-chart type="bar" [data]="attendanceChartData" [options]="attendanceChartOptions" height="300px"></p-chart>
-                <a class="view-link mt-2">View attendance</a>
+                <!-- <a class="view-link mt-2">View attendance</a> -->
             </div>
 
             <!-- Site Wised -->
@@ -212,7 +212,6 @@ export class WorkerGraphReport implements OnInit {
         this.companyId = this.authService.isLogIntType()?.companyid.toString();
         if (changes['filters']) {
             this.applyFilters();
-            this.loadDropdown('REPORTDLR3DAYPROJECT', '', 'projectwise');
         }
     }
 
@@ -220,7 +219,7 @@ export class WorkerGraphReport implements OnInit {
         const payload: DropdownParamter = {
             returnType: type,
             returnValue: value,
-            username: '',
+            username: this.authService.isLogIntType()?.userid.toString(),
             option1: this.companyId,
             option2: ''
         };
@@ -259,6 +258,11 @@ export class WorkerGraphReport implements OnInit {
         if (this.groupwise) {
             let value = this.filters.project ?? null;
             this.loadDropdown('REPORTDLR3DAY', value, 'groupwise');
+        }
+
+        if (this.projectwise) {
+            const value = this.filters.project ?? null;
+            this.loadDropdown('REPORTDLR3DAYPROJECT', value, 'projectwise');
         }
 
         if (this.labourAttendance) {
@@ -377,7 +381,7 @@ export class WorkerGraphReport implements OnInit {
             projectwise: {
                 data: this.projectwise,
                 columns: this.projectwiseColumns,
-                sheetName: 'Site Wise DLR',
+                sheetName: '',
                 fileName: 'Site-Wise-DLR.xlsx'
             }
         };

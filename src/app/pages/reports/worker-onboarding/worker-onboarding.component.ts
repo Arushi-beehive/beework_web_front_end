@@ -52,21 +52,21 @@ export class WorkerOnboardingComponent {
             filterBank: [false]
         });
         this.companyId = this.authService.isLogIntType()?.companyid.toString();
-        this.loadDropdown('ACTIVEPROJECT', 'projectNameOptions', '');
+        this.loadDropdown('PROJECTLIST', 'projectNameOptions', this.authService.isLogIntType()?.userid.toString(), this.authService.isLogIntType()?.userid.toString());
         this.reportForm.get('projectName')?.valueChanges.subscribe((selected) => {
             this.reportForm.patchValue({ groupleader: null });
         });
     }
 
-    loadDropdown(type: string, key: 'projectNameOptions' | 'groupLeaderOptions', value: string) {
+    loadDropdown(type: string, key: 'projectNameOptions' | 'groupLeaderOptions', value: string, p_username?: string) {
         const payload: DropdownParamter = {
             returnType: type,
             returnValue: value,
-            username: '',
+            username: p_username ?? '',
             option1: this.companyId,
             option2: ''
         };
-        const $api = (type==='ACTIVEPROJECT') ? this.setupService.onDropdownDetailsPublic(payload) : this.setupService.onDropdownDetails(payload);
+        const $api = (type==='PROJECTLIST') ? this.setupService.onDropdownDetailsPublic(payload) : this.setupService.onDropdownDetails(payload);
         $api.subscribe({
             next: (res) => {
                 this[key] = res.data;

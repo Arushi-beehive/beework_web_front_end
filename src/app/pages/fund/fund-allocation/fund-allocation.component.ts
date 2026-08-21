@@ -774,7 +774,6 @@ export class FundAllocationComponent {
             this.errorSuccess('Please select Site, Period and Payment For before downloading.');
             return;
         }
-
         const payload: DropdownParamter = {
             returnType: params.returnType,
             returnValue: params.returnType === 'REQINPUT' ? this.selectedStatus : params.returnValue,
