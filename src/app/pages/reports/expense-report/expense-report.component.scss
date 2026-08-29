@@ -1,0 +1,13 @@
+// Visual separation for the frozen (pinned) last column when the table scrolls horizontally.
+.item-report ::ng-deep .frozen-column-shadow {
+    position: sticky;
+    right: 0;
+    z-index: 1;
+    background: var(--surface-card, #fff);
+    box-shadow: -6px 0 6px -6px rgba(0, 0, 0, 0.3);
+}
+
+.item-report ::ng-deep thead .frozen-column-shadow {
+    z-index: 2;
+    background: #facc15;
+}

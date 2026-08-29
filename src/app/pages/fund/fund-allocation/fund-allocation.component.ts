@@ -458,6 +458,14 @@ export class FundAllocationComponent {
             }
         });
     }
+
+link(){
+    const link = document.createElement('a');
+    link.href = '/layout/templates/PAYMENT_UPLOAD_TEMPLATE.xlsx';
+    link.download = 'PAYMENT_UPLOAD_TEMPLATE.xlsx';
+    link.click();
+}
+
     submitFundAllocation(data: any[]) {
         if (this.isPaymentReport && this.selectedPaymentFor === 'GROUP_LEADER') {
             this.submitPaymentGroupLeaderUpload(data);
@@ -485,7 +493,10 @@ export class FundAllocationComponent {
             project_id: Number(row['Project Id']),
             project_name: row['Site Name'] ?? '',
             uploaded_amount: Number(row['Amount']) || 0,
-            Type_P_G: row['Type(P/G)'] ?? ''
+            Type_P_G: row['Type(P/G)'] ?? '',
+            head: row['Head'] ?? '',
+            transaction_date: row['Transaction Date'] ? new Date(row['Transaction Date']) : null,
+            remarks: row['Remark'] ?? ''
         }));
 
         this.runUpload(data.length, this.fundService.uploadPaymentGroupLeader(this.uploadCompanyId, payload, this.uploadUserId));
@@ -745,9 +756,12 @@ export class FundAllocationComponent {
                 'Period Name': row.period_name ?? '',
                 'Site Name': row.project_name ?? '',
                 'Group Leader Name': row.groupleader_name ?? '',
+                'Head': row.head ?? '',
+                'Transaction Date': this.datePipe.transform(row.transaction_date, 'dd/MM/yy') || '',
                 'Type(P/G)': row.type_p_g ?? '',
                 Active: row.isactive ?? '',
-                Amount: row.amount ?? ''
+                Amount: row.amount ?? '',
+                Remark: row.remarks ?? ''
             }));
         }
 

@@ -2,9 +2,10 @@
     <!-- Header Row: Stock In + Buttons -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <span class="block text-surface-900 font-bold text-2xl">Fund Allocation</span>
-
+     
         <!-- Buttons - Hidden on mobile, shown in header on desktop -->
         <div class="hidden md:flex gap-4">
+              <a href="/layout/templates/PAYMENT_UPLOAD_TEMPLATE.xlsx" download="PAYMENT_UPLOAD_TEMPLATE.xlsx" class="text-yellow-500 underline cursor-pointer hover:text-yellow-600 font-large mt-2">Payment Upload Template</a>
             <div class="flex gap-6 mt-2">
                 <label class="flex item-center gap-2 cursor-pointer font-medium text-gray-700">
                     <input type="radio" [checked]="!isPaymentReport" (change)="onReportTypeChange('demand')" value="demand" class="accent-yellow-500 w-4 h-6" />
@@ -15,7 +16,7 @@
                     Payment
                 </label>
             </div>
-            <!-- <a (click)="link($event)" class="text-yellow-500 underline cursor-pointer hover:text-yellow-600 font-large mt-2">Fund Allocation Template</a> -->
+          
             <p-dropdown
                 [options]="requestOptions"
                 optionValue="fieldid"
@@ -87,7 +88,7 @@
 
                 <div class="flex flex-col" *ngIf="isPaymentReport">
                     <label class="font-medium mb-1">Period <span class="text-red-500" *ngIf="isPaymentReport">*</span></label>
-                    <p-dropdown [options]="periodOptions" optionLabel="period_name" optionValue="period_id" [showClear]="true" formControlName="period" placeholder="Select Period" class="w-full"> </p-dropdown>
+                    <p-dropdown [options]="periodOptions" optionLabel="period_name" optionValue="period_id" [showClear]="true" formControlName="period" placeholder="Select Period" filterPlaceholder="Search Period" [filter]="true" filter="true" class="w-full"> </p-dropdown>
                     <small class="text-red-500 ms-3 mt-1" *ngIf="fundForm.get('period')?.touched && fundForm.get('period')?.errors?.['required']">Period is required</small>
                 </div>
 

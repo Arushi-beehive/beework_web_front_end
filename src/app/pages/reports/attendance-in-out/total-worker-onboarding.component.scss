@@ -1,0 +1,12 @@
+// Pins the first 4 columns in place while the table scrolls horizontally.
+.item-report ::ng-deep .frozen-column-shadow {
+    position: sticky;
+    z-index: 1;
+    background: #fff;
+    box-shadow: 6px 0 6px -6px rgba(0, 0, 0, 0.3);
+}
+
+.item-report ::ng-deep thead .frozen-column-shadow {
+    z-index: 2;
+    background: #facc15;
+}

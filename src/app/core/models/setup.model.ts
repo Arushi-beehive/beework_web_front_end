@@ -1,7 +1,7 @@
 export interface DropdownParamter{
   returnType:string;
   returnValue:string | null;
-  username:string;
+  username:string | null;
   option1:string | null;
   option2:string | null;
 }

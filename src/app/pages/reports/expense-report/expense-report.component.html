@@ -2,7 +2,7 @@
 	<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
 		<span class="block text-surface-900 font-bold text-2xl">Expense Report</span>
         <div class="hidden md:flex gap-4">
-			<button pButton type="submit" label="Display" class="p-button-warning" [disabled]="expenseReportForm.invalid" (click)="display()"></button>
+			<button pButton type="submit" label="Display" class="p-button-warning" [disabled]="isDisplayDisabled" (click)="display()"></button>
              <button pButton type="button" label="Download" icon="pi pi-download" iconPos="right" class="p-button-warning" (click)="downloadExcel()"></button>
             <button pButton type="button" label="Reset" class="p-button-secondary" (click)="reset()"></button>
 		</div>
@@ -11,7 +11,7 @@
 	<form [formGroup]="expenseReportForm" (ngSubmit)="onSubmit()" class="space-y-6">
 		<div class="grid grid-cols-1 md:grid-cols-4 gap-6 w-full">
 
-			<div class="flex flex-col">
+			<!-- <div class="flex flex-col">
 				<label class="font-medium mb-1">Period <span class="text-red-500">*</span></label>
 				<p-dropdown
 					[options]="periodOptions"
@@ -27,27 +27,7 @@
 				<small class="text-red-500 ms-1 mt-1" *ngIf="expenseReportForm.get('period')?.touched && expenseReportForm.get('period')?.errors?.['required']">
 					Period is required
 				</small>
-			</div>
-
-            <div class="flex flex-col">
-				<label class="font-medium mb-1">Site <span class="text-red-500">*</span></label>
-				<p-dropdown
-					[options]="projectOptions"
-					optionLabel="project_name"
-					optionValue="project_id"
-					formControlName="site"
-                    (onChange)="onProjectChange($event)"
-					[filter]="true"
-					[showClear]="true"
-					filterPlaceholder="Search Site"
-					placeholder="Select Site"
-					class="w-full"
-				>
-				</p-dropdown>
-				<small class="text-red-500 ms-1 mt-1" *ngIf="expenseReportForm.get('site')?.touched && expenseReportForm.get('site')?.errors?.['required']">
-					Site is required
-				</small>
-			</div>
+			</div> -->
 
 			<div class="flex flex-col">
 				<label class="font-medium mb-1">Report Type <span class="text-red-500">*</span></label>
@@ -66,21 +46,40 @@
 				</small>
 			</div>
 
+
+            <div class="flex flex-col">
+				<label class="font-medium mb-1">Site</label>
+				<p-dropdown
+					[options]="projectOptions"
+					optionLabel="project_name"
+					optionValue="project_id"
+					formControlName="site"
+                    (onChange)="onProjectChange($event)"
+					[filter]="true"
+					[showClear]="true"
+					filterPlaceholder="Search Site"
+					placeholder="Select Site"
+					class="w-full"
+				>
+				</p-dropdown>
+			</div>
+
 			<div class="flex flex-col" *ngIf="isGroupLeaderSelected">
 				<label class="font-medium mb-1">Group Leader Name</label>
-				<p-multiSelect
+				<p-dropdown
 					[options]="groupLeaderOptions"
 					optionLabel="dd_value"
-					optionValue="dd_value"
+					optionValue="id"
 					formControlName="groupLeaderName"
+					(onChange)="onGroupLeaderChange($event)"
 					[filter]="true"
 					[showClear]="true"
 					filterPlaceholder="Search Group Leader"
-					placeholder="Select Group Leaders"
+					placeholder="Select Group Leader"
 					appendTo="body"
 					class="w-full"
 				>
-				</p-multiSelect>
+				</p-dropdown>
 			</div>
 
 			<div class="flex flex-col" *ngIf="isWorkerSelected">
@@ -99,10 +98,68 @@
 				>
 				</p-multiSelect>
 			</div>
+
+			<div class="flex flex-wrap gap-6 items-center mt-6">
+				<div class="flex items-center gap-2 mb-1">
+					<p-checkbox
+						formControlName="onlyDue"
+						[binary]="true"
+						inputId="onlyDue"
+					>
+					</p-checkbox>
+					<label for="onlyDue" class="font-medium">Only Due</label>
+				</div>
+		
+				<div class="flex items-center gap-2 mb-1">
+					<p-checkbox
+						formControlName="statement"
+						[binary]="true"
+						inputId="statement"
+					>
+					</p-checkbox>
+					<label for="statement" class="font-medium">Statement</label>
+				</div>
+			</div>
+
+			<div class="flex flex-col" *ngIf="isStatementChecked">
+				<label class="font-medium mb-1">Start Month <span class="text-red-500">*</span></label>
+				<p-dropdown
+					[options]="periodOptions"
+					optionLabel="period_name"
+					optionValue="period_name"
+					formControlName="startMonth"
+					placeholder="Select Start Month"
+					filterPlaceholder="Search Start Month"
+					[filter]="true"
+					class="w-full"
+				>
+				</p-dropdown>
+				<small class="text-red-500 ms-1 mt-1" *ngIf="expenseReportForm.get('startMonth')?.touched && expenseReportForm.get('startMonth')?.errors?.['required']">
+					Start Month is required
+				</small>
+			</div>
+
+			<div class="flex flex-col" *ngIf="isStatementChecked">
+				<label class="font-medium mb-1">End Month <span class="text-red-500">*</span></label>
+				<p-dropdown
+					[options]="periodOptions"
+					optionLabel="period_name"
+					optionValue="period_name"
+					formControlName="endMonth"
+					placeholder="Select End Month"
+					filterPlaceholder="Search End Month"
+					[filter]="true"
+					class="w-full"
+				>
+				</p-dropdown>
+				<small class="text-red-500 ms-1 mt-1" *ngIf="expenseReportForm.get('endMonth')?.touched && expenseReportForm.get('endMonth')?.errors?.['required']">
+					End Month is required
+				</small>
+			</div>
 		</div>
 
-		<div class="flex md:hidden justify-center gap-2 mt-6">
-			<button pButton type="button" label="Display" class="p-button-warning" [disabled]="expenseReportForm.invalid" (click)="display()"></button>
+		<div class="flex md:hidden justify-center gap-2 mt-6 flex-wrap">
+			<button pButton type="button" label="Display" class="p-button-warning" [disabled]="isDisplayDisabled" (click)="display()"></button>
 			<button pButton type="button" label="Download" class="p-button-warning" (click)="downloadExcel()"></button>
 			<button pButton type="button" label="Reset" class="p-button-secondary" (click)="reset()"></button>
 		</div>
@@ -118,11 +175,15 @@
 				scrollDirection="horizontal"
 				responsiveLayout="scroll"
 				class="p-datatable-gridlines mt-6 item-report"
-				[tableStyle]="{ 'min-width': '1500px' }"
+				[tableStyle]="{ 'min-width': tableMinWidth }"
 			>
 				<ng-template pTemplate="header" let-columns>
 					<tr class="bg-yellow-400">
-						<th *ngFor="let col of columns" [style.width]="col.width + 'px'">
+						<th
+							*ngFor="let col of columns; let last = last"
+							[style.width]="col.width + 'px'"
+							[ngClass]="{ 'frozen-column-shadow': last }"
+						>
 							{{ col.header }}
 						</th>
 					</tr>
@@ -130,7 +191,11 @@
 
 				<ng-template pTemplate="body" let-row let-columns="columns">
 					<tr>
-						<td *ngFor="let col of columns">
+						<td
+							*ngFor="let col of columns; let last = last"
+							[style.width]="col.width + 'px'"
+							[ngClass]="{ 'frozen-column-shadow': last }"
+						>
 							{{ row[col.field] }}
 						</td>
 					</tr>
@@ -140,6 +205,11 @@
 					<div class="total-items text-gray-600 ms-2">Total Items: {{ recordReport.length }}</div>
 				</ng-template>
 			</p-table>
+
+			<div class="flex justify-end mt-2 me-2 gap-4" *ngIf="recordReport.length && totalDueColumnField">
+                <label class="font-medium mt-2">Total Due:</label>
+			<input type="text" pInputText  readonly  [value]="totalDueAmount | number:'1.2-2'" readonly class="w-40 text-right" />
+		</div>
 		</div>
 	</form>
 </div>

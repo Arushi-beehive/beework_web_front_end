@@ -5,7 +5,7 @@
 
         <!-- Buttons - Hidden on mobile, shown in header on desktop -->
         <div class="hidden md:flex gap-4">
-            <button pButton type="submit" label="Display" class="p-button-warning" (click)="display()" [disabled]="reportForm.invalid"></button>
+            <button pButton type="submit" label="Display" class="p-button-warning" (click)="display()" [disabled]="reportForm.get('period')?.invalid || (!reportForm.get('projectName')?.value && !reportForm.get('groupleader')?.value)"></button>
             <button pButton type="button" label="Download" icon="pi pi-download" iconPos="right" class="p-button-warning" (click)="downloadExcel()"></button>
             <button pButton type="button" label="Reset" class="p-button-secondary" (click)="reset()"></button>
         </div>
@@ -39,7 +39,7 @@
 
    <!-- Project Name -->
                 <div class="flex flex-col">
-                    <label class="font-medium mb-1">Site <span class="text-red-500">*</span></label>
+                    <label class="font-medium mb-1">Site</label>
                     <p-dropdown
                         [options]="projectNameOptions"
                         optionLabel="project_name"
@@ -53,14 +53,12 @@
                         class="w-full"
                     >
                     </p-dropdown>
-                    <small class="text-red-500 mt-1" *ngIf="reportForm.get('projectName')?.touched && reportForm.get('projectName')?.invalid"> Project Name is required </small>
                 </div>
 
                 <!-- Group Leader - Full width on mobile, half on desktop -->
                 <div class="flex flex-col">
                     <label class="font-medium mb-1">Group Leader</label>
-                    <p-dropdown [options]="groupLeaderOptions" optionLabel="dd_value" optionValue="id" [filter]="true" [showClear]="true" filterPlaceholder="Search Group Leader" formControlName="groupleader" placeholder="Group Leader" class="w-full">
-                    </p-dropdown>
+                    <p-dropdown [options]="groupLeaderOptions" optionLabel="dd_value" optionValue="id" [filter]="true" [showClear]="true" filterPlaceholder="Search Group Leader" formControlName="groupleader" placeholder="Group Leader" class="w-full" (onChange)="onGroupLeaderChange($event)"></p-dropdown>
                 </div>
 
 </div>
@@ -79,7 +77,9 @@
                 [value]="recordReport"
                 [columns]="columns"
                 dataKey="paidamount"
-                [tableStyle]="{ 'min-width': '50rem' }"
+                [scrollable]="true"
+                scrollDirection="horizontal"
+                [tableStyle]="{ 'min-width': tableMinWidth }"
                 [paginator]="true"
                 selectionMode="multiple"
                 [rows]="10"
@@ -89,7 +89,12 @@
             >
                 <ng-template #header let-columns>
                     <tr class="bg-yellow-400">
-                        <th *ngFor="let col of columns" [style.width]="col.width + 'px'">
+                        <th
+                            *ngFor="let col of columns; let i = index"
+                            [style.width]="col.width + 'px'"
+                            [ngClass]="{ 'frozen-column-shadow': i < 4 }"
+                            [style.left]="i < 4 ? getFrozenLeft(i) : null"
+                        >
                             {{ col.header }}
                         </th>
                     </tr>
@@ -97,7 +102,12 @@
 
                 <ng-template pTemplate="body" let-row let-columns="columns">
                     <tr>
-                        <td *ngFor="let col of columns">
+                        <td
+                            *ngFor="let col of columns; let i = index"
+                            [style.width]="col.width + 'px'"
+                            [ngClass]="{ 'frozen-column-shadow': i < 4 }"
+                            [style.left]="i < 4 ? getFrozenLeft(i) : null"
+                        >
                             {{ row[col.field] }}
                         </td>
                     </tr>

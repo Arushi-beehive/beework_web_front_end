@@ -45,6 +45,7 @@ export class UserComponent {
     glTouched: boolean = false;
     glSameError: boolean = false;
     companyId = '';
+    userProjectId: string = '';
     userGroupMap = new Map<number, any[]>();
 
     exitForm = {
@@ -303,21 +304,45 @@ export class UserComponent {
         }
     }
 
-    loadGroupLeaderDropdown(excludeUserId?: number) {
-        // console.log('Loading group leader dropdown, excluding user ID:', excludeUserId, this.selectedUser);
-       const payload: DropdownParamter = {
-              returnType: 'ACTIVEGROUPLEADER',
-              returnValue: this.selectedUser.project_id,
-              username:'',
-              option1: this.companyId,
-              option2: ''
-          };
-        this.setupService.onDropdownDetails(payload).subscribe({
-            next: (res) => {
-                this.groupLeaderOptions = (res.data.data || []).filter((gl: any) => gl.userid !== excludeUserId);
+   loadGroupLeaderDropdown(excludeUserId?: number) {
+    const payload1: DropdownParamter = {
+        returnType: 'PROJECTONBOARDEDWORKER',
+        returnValue: '',
+        username: this.authService.isLogIntType().userid.toString(),
+        option1: this.companyId,
+        option2: ''
+    };
+
+    this.setupService.onDropdownDetails(payload1).subscribe({
+        next: (res) => {
+            if (res.data && res.data.length > 0) {
+                this.userProjectId = res.data[0].project_id;
             }
-        });
-    }
+
+            const payload: DropdownParamter = {
+                returnType: 'ACTIVEGROUPLEADER',
+                returnValue: this.userProjectId ? this.userProjectId.toString() : '',
+                username: '',
+                option1: this.companyId,
+                option2: ''
+            };
+
+            this.setupService.onDropdownDetails(payload).subscribe({
+                next: (res2) => {
+                    this.groupLeaderOptions = (res2.data || []).filter(
+                        (gl: any) => gl.id !== excludeUserId
+                    );
+                },
+                error: (err) => {
+                    console.error('Failed to load group leaders:', err);
+                }
+            });
+        },
+        error: (err) => {
+            console.error('Failed to load project ID:', err);
+        }
+    });
+}
 
     onGroupLeaderChange() {
         this.glSameError = false;
