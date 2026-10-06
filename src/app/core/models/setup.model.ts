@@ -56,6 +56,7 @@ export interface UserInsert{
   emailId: string,
   userType:string,
   isActive:string,
+  attendance?: string,
   createdBy: string,
   updatedBy: string,
   projectId: MultipleProject[]

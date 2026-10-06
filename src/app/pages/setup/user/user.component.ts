@@ -83,7 +83,8 @@ export class UserComponent {
                 p_phone: ['', [Validators.required, Validators.pattern(/[6-9]\d{9}$/)]],
                 p_email: ['', [Validators.email, Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/), Validators.maxLength(150)]],
                 checked: [true],
-                mobileaccess: [true]
+                mobileaccess: [true],
+                attendance: [{ value: false, disabled: true }]
             },
             { validators: this.passwordMatchValidator }
         );
@@ -127,8 +128,21 @@ export class UserComponent {
         this.userForm.reset({
             checked: true,
             mobileaccess: true,
-            projectname: []
+            projectname: [],
+            attendance: { value: false, disabled: true }
         });
+    }
+
+    onProfileChange() {
+        const selectedProfile = this.profileOptions.find((p) => p.profileid === this.userForm.get('p_profile')?.value);
+        const attendanceControl = this.userForm.get('attendance');
+
+        if (selectedProfile?.profilename === 'Group Leader') {
+            attendanceControl?.enable();
+        } else {
+            attendanceControl?.reset(false);
+            attendanceControl?.disable();
+        }
     }
 
     openEditDialog(user: any) {
@@ -156,8 +170,10 @@ export class UserComponent {
             p_email: user.emailid,
             p_pwd: user.password,
             conPassword: user.password,
-            checked: user.isactive === 'Yes'
+            checked: user.isactive === 'Yes',
+            attendance: user.attendance_enabled === 'Y'
         });
+        this.onProfileChange();
     }
 
     onGetUserList() {
@@ -209,9 +225,10 @@ export class UserComponent {
             emailId: data.p_email || '',
             userType: selectedProfile?.profilename,
             isActive: data.checked ? 'Y' : 'N',
+            attendance: data.attendance ? 'Y' : 'N',
             projectId: JSON.stringify(data.projectname),
-            createdBy: userid,
-            updatedBy: userid
+            createdBy: userid.toString(),
+            updatedBy: userid.toString()
         };
         this.setupService.onUserInsert(payload).subscribe({
             next: (res) => {

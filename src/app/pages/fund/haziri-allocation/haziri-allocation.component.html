@@ -1,0 +1,107 @@
+<main class="fund-upload-page">
+    <header class="fund-upload-header">
+        <div class="fund-upload-heading">
+            <span class="fund-upload-heading-icon"><i class="pi pi-calendar"></i></span>
+            <div>
+                <h1>{{ pageTitle }} Upload</h1>
+                <p>Download the Worker Haziri template, upload the completed file, and review the rows.</p>
+            </div>
+        </div>
+        <div class="fund-upload-progress" aria-label="Upload steps">
+            <div class="progress-step active"><span>1</span><small>Download Template</small></div>
+            <div class="progress-line" [class.complete]="isExcelUploaded"></div>
+            <div class="progress-step" [class.complete]="isExcelUploaded"><span>2</span><small>Upload File</small></div>
+            <div class="progress-line" [class.complete]="showUploadPreviewDialog"></div>
+            <div class="progress-step" [class.complete]="showUploadPreviewDialog"><span>3</span><small>Review Data</small></div>
+        </div>
+    </header>
+
+    <form [formGroup]="haziriForm" class="fund-upload-content">
+        <section class="upload-step-panel template-panel">
+            <div class="step-panel-heading">
+                <span class="step-number">1</span>
+                <div><h2>Download Template</h2></div>
+                <a [href]="uploadTemplateHref" [attr.download]="uploadTemplateName" class="template-sample-link">Download {{ uploadTemplateName }}</a>
+            </div>
+            <div class="template-controls">
+                <div class="field-group">
+                    <label for="haziri-period">Period <span class="required-mark">*</span></label>
+                    <p-dropdown inputId="haziri-period" [options]="periodOptions" optionLabel="period_name" optionValue="period_id" formControlName="period" placeholder="Select period" [filter]="true"></p-dropdown>
+                    <small class="field-error" *ngIf="haziriForm.get('period')?.touched && !haziriForm.get('period')?.value">Period is required.</small>
+                </div>
+                <div class="field-group">
+                    <label for="haziri-site">Site <span class="required-mark">*</span></label>
+                    <p-dropdown inputId="haziri-site" [options]="projectNameOptions" optionLabel="project_name" optionValue="project_id" formControlName="projectName" placeholder="Select site" [filter]="true" (onChange)="onProjectChange($event)"></p-dropdown>
+                    <small class="field-error" *ngIf="haziriForm.get('projectName')?.touched && !haziriForm.get('projectName')?.value">Site is required.</small>
+                </div>
+                <div class="field-group">
+                    <label for="haziri-group-leader">Group Leader</label>
+                    <p-dropdown inputId="haziri-group-leader" [options]="groupLeaderOptions" optionLabel="dd_value" optionValue="dd_value" formControlName="groupleader" placeholder="All Group Leaders" [showClear]="true" [filter]="true"></p-dropdown>
+                </div>
+                <div class="template-download-action">
+                    <button pButton type="button" label="Download" icon="pi pi-download" [disabled]="!!downloadValidationMessage" (click)="downloadExcel()"></button>
+                    <small class="field-error" *ngIf="downloadValidationMessage">{{ downloadValidationMessage }}</small>
+                </div>
+            </div>
+        </section>
+
+        <section class="upload-step-panel validation-panel">
+            <div class="step-panel-heading">
+                <span class="step-number">2</span>
+                <div>
+                    <h2>Upload Haziri Data</h2>
+                    <p>Upload the completed Worker Haziri Excel file to review its rows.</p>
+                </div>
+            </div>
+            <div class="validation-layout">
+                <div class="file-drop-zone">
+                    <input #haziriFileInput type="file" accept=".xlsx,.xls" hidden (change)="onFileUpload($event)" />
+                    <i class="pi pi-file-excel file-excel-icon"></i>
+                    <strong>Upload Excel File</strong>
+                    <span>Select the completed Worker Haziri template.</span>
+                    <button pButton type="button" label="Choose File" icon="pi pi-upload" class="p-button-outlined" (click)="haziriFileInput.click()"></button>
+                    <small>Supported format: .xlsx, .xls | Max file size: 10 MB</small>
+                </div>
+                <div class="validation-results">
+                    <div class="uploaded-file-row" *ngIf="uploadFileName; else noUploadedFile">
+                        <i class="pi pi-file-excel"></i>
+                        <div class="uploaded-file-name"><strong>{{ uploadFileName }}</strong><small>{{ recordReport.length }} data row(s)</small></div>
+                        <button pButton type="button" icon="pi pi-times" class="p-button-text p-button-secondary" aria-label="Remove uploaded file" (click)="clearUpload()"></button>
+                    </div>
+                    <ng-template #noUploadedFile>
+                        <div class="validation-empty-state"><i class="pi pi-inbox"></i><span>Your selected file will appear here.</span></div>
+                    </ng-template>
+                    <div class="validation-guidance" *ngIf="isExcelUploaded">
+                        <i class="pi pi-check-circle"></i><span>File loaded and required columns are present. Review the rows before continuing.</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="process-step-panel">
+            <div class="step-panel-heading">
+                <span class="step-number">3</span>
+                <div>
+                    <h2>Review Data</h2>
+                    <p>Review the uploaded Worker Haziri rows.</p>
+                </div>
+            </div>
+            <button pButton type="button" label="Review Data" icon="pi pi-eye" [disabled]="!isExcelUploaded || recordReport.length === 0" (click)="showHaziriUploadPreview()"></button>
+        </section>
+    </form>
+
+    <p-dialog header="Uploaded Worker Haziri Data" [(visible)]="showUploadPreviewDialog" [modal]="true" [style]="{ width: 'min(100vw, 1100px)' }">
+        <p class="upload-preview-message">Review the uploaded rows below.</p>
+        <p-table [value]="recordReport" [scrollable]="true" scrollHeight="50vh" [tableStyle]="{ 'min-width': '60rem' }" class="p-datatable-gridlines upload-preview-table">
+            <ng-template pTemplate="header">
+                <tr><th *ngFor="let column of excelColumns">{{ column }}</th></tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-row>
+                <tr><td *ngFor="let column of excelColumns">{{ row[column] }}</td></tr>
+            </ng-template>
+        </p-table>
+        <ng-template pTemplate="footer">
+            <button pButton type="button" label="Close" class="p-button-text" (click)="showUploadPreviewDialog = false"></button>
+        </ng-template>
+    </p-dialog>
+</main>

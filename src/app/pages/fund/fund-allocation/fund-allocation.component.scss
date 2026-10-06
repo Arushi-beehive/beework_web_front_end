@@ -33,3 +33,708 @@
 		}
 	}
 }
+
+/* ==========================================================================
+   Upload page: palette
+   ========================================================================== */
+.fund-upload-page {
+	--upload-ink: #1f1a0e;
+	--upload-muted: #6b5f3f;
+	--upload-line: #eadfbf;
+	--upload-blue: #e8b718; // name kept for compatibility; value is gold
+	--upload-gold-dark: #b8860b;
+	--upload-gold-soft: #fff8e1;
+	--upload-panel: #fffaf0;
+
+	color: var(--upload-ink);
+	background: #fff;
+	border: 1px solid var(--upload-line);
+	border-radius: 8px;
+	overflow: hidden;
+	box-shadow: 0 2px 10px rgba(184, 134, 11, 0.08);
+}
+
+/* ==========================================================================
+   Header + progress steps
+   ========================================================================== */
+.fund-upload-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 28px;
+	padding: 16px 24px;
+	color: var(--upload-ink);
+	background: linear-gradient(135deg, #fffdf5 0%, #fff4cf 100%);
+	border-bottom: 1px solid var(--upload-line);
+}
+
+.fund-upload-heading,
+.fund-upload-progress,
+.step-panel-heading,
+.uploaded-file-row,
+.validation-status,
+.payment-report-heading {
+	display: flex;
+	align-items: center;
+}
+
+.fund-upload-heading {
+	gap: 14px;
+	min-width: 260px;
+}
+
+.fund-upload-heading-icon {
+	display: grid;
+	width: 40px;
+	height: 40px;
+	place-items: center;
+	border: 1px solid var(--upload-blue);
+	border-radius: 6px;
+	background: #fff;
+	color: var(--upload-gold-dark);
+	font-size: 19px;
+	box-shadow: 0 1px 4px rgba(232, 183, 24, 0.3);
+}
+
+.fund-upload-heading h1,
+.fund-upload-heading p,
+.step-panel-heading h2,
+.step-panel-heading p,
+.payment-report-heading h2,
+.payment-report-heading p {
+	margin: 0;
+}
+
+.fund-upload-heading h1 {
+	font-size: 20px;
+	font-weight: 700;
+}
+
+.fund-upload-heading p,
+.step-panel-heading p,
+.payment-report-heading p {
+	margin-top: 3px;
+	color: inherit;
+	font-size: 12px;
+}
+
+.fund-upload-heading p {
+	color: var(--upload-muted);
+}
+
+.fund-upload-progress {
+	flex: 0 1 470px;
+	justify-content: space-between;
+}
+
+.progress-step {
+	display: grid;
+	justify-items: center;
+	gap: 5px;
+	min-width: 92px;
+	color: var(--upload-muted);
+	text-align: center;
+}
+
+.progress-step > span {
+	display: grid;
+	width: 27px;
+	height: 27px;
+	place-items: center;
+	border: 1px solid #d8c88f;
+	border-radius: 50%;
+	background: #fff;
+	color: var(--upload-muted);
+	font-size: 12px;
+	font-weight: 700;
+}
+
+.progress-step small {
+	font-size: 10px;
+}
+
+.progress-step.active,
+.progress-step.complete {
+	color: var(--upload-ink);
+	font-weight: 600;
+}
+
+.progress-step.active > span,
+.progress-step.complete > span {
+	border-color: var(--upload-blue);
+	background: var(--upload-blue);
+	color: #3b2d00;
+	box-shadow: 0 0 0 3px rgba(232, 183, 24, 0.25);
+}
+
+.progress-line {
+	flex: 1;
+	height: 2px;
+	margin: -20px 4px 0;
+	background: #e6dcb8;
+}
+
+.progress-line.complete {
+	background: var(--upload-blue);
+}
+
+/* ==========================================================================
+   Layout + step panels
+   ========================================================================== */
+.fund-upload-content {
+	display: grid;
+	gap: 12px;
+	padding: 16px;
+}
+
+.upload-step-panel,
+.process-step-panel,
+.payment-report-section {
+	min-width: 0;
+	border: 1px solid var(--upload-line);
+	border-radius: 5px;
+}
+
+.upload-step-panel {
+	background: #fff;
+}
+
+.step-panel-heading {
+	gap: 12px;
+	padding: 12px 14px;
+	background: linear-gradient(90deg, var(--upload-panel), #fff);
+	border-bottom: 1px solid var(--upload-line);
+}
+
+.template-panel .step-panel-heading > a {
+	margin-left: auto;
+	color: var(--upload-gold-dark);
+	font-size: 12px;
+	font-weight: 600;
+	text-decoration: underline;
+	white-space: nowrap;
+}
+
+.upload-preview-message {
+	margin: 0 0 12px;
+	color: var(--upload-muted);
+}
+
+.step-number {
+	display: grid;
+	width: 28px;
+	height: 28px;
+	flex: 0 0 28px;
+	place-items: center;
+	border-radius: 50%;
+	color: #3b2d00;
+	background: linear-gradient(135deg, #f5cd3d, var(--upload-blue));
+	box-shadow: 0 1px 3px rgba(184, 134, 11, 0.35);
+	font-size: 13px;
+	font-weight: 700;
+}
+
+.step-panel-heading h2,
+.payment-report-heading h2 {
+	font-size: 15px;
+	font-weight: 700;
+}
+
+.step-panel-heading p,
+.payment-report-heading p {
+	color: var(--upload-muted);
+}
+
+/* ==========================================================================
+   Step 1: template controls
+   ========================================================================== */
+.template-controls {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(140px, 1fr)) minmax(185px, 1.15fr);
+	align-items: end;
+	gap: 14px;
+	padding: 14px;
+}
+
+.field-group {
+	position: relative;
+	display: grid;
+	gap: 6px;
+	min-width: 0;
+	padding-bottom: 16px;
+}
+
+.field-group label {
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.field-group p-dropdown {
+	width: 100%;
+}
+
+.required-mark {
+	color: #c83f45;
+}
+
+.field-error {
+	position: absolute;
+	bottom: 0;
+	left: 2px;
+	color: #c83f45;
+	font-size: 11px;
+	line-height: 14px;
+	white-space: nowrap;
+}
+
+.template-download-action {
+	display: grid;
+	padding-bottom: 16px;
+}
+
+.template-download-action small i {
+	margin-right: 4px;
+	color: var(--upload-gold-dark);
+}
+
+/* ==========================================================================
+   Step 2: upload + validation
+   ========================================================================== */
+.validation-layout {
+	display: grid;
+	grid-template-columns: minmax(260px, 0.82fr) minmax(320px, 1.18fr);
+	gap: 14px;
+	padding: 12px 14px;
+}
+
+.file-drop-zone {
+	display: flex;
+	min-height: 160px;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	border: 2px dashed #e0cd8a;
+	border-radius: 5px;
+	background: #fffdf6;
+	text-align: center;
+	transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.file-drop-zone:hover {
+	border-color: var(--upload-blue);
+	background: var(--upload-gold-soft);
+}
+
+.file-drop-zone.drag-active {
+	border-color: var(--upload-gold-dark);
+	background: #fff1c2;
+}
+
+.file-excel-icon {
+	color: #1c8b56;
+	font-size: 27px;
+}
+
+.file-drop-zone strong {
+	font-size: 12px;
+}
+
+.file-drop-zone > span,
+.file-drop-zone > small {
+	color: var(--upload-muted);
+	font-size: 10px;
+}
+
+.validation-results {
+	display: grid;
+	align-content: start;
+	gap: 8px;
+	min-width: 0;
+}
+
+.uploaded-file-row {
+	gap: 10px;
+	min-height: 42px;
+	padding: 6px 10px;
+	border: 1px solid var(--upload-line);
+	border-radius: 5px;
+	background: #fffdf6;
+}
+
+.uploaded-file-row > i {
+	color: #198653;
+	font-size: 19px;
+}
+
+.uploaded-file-name {
+	display: grid;
+	flex: 1;
+	min-width: 0;
+	gap: 2px;
+}
+
+.uploaded-file-name strong {
+	overflow: hidden;
+	font-size: 11px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.uploaded-file-name small {
+	color: var(--upload-muted);
+	font-size: 10px;
+}
+
+.validation-empty-state {
+	display: flex;
+	min-height: 44px;
+	align-items: center;
+	gap: 9px;
+	padding: 10px;
+	border: 1px solid var(--upload-line);
+	border-radius: 5px;
+	color: var(--upload-muted);
+	background: #fffdf6;
+	font-size: 11px;
+}
+
+.validation-empty-state i {
+	color: var(--upload-gold-dark);
+	font-size: 18px;
+}
+
+.validation-status {
+	gap: 9px;
+	padding: 9px 11px;
+	border: 1px solid #f1c5c5;
+	border-radius: 5px;
+	color: #a52d32;
+	background: #fff5f5;
+}
+
+.validation-status.is-valid {
+	border-color: #b8dfcb;
+	color: #167449;
+	background: #f1fbf5;
+}
+
+.validation-status > i {
+	font-size: 18px;
+}
+
+.validation-status div {
+	display: grid;
+	gap: 2px;
+}
+
+.validation-status strong {
+	font-size: 11px;
+}
+
+.validation-status small {
+	font-size: 10px;
+}
+
+.validation-counts {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 8px;
+}
+
+.validation-count {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	align-items: center;
+	column-gap: 7px;
+	padding: 8px;
+	border: 1px solid var(--upload-line);
+	border-radius: 5px;
+}
+
+.validation-count i {
+	grid-row: span 2;
+	font-size: 15px;
+}
+
+.validation-count strong {
+	font-size: 13px;
+}
+
+.validation-count span {
+	font-size: 9px;
+}
+
+.error-count {
+	color: #b32d35;
+	background: #fff5f5;
+	border-color: #f3caca;
+}
+
+.warning-count {
+	color: #a15c07;
+	background: #fff4e5;
+	border-color: #f6d9aa;
+}
+
+.valid-count {
+	color: #167449;
+	background: #f0fbf4;
+	border-color: #b8dfcb;
+}
+
+/* ==========================================================================
+   Validation issue table
+   ========================================================================== */
+.validation-issues {
+	padding: 0 14px 12px;
+}
+
+.issue-table-wrap {
+	max-height: 230px;
+	overflow: auto;
+	border: 1px solid var(--upload-line);
+	border-radius: 4px;
+}
+
+.issue-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 11px;
+}
+
+.issue-table th,
+.issue-table td {
+	padding: 7px 9px;
+	border-bottom: 1px solid #f3ecd3;
+	text-align: left;
+}
+
+.issue-table th {
+	position: sticky;
+	top: 0;
+	background: #fff4cf;
+	color: #3b2d00;
+	font-weight: 700;
+}
+
+.issue-table tbody tr:hover {
+	background: #fffaf0;
+}
+
+.issue-type {
+	display: inline-block;
+	padding: 2px 7px;
+	border-radius: 10px;
+	color: #a92e34;
+	background: #fde9e9;
+	font-size: 10px;
+}
+
+.issue-type.warning-type {
+	color: #8a5200;
+	background: #ffe7bf;
+}
+
+.validation-guidance {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0 14px 12px;
+	padding: 9px 11px;
+	border: 1px solid #ecd999;
+	border-radius: 4px;
+	color: #6b5200;
+	background: var(--upload-gold-soft);
+	font-size: 11px;
+}
+
+.validation-guidance i {
+	color: var(--upload-gold-dark);
+}
+
+/* ==========================================================================
+   Step 3: process
+   ========================================================================== */
+.process-step-panel {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 12px 14px;
+	border-color: #bfe3d2;
+	background: linear-gradient(90deg, #f1faf6, #fff);
+}
+
+.process-step-panel .step-panel-heading {
+	padding: 0;
+	border: 0;
+	background: transparent;
+}
+
+.process-step-panel .step-number {
+	color: #fff;
+	background: #168354;
+	box-shadow: none;
+}
+
+.process-step-panel button {
+	min-width: 175px;
+}
+
+/* ==========================================================================
+   Payment report section (kept from original)
+   ========================================================================== */
+.payment-report-section {
+	padding: 12px 14px;
+}
+
+.payment-report-heading {
+	justify-content: space-between;
+	gap: 16px;
+	margin-bottom: 12px;
+}
+
+.report-actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 8px;
+}
+
+.report-actions p-dropdown {
+	min-width: 155px;
+}
+
+/* ==========================================================================
+   PrimeNG buttons: gold theme (Process Data stays green)
+   ========================================================================== */
+.fund-upload-page ::ng-deep .p-button:not(.p-button-text):not(.p-button-outlined):not(.p-button-secondary) {
+	background: var(--upload-blue);
+	border-color: var(--upload-blue);
+	color: #3b2d00;
+	font-weight: 600;
+}
+
+.fund-upload-page ::ng-deep .p-button:not(.p-button-text):not(.p-button-outlined):not(.p-button-secondary):not(:disabled):hover {
+	background: var(--upload-gold-dark);
+	border-color: var(--upload-gold-dark);
+	color: #fff;
+}
+
+.fund-upload-page ::ng-deep .p-button-outlined {
+	color: var(--upload-gold-dark);
+	border-color: var(--upload-blue);
+}
+
+.fund-upload-page ::ng-deep .p-button-outlined:not(:disabled):hover {
+	background: var(--upload-gold-soft);
+	color: var(--upload-gold-dark);
+}
+
+/* Process Data: green override (same specificity as the gold rule, declared after it) */
+.fund-upload-page ::ng-deep .process-step-panel .p-button:not(.p-button-text):not(.p-button-outlined):not(.p-button-secondary) {
+	background: #168354;
+	border-color: #168354;
+	color: #fff;
+}
+
+.fund-upload-page ::ng-deep .process-step-panel .p-button:not(.p-button-text):not(.p-button-outlined):not(.p-button-secondary):not(:disabled):hover {
+	background: #11693f;
+	border-color: #11693f;
+	color: #fff;
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+@media (max-width: 1050px) {
+	.fund-upload-header {
+		align-items: flex-start;
+		flex-direction: column;
+	}
+
+	.fund-upload-progress {
+		width: 100%;
+		max-width: 560px;
+		align-self: center;
+	}
+
+	.template-controls {
+		grid-template-columns: repeat(2, minmax(140px, 1fr));
+	}
+
+	.template-download-action {
+		grid-column: 1 / -1;
+	}
+}
+
+@media (max-width: 680px) {
+	.fund-upload-header {
+		padding: 14px;
+	}
+
+	.fund-upload-heading {
+		min-width: 0;
+	}
+
+	.fund-upload-heading h1 {
+		font-size: 17px;
+	}
+
+	.fund-upload-progress {
+		gap: 2px;
+	}
+
+	.progress-step {
+		min-width: 72px;
+	}
+
+	.progress-step small {
+		max-width: 76px;
+		font-size: 9px;
+	}
+
+	.progress-line {
+		margin-right: 0;
+		margin-left: 0;
+	}
+
+	.fund-upload-content {
+		gap: 10px;
+		padding: 10px;
+	}
+
+	.template-controls,
+	.validation-layout {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.template-download-action {
+		grid-column: auto;
+	}
+
+	.payment-report-heading {
+		align-items: flex-start;
+		flex-direction: column;
+	}
+
+	.report-actions {
+		width: 100%;
+		justify-content: flex-start;
+	}
+
+	.report-actions p-dropdown {
+		width: 100%;
+	}
+
+	.process-step-panel {
+		align-items: stretch;
+		flex-direction: column;
+	}
+
+	.process-step-panel button {
+		width: 100%;
+	}
+}

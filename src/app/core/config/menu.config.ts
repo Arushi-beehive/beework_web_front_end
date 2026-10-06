@@ -127,6 +127,17 @@ export const MENU_MODEL: MenuItem[] = [
                 permissionKey: 'FUND_ALLOCATION'
             },
              {
+                label: 'New Fund Allocation',
+                icon: 'pi pi-fw pi-dollar',
+                routerLink: ['/layout/fund/new-fund-allocation'],
+                permissionKey: 'NEW_FUND_ALLOCATION'
+            },
+            {
+                label: 'Haziri Allocation',
+                icon: 'pi pi-fw pi-money-bill',
+                routerLink: ['/layout/fund/haziri-allocation']
+            },
+             {
                 label: 'Bulk Attendance',
                 icon: 'pi pi-fw pi-calendar',
                 routerLink: ['/layout/fund/attendance-rule'],

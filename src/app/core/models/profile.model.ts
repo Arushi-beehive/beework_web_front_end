@@ -25,6 +25,7 @@ export interface UserHeader {
   p_companycontactphone: string;
   p_companycontactemail: string;
   p_companyLogo: string | null;
+  p_attendance?: string;
   "x-access-token"?: string;
 }
 

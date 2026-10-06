@@ -3,7 +3,7 @@ import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { ShareService } from "./shared.service";
 import { API_ENDPOINTS } from "../config/api-endpoints";
-import { FundAllocationUpload ,PaymentGroupLeaderUpload,PaymentWorkerUpload,SubmitAttendance } from "../models/fundallocation.model";
+import { BulkUpdateWorkerProfileRate, FundAllocationUpload ,PaymentGroupLeaderUpload,PaymentWorkerUpload,StageGroupLeaderPayment,StageWorkerPayment,SubmitAttendance } from "../models/fundallocation.model";
 
 @Injectable({
     providedIn:'root'
@@ -34,5 +34,17 @@ export class FundService{
 
     onSubmitAttendance(payload: SubmitAttendance) {
         return this.shareService.post(API_ENDPOINTS.setup.submitbulkattendance, payload);
+    }
+
+    stageGroupleaderPayment(payload: StageGroupLeaderPayment) {
+        return this.shareService.post(API_ENDPOINTS.fund.stageGroupleaderPayment, payload);
+    }
+
+    stageWorkerPayment(payload: StageWorkerPayment) {
+        return this.shareService.post(API_ENDPOINTS.fund.stageWorkerPayment, payload);
+    }
+
+    bulkUpdateWorkerProfileRate(payload: BulkUpdateWorkerProfileRate) {
+        return this.shareService.post(API_ENDPOINTS.fund.bulkUpdateWorkerProfileRate, payload);
     }
 }

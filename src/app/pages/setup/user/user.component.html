@@ -71,6 +71,7 @@
                         filterPlaceholder="Search Profile"
                         formControlName="p_profile"
                         placeholder="Select Profile"
+                        (onChange)="onProfileChange()"
                         class="w-full"
                     >
                     </p-dropdown>
@@ -140,6 +141,10 @@
                     <div class="flex gap-2">
                         <p-checkbox formControlName="mobileaccess" [binary]="true"></p-checkbox>
                         <label class="font-medium">Mobile Access</label>
+                    </div>
+                    <div class="flex gap-2">
+                        <p-checkbox formControlName="attendance" [binary]="true"></p-checkbox>
+                        <label class="font-medium">Attendance</label>
                     </div>
                 </div>
             </div>

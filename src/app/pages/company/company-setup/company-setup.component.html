@@ -126,6 +126,11 @@
                     <small class="text-red-500 mt-1" style="min-height:16px;display:block"
                         *ngIf="cf['timezone'].touched && cf['timezone'].invalid">Time Zone is required</small>
                 </div>
+
+                <div class="flex items-center gap-2 mt-7">
+                    <p-checkbox formControlName="attendance" [binary]="true" inputId="companyAttendance"></p-checkbox>
+                    <label for="companyAttendance" class="font-medium">Attendance</label>
+                </div>
             </div>
 
             <!-- Address -->

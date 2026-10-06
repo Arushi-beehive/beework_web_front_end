@@ -84,6 +84,10 @@ ngOnInit() {
     // When "Statement" is checked, Start Month / End Month become mandatory;
     // when unchecked, clear their validators and values.
     this.expenseReportForm.get('statement')?.valueChanges.subscribe((checked: boolean) => {
+      this.columns = [];
+  this.originalReport = [];
+  this.recordReport = [];
+
       const startMonthControl = this.expenseReportForm.get('startMonth');
       const endMonthControl = this.expenseReportForm.get('endMonth');
 
@@ -177,11 +181,11 @@ ngOnInit() {
     return !!this.expenseReportForm.get('statement')?.value;
   }
 
-  get isDisplayDisabled(): boolean {
-    const siteValue = this.expenseReportForm.get('site')?.value;
-    const groupLeaderValue = this.expenseReportForm.get('groupLeaderName')?.value;
-    return this.isStatementChecked || (!siteValue && !groupLeaderValue);
-  }
+  // get isDisplayDisabled(): boolean {
+  //   const siteValue = this.expenseReportForm.get('site')?.value;
+  //   const groupLeaderValue = this.expenseReportForm.get('groupLeaderName')?.value;
+  //   return this.isStatementChecked || (!siteValue && !groupLeaderValue);
+  // }
 
   // Table width should grow to fit the actual columns returned by the API instead of a fixed guess.
   get tableMinWidth(): string {
@@ -276,6 +280,11 @@ onGroupLeaderChange(data: any) {
       return;
     }
 
+    if (this.isStatementChecked) {
+    this.displayStatement();
+    return;
+  }
+
     // const periodValue  = this.periodOptions.find((period: any) => period.period_id === this.expenseReportForm.get('period')?.value)?.period_name;
     const selectedGroupLeader: any = this.expenseReportForm.get('groupLeaderName')?.value ?? null;
     const selectedWorkers: any[] = this.expenseReportForm.get('workerName')?.value ?? [];
@@ -363,6 +372,58 @@ get totalDueAmount(): number {
   }, 0);
 }
 
+// Builds the EXPENSEREPORTSTATEMENT payload (shared by Display and Download)
+private buildStatementPayload(): DropdownParamter {
+  const selectedGroupLeader: any = this.expenseReportForm.get('groupLeaderName')?.value ?? null;
+
+  return {
+    returnType: 'EXPENSEREPORTSTATEMENT',
+    returnValue: selectedGroupLeader ? selectedGroupLeader.toString() : null,
+    username: this.expenseReportForm.get('startMonth')?.value,
+    option1: this.authService.isLogIntType()?.companyid.toString(),
+    option2: this.expenseReportForm.get('endMonth')?.value
+  } as DropdownParamter;
+}
+
+// Validates Start/End month; returns false and shows a toast if missing
+private validateStatementMonths(): boolean {
+  const startMonthControl = this.expenseReportForm.get('startMonth');
+  const endMonthControl = this.expenseReportForm.get('endMonth');
+  startMonthControl?.markAsTouched();
+  endMonthControl?.markAsTouched();
+
+  if (startMonthControl?.invalid || endMonthControl?.invalid) {
+    this.errorSuccess('Start Month and End Month are required for Statement.');
+    return false;
+  }
+  return true;
+}
+
+private displayStatement() {
+  if (!this.validateStatementMonths()) {
+    return;
+  }
+
+  this.dashboardService.onGetReportDetails(this.buildStatementPayload()).subscribe({
+    next: (res) => {
+      this.columns = Array.isArray(res?.data?.columns) ? res.data.columns : [];
+      this.originalReport = Array.isArray(res?.data?.data) ? res.data.data : [];
+      this.recordReport = [...this.originalReport];
+
+      if (this.recordReport.length === 0) {
+        this.showSuccess('No data available for the selected statement filters.');
+      }
+    },
+    error: (err) => {
+      console.error(err);
+      this.columns = [];
+      this.originalReport = [];
+      this.recordReport = [];
+      this.errorSuccess('Failed to load statement report data.');
+    }
+  });
+}
+
   onSubmit() {
     this.expenseReportForm.markAllAsTouched();
     if (this.expenseReportForm.invalid) {
@@ -414,49 +475,28 @@ get totalDueAmount(): number {
 
   // Statement API is only called when the "Statement" checkbox is checked.
   private downloadStatementExcel() {
-    if (!this.validateSiteOrGroupLeader()) {
-      return;
-    }
-
-    const startMonthControl = this.expenseReportForm.get('startMonth');
-    const endMonthControl = this.expenseReportForm.get('endMonth');
-    startMonthControl?.markAsTouched();
-    endMonthControl?.markAsTouched();
-
-    if (startMonthControl?.invalid || endMonthControl?.invalid) {
-      this.errorSuccess('Start Month and End Month are required for Statement.');
-      return;
-    }
-
-    const selectedGroupLeader: any = this.expenseReportForm.get('groupLeaderName')?.value ?? null;
-    const onlyDueValue = this.expenseReportForm.get('onlyDue')?.value ? 'D' : 'A';
-
-    const payload: DropdownParamter = {
-      returnType: 'EXPENSEREPORTSTATEMENT',
-      returnValue: selectedGroupLeader ? selectedGroupLeader.toString() : null,
-      username: this.expenseReportForm.get('startMonth')?.value,
-      option1: this.authService.isLogIntType()?.companyid.toString(),
-      option2: this.expenseReportForm.get('endMonth')?.value,
-    };
-
-    this.dashboardService.onGetReportDetails(payload).subscribe({
-      next: (res) => {
-        const columns = Array.isArray(res?.data?.columns) ? res.data.columns : [];
-        const data = Array.isArray(res?.data?.data) ? res.data.data : [];
-
-        if (!columns.length || !data.length) {
-          this.errorSuccess('No data available for the selected statement filters.');
-          return;
-        }
-
-        this.exportToExcel(columns, data, 'Statement_Report.xlsx');
-      },
-      error: (err) => {
-        console.error(err);
-        this.errorSuccess('Failed to load statement report data.');
-      }
-    });
+  if (!this.validateSiteOrGroupLeader() || !this.validateStatementMonths()) {
+    return;
   }
+
+  this.dashboardService.onGetReportDetails(this.buildStatementPayload()).subscribe({
+    next: (res) => {
+      const columns = Array.isArray(res?.data?.columns) ? res.data.columns : [];
+      const data = Array.isArray(res?.data?.data) ? res.data.data : [];
+
+      if (!columns.length || !data.length) {
+        this.errorSuccess('No data available for the selected statement filters.');
+        return;
+      }
+
+      this.exportToExcel(columns, data, 'Statement_Report.xlsx');
+    },
+    error: (err) => {
+      console.error(err);
+      this.errorSuccess('Failed to load statement report data.');
+    }
+  });
+}
 
   // ---- Reset ----
 

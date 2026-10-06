@@ -2,7 +2,7 @@
 	<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
 		<span class="block text-surface-900 font-bold text-2xl">Expense Report</span>
         <div class="hidden md:flex gap-4">
-			<button pButton type="submit" label="Display" class="p-button-warning" [disabled]="isDisplayDisabled" (click)="display()"></button>
+			<button pButton type="submit" label="Display" class="p-button-warning" (click)="display()"></button>
              <button pButton type="button" label="Download" icon="pi pi-download" iconPos="right" class="p-button-warning" (click)="downloadExcel()"></button>
             <button pButton type="button" label="Reset" class="p-button-secondary" (click)="reset()"></button>
 		</div>
@@ -159,7 +159,7 @@
 		</div>
 
 		<div class="flex md:hidden justify-center gap-2 mt-6 flex-wrap">
-			<button pButton type="button" label="Display" class="p-button-warning" [disabled]="isDisplayDisabled" (click)="display()"></button>
+			<button pButton type="button" label="Display" class="p-button-warning" (click)="display()"></button>
 			<button pButton type="button" label="Download" class="p-button-warning" (click)="downloadExcel()"></button>
 			<button pButton type="button" label="Reset" class="p-button-secondary" (click)="reset()"></button>
 		</div>
@@ -206,7 +206,7 @@
 				</ng-template>
 			</p-table>
 
-			<div class="flex justify-end mt-2 me-2 gap-4" *ngIf="recordReport.length && totalDueColumnField">
+			<div class="flex justify-end mt-2 me-2 gap-4" *ngIf="!isStatementChecked && recordReport.length && totalDueColumnField">
                 <label class="font-medium mt-2">Total Due:</label>
 			<input type="text" pInputText  readonly  [value]="totalDueAmount | number:'1.2-2'" readonly class="w-40 text-right" />
 		</div>

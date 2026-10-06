@@ -170,15 +170,10 @@ export class WorkerWagesComponent {
     }
 
    downloadExcel() {
-          const exportData = this.recordReport.map((row) => {
-              const obj: any = {};
-              this.columns.forEach((col) => {
-                  obj[col.header] = row[col.field];
-              });
-              return obj;
-          });
+    const headers = this.columns.map((col) => col.header);
+    const dataRows = this.recordReport.map((row) => this.columns.map((col) => row[col.field] ?? ''));
   
-          const ws = XLSX.utils.json_to_sheet(exportData);
+          const ws = XLSX.utils.aoa_to_sheet([headers, ...dataRows]);
           const wb = XLSX.utils.book_new();
           XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
           const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });

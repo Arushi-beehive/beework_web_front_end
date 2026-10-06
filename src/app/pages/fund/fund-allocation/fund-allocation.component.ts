@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { ChipModule } from 'primeng/chip';
@@ -27,11 +27,15 @@ import { MobileOption } from '@/core/models/project.model';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { FundService } from '@/core/services/fund.service';
-import { FundAllocationUpload, PaymentGroupLeaderUpload, PaymentWorkerUpload } from '@/core/models/fundallocation.model';
+import { BulkUpdateWorkerProfileRate, FundAllocationUpload, GroupLeaderPaymentRow, StageGroupLeaderPayment, StageWorkerPayment, WorkerPaymentRow, WorkerRateRow } from '@/core/models/fundallocation.model';
 import { Observable } from 'rxjs';
 
-interface FundAllocation {
-    [key: string]: any;
+interface UploadValidationIssue {
+    rowNumber: number;
+    column: string;
+    value: string;
+    issue: string;
+    type: 'Error' | 'Warning';
 }
 
 @Component({
@@ -64,6 +68,9 @@ interface FundAllocation {
     providers: [ConfirmationService, DatePipe]
 })
 export class FundAllocationComponent {
+    @Input() initialReportType: 'demand' | 'payment' = 'payment';
+    @Input() showReportTypeSwitch = false;
+    @Input() pageTitle = 'Fund Allocation';
     fundForm!: FormGroup;
     visibleDialog = false;
     selectedRow: any = null;
@@ -90,13 +97,24 @@ export class FundAllocationComponent {
         { fieldid: 'REJECTED', fieldname: 'REJECTED' }
     ];
     paymentForOptions = [
-        { label: 'Group Leader', value: 'GROUP_LEADER' },
-        { label: 'Worker', value: 'WORKER' }
+        { label: 'Group Leader Payment', value: 'GROUP_LEADER' },
+        { label: 'Worker Payment', value: 'WORKER' },
+        { label: 'Worker Rate', value: 'WORKER_RATE' }
     ];
 
     selectedStatus: string | null = 'PENDING';
     periodOptions: any[] = [];
-    private hasDemandSearchExecuted: boolean = false;
+    protected hasDemandSearchExecuted: boolean = false;
+    uploadFileName = '';
+    uploadedPaymentRows: any[] = [];
+    uploadPreviewColumns: string[] = [];
+    uploadValidationIssues: UploadValidationIssue[] = [];
+    isUploadValidated = false;
+    isProcessingUpload = false;
+    hasUploadProcessed = false;
+    isUploadDragOver = false;
+    showUploadPreviewDialog = false;
+    uploadTemplateHref = '';
 
     constructor(
         private fb: FormBuilder,
@@ -112,21 +130,75 @@ export class FundAllocationComponent {
         this.fundForm = this.fb.group({
             startDate: [this.today],
             endDate: [this.today],
-            projectName: ['', Validators.required],
+            projectName: [''],
             groupleader: [],
             workerProfile: [],
             fund: [],
             period: [''],
             paymentFor: [''],
-            reportType: ['', Validators.required]
+            reportType: [this.initialReportType, Validators.required]
         });
+        this.selectedStatus = this.initialReportType === 'payment' ? 'APPROVED' : 'PENDING';
         this.updatePeriodValidation();
+        this.refreshUploadTemplateHref();
         this.companyId = this.authService.isLogIntType()?.companyid.toString();
         this.loadDropdown('ACTIVEPROJECT', '', '', 'projectNameOptions');
         this.loadDropdown('PERIOD', '', '', 'periodOptions');
     }
 
-   onReportTypeChange(type: 'demand' | 'payment') {
+    private buildWorkerRateRows(data: any[]): WorkerRateRow[] {
+        return data.map((row: any) => ({
+            profileid: row['Worker Id']?.toString().trim() ?? '',
+            rate: row['Rate']?.toString().trim() ?? ''
+        }));
+    }
+
+    private bulkUpdateWorkerProfileRate(operation: BulkUpdateWorkerProfileRate['p_operation']) {
+        return this.fundService.bulkUpdateWorkerProfileRate({
+            p_company_id: this.uploadCompanyId,
+            p_operation: operation,
+            p_uploaded_file_name: this.uploadFileName,
+            p_uploaded_by: this.uploadUserId,
+            p_data: this.buildWorkerRateRows(this.uploadedPaymentRows)
+        });
+    }
+
+    private processWorkerRateUpload(operation: BulkUpdateWorkerProfileRate['p_operation']): void {
+        this.isProcessingUpload = true;
+        if (operation === 'VALIDATE') this.isUploadValidated = false;
+        this.bulkUpdateWorkerProfileRate(operation).subscribe({
+            next: (response: any) => {
+                this.isProcessingUpload = false;
+                const issues = this.readStageValidationIssues(response);
+                if (issues.length) {
+                    this.uploadValidationIssues.push(...issues);
+                    this.isUploadValidated = true;
+                    this.showUploadPreviewDialog = false;
+                    return;
+                }
+
+                if (operation === 'VALIDATE') {
+                    this.isUploadValidated = true;
+                    this.showUploadPreviewDialog = true;
+                    this.showSuccess(`Validation complete. ${this.uploadedPaymentRows.length} row(s) are ready to process.`);
+                    return;
+                }
+
+                this.hasUploadProcessed = true;
+                this.showUploadPreviewDialog = false;
+                this.showSuccess(response?.data?.message || `${this.uploadedPaymentRows.length} worker rate(s) updated successfully.`);
+            },
+            error: (error: any) => {
+                this.isProcessingUpload = false;
+                const issues = this.readStageValidationIssues(error);
+                this.uploadValidationIssues.push(...(issues.length ? issues : [this.createStageRequestIssue(error)]));
+                this.isUploadValidated = true;
+                this.showUploadPreviewDialog = false;
+            }
+        });
+    }
+
+    onReportTypeChange(type: 'demand' | 'payment') {
         this.fundForm.get('reportType')?.setValue(type);
         this.fundForm.get('projectName')?.reset('');
         this.recordReport = [];
@@ -145,23 +217,35 @@ export class FundAllocationComponent {
         } else {
             this.selectedStatus = 'APPROVED';
             this.hasDemandSearchExecuted = false;
+            if (!this.fundForm.get('paymentFor')?.value) {
+                this.fundForm.get('paymentFor')?.setValue('GROUP_LEADER');
+            }
             this.fundForm.get('groupleader')?.reset('');
             this.fundForm.get('workerProfile')?.reset('');
             this.workerOptions = [];
             this.updatePeriodValidation();
         }
+        this.refreshUploadTemplateHref();
     }
 
-    private updatePeriodValidation() {
+    protected updatePeriodValidation() {
         const periodControl = this.fundForm.get('period');
         const paymentfor = this.fundForm.get('paymentFor');
         const project = this.fundForm.get('projectName');
         if (!periodControl) return;
 
         if (this.isPaymentReport) {
-            periodControl.setValidators([Validators.required]);
+            if (this.selectedPaymentFor === 'WORKER_RATE') {
+                periodControl.clearValidators();
+            } else {
+                periodControl.setValidators([Validators.required]);
+            }
             paymentfor?.setValidators([Validators.required]);
-            project?.setValidators([Validators.required]);
+            if (this.selectedPaymentFor === 'WORKER' || this.selectedPaymentFor === 'WORKER_RATE') {
+                project?.setValidators([Validators.required]);
+            } else {
+                project?.clearValidators();
+            }
         } else {
             periodControl.clearValidators();
             paymentfor?.clearValidators();
@@ -170,6 +254,7 @@ export class FundAllocationComponent {
 
         periodControl.updateValueAndValidity();
         paymentfor?.updateValueAndValidity();
+        project?.updateValueAndValidity();
     }
 
     get isPaymentReport(): boolean {
@@ -178,6 +263,80 @@ export class FundAllocationComponent {
 
     get selectedPaymentFor(): string {
         return this.fundForm.get('paymentFor')?.value;
+    }
+
+    get downloadValidationMessage(): string {
+        if (!this.isPaymentReport) return '';
+
+        const paymentFor = this.selectedPaymentFor;
+        const hasSite = !!this.fundForm.get('projectName')?.value;
+        const hasPeriod = !!this.fundForm.get('period')?.value;
+
+        if (!paymentFor || (paymentFor !== 'WORKER_RATE' && !hasPeriod)) {
+            return paymentFor === 'WORKER' ? 'Please select Period, Payment For, and Site before downloading Worker payments.' : 'Please select Period and Payment For before downloading.';
+        }
+        if ((paymentFor === 'WORKER' || paymentFor === 'WORKER_RATE') && !hasSite) {
+            return paymentFor === 'WORKER' ? 'Please select Period, Payment For, and Site before downloading Worker payments.' : 'Please select Site before downloading Worker rates.';
+        }
+        return '';
+    }
+
+    get uploadTemplateName(): string {
+        switch (this.selectedPaymentFor) {
+            case 'GROUP_LEADER':
+                return 'GROUP_LEADER_PAYMENT_UPLOAD_TEMPLATE.xlsx';
+            case 'WORKER':
+                return 'WORKER_PAYMENT_UPLOAD_TEMPLATE.xlsx';
+            case 'WORKER_RATE':
+                return 'WORKER_RATE_UPLOAD_TEMPLATE.xlsx';
+            default:
+                return 'PAYMENT_UPLOAD_TEMPLATE.xlsx';
+        }
+    }
+
+    private refreshUploadTemplateHref(): void {
+        if (!this.selectedPaymentFor) {
+            this.uploadTemplateHref = '';
+            return;
+        }
+
+        let headers: string[];
+        switch (this.selectedPaymentFor) {
+            case 'GROUP_LEADER':
+                headers = ['Period Id', 'Period Name', 'Site Id', 'Site Name', 'Group Leader Id', 'Group Leader Name', 'Head', 'Transaction Date', 'Type(P/G)', 'Active', 'Amount', 'Remark'];
+                break;
+            case 'WORKER':
+                headers = [
+                    'Period Id',
+                    'Period Name',
+                    'Site Id',
+                    'Site Name',
+                    'Group Leader Id',
+                    'Group Leader Name',
+                    'Worker Id',
+                    'Worker Code',
+                    'Worker Name',
+                    'Worker Mobile',
+                    'Worker Aadhaar',
+                    'Head',
+                    'Transaction Date',
+                    'Type(P/W)',
+                    'Active',
+                    'Amount',
+                    'Remark'
+                ];
+                break;
+            case 'WORKER_RATE':
+                headers = ['Site Id', 'Site Name', 'Group Leader Id', 'Group Leader Name', 'Worker Id', 'Worker Code', 'Worker Name', 'Worker Mobile', 'Worker Aadhaar', 'Is Active', 'Trade', 'Rate'];
+                break;
+            default:
+                headers = ['Select an upload type to download its template'];
+        }
+        const worksheet = XLSX.utils.aoa_to_sheet([headers]);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Upload Template');
+        const base64 = XLSX.write(workbook, { bookType: 'xlsx', type: 'base64' });
+        this.uploadTemplateHref = `data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,${base64}`;
     }
 
     private refreshWorkerOptions(records: any[] = []) {
@@ -227,13 +386,13 @@ export class FundAllocationComponent {
         const $api = type === 'ACTIVEPROJECT' || type === 'PERIOD' ? this.setupService.onDropdownDetailsPublic(payload) : this.setupService.onDropdownDetails(payload);
         $api.subscribe({
             next: (res) => {
-                 const data = Array.isArray(res?.data) ? res.data : [];
+                const data = Array.isArray(res?.data) ? res.data : [];
                 if (key === 'workerOptions') {
                     this.workerOptions = this.normalizeWorkerOptions(data);
                 } else {
                     this[key] = data;
                 }
-                if(type=== 'PROJECTBASEDWORKER'){
+                if (type === 'PROJECTBASEDWORKER') {
                     this.workerOptions = this.normalizeWorkerOptions(data);
                 }
                 if (key === 'recordReport') {
@@ -255,7 +414,7 @@ export class FundAllocationComponent {
         });
     }
 
-    private getReportRequestParams(mode: 'search' | 'download' = 'search'): { returnType: string; returnValue: string | null; username?: string; option2: string } | null {
+    private getReportRequestParams(mode: 'search' | 'download' = 'search'): { returnType: string; returnValue: string | null; username?: string | null; option2: string | null } | null {
         if (!this.isPaymentReport) {
             return { returnType: 'REQINPUT', returnValue: null, option2: '' };
         }
@@ -264,12 +423,24 @@ export class FundAllocationComponent {
         const projectId = this.fundForm.get('projectName')?.value?.toString();
         const periodId = this.fundForm.get('period')?.value;
 
-        if (!paymentFor || !projectId || !periodId) {
+        const isWorkerRateDownload = mode === 'download' && paymentFor === 'WORKER_RATE';
+        const requiresSite = paymentFor === 'WORKER' || paymentFor === 'WORKER_RATE';
+        if (!paymentFor || (!isWorkerRateDownload && !periodId) || (requiresSite && !projectId)) {
             return null;
         }
 
-        const periodValue = this.periodOptions.find((p) => p.period_id === periodId);
+        if (isWorkerRateDownload) {
+            return {
+                returnType: 'WORKERBULKRATE',
+                returnValue: projectId,
+                username: null,
+                option2: null
+            };
+        }
+
+        const periodValue = this.periodOptions.find((p) => p.period_id?.toString() === periodId?.toString());
         const periodName = periodValue?.period_name?.toString();
+
         const baseType = paymentFor === 'GROUP_LEADER' ? 'GROUPBULKPAYMENT' : 'WORKERBULKPAYMENT';
 
         if (mode === 'download') {
@@ -281,7 +452,6 @@ export class FundAllocationComponent {
             };
         }
 
-        
         return {
             returnType: `GET${baseType}`,
             returnValue: this.selectedStatus,
@@ -296,35 +466,50 @@ export class FundAllocationComponent {
 
         this.loadDropdown(params.returnType, params.returnValue, params.username ?? null, 'recordReport', params.option2);
     }
-   
+
     onProjectChange(data: any): void {
         this.fundForm.get('groupleader')?.reset('');
         this.fundForm.get('workerProfile')?.reset('');
         this.recordReport = [];
-       
+        this.resetUploadValidation();
+
+        const projectId = data?.value;
+        if (projectId === null || projectId === undefined || projectId === '') {
+            this.groupLeaderOptions = [];
+            this.workerOptions = [];
+            return;
+        }
+
         if (!this.isPaymentReport) {
             this.hasDemandSearchExecuted = false;
         }
 
         if (this.isPaymentReport) {
-            this.loadDropdown('PROJECTBASEDWORKER', data.value, '', 'workerOptions');
+            this.loadDropdown('PROJECTBASEDWORKER', projectId, '', 'workerOptions');
         }
-         const payload: DropdownParamter = {
-              returnType: 'ACTIVEGROUPLEADER',
-              returnValue: data.value.toString(),
-              username:'',
-              option1: this.companyId,
-              option2: ''
-          };
-          this.setupService.onDropdownDetails(payload).subscribe({
-            next:(res)=> this.groupLeaderOptions = res.data
-          })
+        const payload: DropdownParamter = {
+            returnType: 'ACTIVEGROUPLEADER',
+            returnValue: projectId.toString(),
+            username: '',
+            option1: this.companyId,
+            option2: ''
+        };
+        this.setupService.onDropdownDetails(payload).subscribe({
+            next: (res) => (this.groupLeaderOptions = Array.isArray(res?.data) ? res.data : [])
+        });
     }
 
     onPaymentForChange(): void {
         this.fundForm.get('groupleader')?.reset('');
         this.fundForm.get('workerProfile')?.reset('');
         this.recordReport = [];
+        this.resetUploadValidation();
+        this.updatePeriodValidation();
+        this.refreshUploadTemplateHref();
+    }
+
+    onPaymentCriteriaChange(): void {
+        this.resetUploadValidation();
     }
 
     private isExcludedRequisitionFor(row: any): boolean {
@@ -335,7 +520,7 @@ export class FundAllocationComponent {
     applyStatusFilter() {
         const selectedStatus = this.selectedStatus?.toString().toUpperCase().trim();
 
-       if (!this.isPaymentReport) {
+        if (!this.isPaymentReport) {
             if (!this.hasDemandSearchExecuted) {
                 this.recordReport = [];
                 return;
@@ -386,7 +571,7 @@ export class FundAllocationComponent {
         this.applyStatusFilter();
     }
 
-     Onreturndropdowndetails() {
+    Onreturndropdowndetails() {
         if (this.isPaymentReport) {
             this.runPaymentSearch();
         } else {
@@ -398,85 +583,352 @@ export class FundAllocationComponent {
         this.first = event.first;
         this.rowsPerPage = event.rows;
     }
-    
-    onFileUpload(event: any) {
-        const file = event.target.files[0];
+
+    onFileUpload(event: Event): void {
+        const input = event.target as HTMLInputElement;
+        const file = input.files?.[0];
         if (!file) return;
+
+        const readFile = () => this.readFundAllocationFile(file, () => (input.value = ''));
+        if (this.isPaymentReport) {
+            readFile();
+            return;
+        }
 
         this.confirmationService.confirm({
             header: 'Upload Confirmation',
             message: `Are you sure you want to upload "${file.name}"?`,
             acceptLabel: 'Yes',
             rejectLabel: 'Cancel',
-            accept: () => {
-                const reader = new FileReader();
-
-                reader.onload = (e: any) => {
-                    try {
-                        const binaryStr = e.target.result;
-                        const workbook = XLSX.read(binaryStr, { type: 'binary' });
-                        const sheetName = workbook.SheetNames[0];
-                        const worksheet = workbook.Sheets[sheetName];
-                        const data = XLSX.utils.sheet_to_json(worksheet, { raw: false });
-
-                        if (!data || data.length === 0) {
-                            this.errorSuccess('The uploaded file has no data. Please check the file and try again.');
-                            event.target.value = '';
-                            return;
-                        }
-
-                        const extraCols = ['Approved Date'];
-                        this.excelColumns = Object.keys(data[0] as object).filter((col) => !extraCols.includes(col));
-
-                        this.recordReport = data.map((item: any) => {
-                            const row: any = {};
-                            this.excelColumns.forEach((col) => {
-                                row[col] = item[col] ?? '';
-                            });
-                            row['Approved Date'] = item['Approved Date'] ?? '';
-                            return row;
-                        });
-
-                        this.isExcelUploaded = true;
-                        this.submitFundAllocation(data);
-                    } catch (err) {
-                        this.errorSuccess('Failed to read the file. Please upload a valid Excel file (.xlsx / .xls).');
-                    }
-
-                    event.target.value = '';
-                };
-
-                reader.onerror = () => {
-                    this.errorSuccess('File could not be read. Please try again.');
-                    event.target.value = '';
-                };
-
-                reader.readAsBinaryString(file);
-            },
-            reject: () => {
-                event.target.value = '';
-            }
+            accept: readFile,
+            reject: () => (input.value = '')
         });
     }
 
-link(){
-    const link = document.createElement('a');
-    link.href = '/layout/templates/PAYMENT_UPLOAD_TEMPLATE.xlsx';
-    link.download = 'PAYMENT_UPLOAD_TEMPLATE.xlsx';
-    link.click();
-}
+    onFileDrop(event: DragEvent): void {
+        event.preventDefault();
+        this.isUploadDragOver = false;
+        const file = event.dataTransfer?.files?.[0];
+        if (file) this.readFundAllocationFile(file);
+    }
+
+    onFileDragOver(event: DragEvent): void {
+        event.preventDefault();
+        this.isUploadDragOver = true;
+    }
+
+    onFileDragLeave(event: DragEvent): void {
+        event.preventDefault();
+        this.isUploadDragOver = false;
+    }
+
+    private readFundAllocationFile(file: File, onComplete: () => void = () => undefined): void {
+        if (!/\.xlsx?$/i.test(file.name)) {
+            this.errorSuccess('Please upload an Excel file (.xlsx or .xls).');
+            onComplete();
+            return;
+        }
+        if (file.size > 10 * 1024 * 1024) {
+            this.errorSuccess('The file exceeds the 10 MB upload limit.');
+            onComplete();
+            return;
+        }
+        if (this.isPaymentReport && !this.fundForm.get('paymentFor')?.value) {
+            this.fundForm.get('paymentFor')?.markAsTouched();
+            // this.fundForm.get('period')?.markAsTouched();
+            this.errorSuccess('Select a upload type before validating a file.');
+            onComplete();
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (event: ProgressEvent<FileReader>) => {
+            try {
+                const workbook = XLSX.read(event.target?.result, { type: 'array' });
+                const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                const sheetRows = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false, defval: '' }) as any[][];
+                const headers = (sheetRows[0] ?? []).map(
+                    (column) =>
+                        column
+                            ?.toString()
+                            .replace(/^\uFEFF/, '')
+                            .trim() ?? ''
+                );
+                const sourceRows = sheetRows.slice(1);
+                const data = sourceRows.map((row) => Object.fromEntries(headers.map((column, index) => [column, row[index] ?? ''])));
+                if (data.length === 0) {
+                    this.errorSuccess('The uploaded file has no data. Please check the file and try again.');
+                    return;
+                }
+
+                if (this.isPaymentReport) {
+                    if (this.selectedPaymentFor === 'WORKER_RATE') {
+                        this.validateWorkerRateUpload(data, file.name, headers, sourceRows);
+                    } else {
+                        this.validatePaymentUpload(data, file.name, headers, sourceRows);
+                    }
+                } else {
+                    const extraCols = ['Approved Date'];
+                    this.excelColumns = Object.keys(data[0]).filter((column) => !extraCols.includes(column));
+                    this.recordReport = data.map((item) => ({
+                        ...Object.fromEntries(this.excelColumns.map((column) => [column, item[column] ?? ''])),
+                        'Approved Date': item['Approved Date'] ?? ''
+                    }));
+                    this.isExcelUploaded = true;
+                    this.submitFundAllocation(data);
+                }
+            } catch {
+                this.errorSuccess('Failed to read the file. Please upload a valid Excel file (.xlsx / .xls).');
+            } finally {
+                onComplete();
+            }
+        };
+        reader.onerror = () => {
+            this.errorSuccess('File could not be read. Please try again.');
+            onComplete();
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    private validatePaymentUpload(data: any[], fileName: string, headers: string[], sourceRows: any[][]): void {
+        this.resetUploadValidation();
+        this.uploadFileName = fileName;
+        this.hasUploadProcessed = false;
+        const isWorkerUpload = this.selectedPaymentFor === 'WORKER';
+        const typeColumn = isWorkerUpload ? 'Type(P/W)' : 'Type(P/G)';
+
+        const requiredColumns = isWorkerUpload
+            ? ['Period Id', 'Period Name', 'Site Id', 'Site Name', 'Group Leader Id', 'Group Leader Name', 'Worker Id', 'Worker Code', 'Worker Name', 'Worker Mobile', 'Worker Aadhaar', 'Head', 'Transaction Date', typeColumn, 'Active', 'Amount']
+            : ['Period Id', 'Period Name', 'Site Id', 'Site Name', 'Group Leader Id', 'Group Leader Name', 'Head', 'Transaction Date', typeColumn, 'Active', 'Amount'];
+        const missingColumns = requiredColumns.filter((column) => !headers.includes(column));
+
+        for (const column of missingColumns) {
+            this.uploadValidationIssues.push({ rowNumber: 1, column, value: '', issue: `Required column "${column}" is missing.`, type: 'Error' });
+        }
+
+        requiredColumns.forEach((column, index) => {
+            if (headers[index] !== column && !missingColumns.includes(column)) {
+                this.uploadValidationIssues.push({
+                    rowNumber: 1,
+                    column,
+                    value: headers[index] ?? '',
+                    issue: `Column ${String.fromCharCode(65 + index)} must be "${column}" but found "${headers[index] || 'blank'}".`,
+                    type: 'Error'
+                });
+            }
+        });
+
+        const nonBlankRows: any[] = [];
+        data.forEach((row, index) => {
+            const values = sourceRows[index] ?? [];
+            if (values.every((value) => value === null || value === undefined || value.toString().trim() === '')) {
+                return;
+            }
+
+            nonBlankRows.push(row);
+            const rowNumber = index + 2;
+            const addIssue = (column: string, issue: string, type: UploadValidationIssue['type'], value = row[column]): void => {
+                this.uploadValidationIssues.push({ rowNumber, column, value: value?.toString?.() ?? '', issue, type });
+            };
+
+            if (!isWorkerUpload) {
+                row[typeColumn] = this.getTypeForHead(row['Head']);
+            } else {
+                row[typeColumn] = row[typeColumn]?.toString().trim().toUpperCase() ?? '';
+            }
+
+            requiredColumns.forEach((column, columnIndex) => {
+                const value = values[columnIndex];
+                if (value === null || value === undefined || value.toString().trim() === '') {
+                    addIssue(column, `Cell ${String.fromCharCode(65 + columnIndex)} cannot be blank.`, 'Error', value);
+                }
+            });
+
+            const allowedHeads = ['KHARCHI', 'ADVANCE', 'COOK_CHARGE', 'ADMIN_CHARGE', 'GROSS', 'HOME_ADVANCE', 'FARE_ADVANCE', 'PAYMENT', 'WRITE_OFF'];
+            const normalizedHead = this.normalizePaymentHead(row['Head']);
+            if (!allowedHeads.includes(normalizedHead)) {
+                addIssue('Head', `Head is incorrect. Please refer download sample template`, 'Error');
+            }
+
+            const rawType = (values[requiredColumns.indexOf(typeColumn)] ?? '').toString().trim().toUpperCase();
+            const expectedType = this.getTypeForHead(row['Head']);
+
+            row[typeColumn] = isWorkerUpload ? rawType : expectedType;
+            if (rawType && rawType !== expectedType) {
+                addIssue(typeColumn, `Type must be ${expectedType} for Head "${row['Head']}".`, 'Error', rawType);
+            }
+
+            const amountValue = row['Amount']?.toString().trim();
+            if (!amountValue || !Number.isFinite(Number(amountValue))) {
+                addIssue('Amount', 'Amount should not be zero.', 'Error');
+            } else if (Number(amountValue) === 0) {
+                addIssue('Amount', 'Amount cannot be 0.', 'Error');
+            }
+
+            const transactionDate = row['Transaction Date']?.toString().trim() ?? '';
+            if (transactionDate) {
+                const parsedDate = this.parseUploadDate(transactionDate);
+
+                if (!/^\d{2}\/\d{2}\/\d{4}$/.test(transactionDate)) {
+                    addIssue('Transaction Date', 'Transaction Date should be in dd/mm/yyyy format.', 'Error');
+                } else if (Number.isNaN(parsedDate.getTime())) {
+                    addIssue('Transaction Date', 'Transaction Date is not a valid calendar date.', 'Error');
+                } else {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    if (parsedDate > today) {
+                        addIssue('Transaction Date', 'Transaction date is in the future.', 'Warning');
+                    }
+                }
+            }
+
+            const active = row['Active']?.toString().trim().toLowerCase();
+            if (['false', '0', 'no', 'n', 'inactive'].includes(active)) {
+                addIssue('Active', 'This record is marked inactive.', 'Warning');
+            }
+        });
+
+        this.uploadedPaymentRows = nonBlankRows;
+        this.uploadPreviewColumns = headers;
+        this.isUploadValidated = true;
+        if (nonBlankRows.length === 0) {
+            this.errorSuccess('The uploaded file has no data rows. Please check the file and try again.');
+            this.resetUploadValidation();
+            return;
+        }
+        if (this.uploadErrorCount === 0) {
+            if (!isWorkerUpload) {
+                this.validateStagedGroupLeaderPayment();
+                return;
+            }
+            this.validateStagedWorkerPayment();
+        }
+    }
+
+    private validateWorkerRateUpload(data: any[], fileName: string, headers: string[], sourceRows: any[][]): void {
+        this.resetUploadValidation();
+        this.uploadFileName = fileName;
+        const requiredColumns = ['Site Id', 'Site Name', 'Group Leader Id', 'Group Leader Name', 'Worker Id', 'Worker Code', 'Worker Name', 'Worker Mobile', 'Worker Aadhaar', 'Is Active', 'Trade', 'Rate'];
+        const missingColumns = requiredColumns.filter((column) => !headers.includes(column));
+
+        for (const column of missingColumns) {
+            this.uploadValidationIssues.push({ rowNumber: 1, column, value: '', issue: `Required column "${column}" is missing.`, type: 'Error' });
+        }
+        requiredColumns.forEach((column, index) => {
+            if (headers[index] !== column && !missingColumns.includes(column)) {
+                this.uploadValidationIssues.push({
+                    rowNumber: 1,
+                    column,
+                    value: headers[index] ?? '',
+                    issue: `Column ${String.fromCharCode(65 + index)} must be "${column}" but found "${headers[index] || 'blank'}".`,
+                    type: 'Error'
+                });
+            }
+        });
+
+        const nonBlankRows: any[] = [];
+        data.forEach((row, index) => {
+            const values = sourceRows[index] ?? [];
+            if (values.every((value) => value === null || value === undefined || value.toString().trim() === '')) return;
+            nonBlankRows.push(row);
+
+            const rowNumber = index + 2;
+
+            requiredColumns.forEach((column, columnIndex) => {
+                const value = values[columnIndex];
+                if (value === null || value === undefined || value.toString().trim() === '') {
+                    this.uploadValidationIssues.push({
+                        rowNumber,
+                        column,
+                        value: '',
+                        issue: `Cell ${String.fromCharCode(65 + columnIndex)} cannot be blank.`,
+                        type: 'Error'
+                    });
+                }
+            });
+
+            const profileId = row['Worker Id']?.toString().trim() ?? '';
+            const rate = row['Rate']?.toString().trim() ?? '';
+            if (profileId && (!/^\d+$/.test(profileId) || Number(profileId) <= 0)) {
+                this.uploadValidationIssues.push({ rowNumber, column: 'Worker Id', value: profileId, issue: 'Worker Id must be a positive numeric profile ID.', type: 'Error' });
+            }
+            if (rate && !Number.isFinite(Number(rate))) {
+                this.uploadValidationIssues.push({ rowNumber, column: 'Rate', value: rate, issue: 'Rate must be a valid number.', type: 'Error' });
+            }
+        });
+
+        this.uploadedPaymentRows = nonBlankRows;
+        this.uploadPreviewColumns = headers;
+        this.isUploadValidated = true;
+        if (nonBlankRows.length === 0) {
+            this.errorSuccess('The uploaded file has no data rows. Please check the file and try again.');
+            this.resetUploadValidation();
+            return;
+        }
+        if (this.uploadErrorCount === 0) {
+            this.processWorkerRateUpload('VALIDATE');
+        }
+    }
+
+    get uploadErrorCount(): number {
+        return this.uploadValidationIssues.filter((issue) => issue.type === 'Error').length;
+    }
+
+    get uploadWarningCount(): number {
+        return this.uploadValidationIssues.filter((issue) => issue.type === 'Warning').length;
+    }
+
+    get validPaymentRowCount(): number {
+        if (this.uploadValidationIssues.some((issue) => issue.type === 'Error' && issue.rowNumber === 1)) return 0;
+        const invalidRows = new Set(this.uploadValidationIssues.filter((issue) => issue.type === 'Error' && issue.rowNumber > 1).map((issue) => issue.rowNumber));
+        return Math.max(0, this.uploadedPaymentRows.length - invalidRows.size);
+    }
+
+    showUploadPreview(): void {
+        if (!this.isUploadValidated || this.uploadErrorCount > 0 || this.validPaymentRowCount === 0 || this.isProcessingUpload || this.hasUploadProcessed) return;
+        this.showUploadPreviewDialog = true;
+    }
+
+    processValidatedUpload(): void {
+        if (!this.isUploadValidated || this.uploadErrorCount > 0 || this.validPaymentRowCount === 0 || this.isProcessingUpload || this.hasUploadProcessed) return;
+        if (this.isPaymentReport && this.selectedPaymentFor === 'GROUP_LEADER') {
+            this.processStagedGroupLeaderPayment();
+            return;
+        }
+        if (this.isPaymentReport && this.selectedPaymentFor === 'WORKER') {
+            this.processStagedWorkerPayment();
+            return;
+        }
+        if (this.isPaymentReport && this.selectedPaymentFor === 'WORKER_RATE') {
+            this.processWorkerRateUpload('PROCESS');
+            return;
+        }
+        this.submitFundAllocation(this.uploadedPaymentRows);
+    }
+
+    resetUploadValidation(): void {
+        this.uploadFileName = '';
+        this.uploadedPaymentRows = [];
+        this.uploadPreviewColumns = [];
+        this.uploadValidationIssues = [];
+        this.isUploadValidated = false;
+        this.hasUploadProcessed = false;
+        this.showUploadPreviewDialog = false;
+    }
+
+    private parseUploadDate(value: string): Date {
+        const dayFirstDate = value.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})$/);
+        if (!dayFirstDate) return new Date(value);
+
+        const year = Number(dayFirstDate[3]) < 100 ? 2000 + Number(dayFirstDate[3]) : Number(dayFirstDate[3]);
+        const date = new Date(year, Number(dayFirstDate[2]) - 1, Number(dayFirstDate[1]));
+        if (date.getFullYear() !== year || date.getMonth() !== Number(dayFirstDate[2]) - 1 || date.getDate() !== Number(dayFirstDate[1])) {
+            return new Date(Number.NaN);
+        }
+        return date;
+    }
 
     submitFundAllocation(data: any[]) {
-        if (this.isPaymentReport && this.selectedPaymentFor === 'GROUP_LEADER') {
-            this.submitPaymentGroupLeaderUpload(data);
-            return;
-        }
-
-        if (this.isPaymentReport && this.selectedPaymentFor === 'WORKER') {
-            this.submitPaymentWorkerUpload(data);
-            return;
-        }
-
         const payload: FundAllocationUpload[] = data.map((row: any) => ({
             requisition_id: row['Requisition Id'],
             approved_amount: row['Approved Amount'] ?? ''
@@ -484,40 +936,243 @@ link(){
         this.runUpload(data.length, this.fundService.uploadApprovedAmount(this.uploadCompanyId, payload, this.uploadUserId));
     }
 
-    private submitPaymentGroupLeaderUpload(data: any[]) {
-        const payload: PaymentGroupLeaderUpload[] = data.map((row: any) => ({
-            period_id: Number(row['Period Id']),
-            period_name: row['Period Name'] ?? '',
-            profile_id: Number(row['Group Leader Id']),
-            profile_name: row['Group Leader Name'] ?? '',
-            project_id: Number(row['Project Id']),
-            project_name: row['Site Name'] ?? '',
-            uploaded_amount: Number(row['Amount']) || 0,
-            Type_P_G: row['Type(P/G)'] ?? '',
-            head: row['Head'] ?? '',
-            transaction_date: row['Transaction Date'] ? new Date(row['Transaction Date']) : null,
-            remarks: row['Remark'] ?? ''
-        }));
-
-        this.runUpload(data.length, this.fundService.uploadPaymentGroupLeader(this.uploadCompanyId, payload, this.uploadUserId));
+    private normalizePaymentHead(head: unknown): string {
+        return (
+            head
+                ?.toString()
+                .trim()
+                .toUpperCase()
+                .replace(/[\s-]+/g, '_') ?? ''
+        );
     }
 
-    private submitPaymentWorkerUpload(data: any[]) {
-        const payload: PaymentWorkerUpload[] = data.map((row: any) => ({
+    private getTypeForHead(head: unknown): 'P' | 'G' | 'W' {
+        const normalizedHead = this.normalizePaymentHead(head);
+        if (normalizedHead === 'WRITE_OFF') {
+            return 'W';
+        }
+        if (normalizedHead === 'GROSS') {
+            return 'G';
+        }
+        return 'P';
+    }
+
+    private buildStagedGroupLeaderRows(data: any[]): GroupLeaderPaymentRow[] {
+        return data.map((row: any) => ({
             period_id: Number(row['Period Id']),
             period_name: row['Period Name'] ?? '',
-            profile_id: Number(row['Profile Id']),
-            profile_code: row['Worker Code'] ?? '',
-            group_id: Number(row['Group Id']),
-            group_name: row['Group Leader Name'] ?? '',
-            profile_name: row['Worker Name'] ?? '',
-            project_id: Number(row['Project Id']),
-            project_name: row['Site Name'] ?? '',
-            uploaded_amount: Number(row['Amount']) || 0,
-            Type_P_G: row['Type(P/G)'] ?? ''
+            project_id: Number(row['Site Id']),
+            group_leader_id: Number(row['Group Leader Id']),
+            site_name: row['Site Name'] ?? '',
+            group_leader_name: row['Group Leader Name'] ?? '',
+            head: this.normalizePaymentHead(row['Head']),
+            transaction_date: row['Transaction Date']?.toString().trim() ?? '',
+            transaction_type: this.getTypeForHead(row['Head']),
+            active: ['N', 'NO', 'FALSE', '0', 'INACTIVE'].includes(row['Active']?.toString().trim().toUpperCase()) ? 'N' : 'Y',
+            amount: Number(row['Amount']),
+            remark: row['Remark']?.toString() ?? ''
         }));
+    }
 
-        this.runUpload(data.length, this.fundService.uploadPaymentWorker(this.uploadCompanyId, payload, this.uploadUserId));
+    private stageGroupLeaderPayment(operation: StageGroupLeaderPayment['p_operation'], data: GroupLeaderPaymentRow[] | null) {
+        return this.fundService.stageGroupleaderPayment({
+            p_company_id: this.uploadCompanyId,
+            p_operation: operation,
+            p_uploaded_file_name: this.uploadFileName,
+            p_uploaded_by: this.uploadUserId,
+            p_data: data
+        });
+    }
+
+    private buildStagedWorkerRows(data: any[]): WorkerPaymentRow[] {
+        return data.map((row: any) => ({
+            period_id: row['Period Id']?.toString().trim() ?? '',
+            profile_id: row['Worker Id']?.toString().trim() ?? '',
+            project_id: row['Site Id']?.toString().trim() ?? '',
+            group_id: row['Group Leader Id']?.toString().trim() ?? '',
+            group_leader_name: row['Group Leader Name']?.toString().trim() ?? '',
+            site_name: row['Site Name']?.toString().trim() ?? '',
+            period_name: row['Period Name']?.toString().trim() ?? '',
+            worker_code: row['Worker Code']?.toString().trim() ?? '',
+            worker_mobile: row['Worker Mobile']?.toString().trim() ?? '',
+            worker_aadhaar: row['Worker Aadhaar']?.toString().trim() ?? '',
+            worker_name: row['Worker Name']?.toString().trim() ?? '',
+            head: this.normalizePaymentHead(row['Head']),
+            transaction_type: row['Type(P/W)']?.toString().trim().toUpperCase() ?? '',
+            active: ['N', 'NO', 'FALSE', '0', 'INACTIVE'].includes(row['Active']?.toString().trim().toUpperCase()) ? 'N' : 'Y',
+            amount: row['Amount']?.toString().trim() ?? '',
+            remark: row['Remark']?.toString() ?? '',
+            transaction_date: row['Transaction Date']?.toString().trim() ?? ''
+        }));
+    }
+
+    private stageWorkerPayment(operation: StageWorkerPayment['p_operation'], data: WorkerPaymentRow[] | null) {
+        return this.fundService.stageWorkerPayment({
+            p_company_id: this.uploadCompanyId,
+            p_operation: operation,
+            p_uploaded_file_name: this.uploadFileName,
+            p_uploaded_by: this.uploadUserId,
+            p_data: data
+        });
+    }
+
+    private validateStagedGroupLeaderPayment(): void {
+        this.isProcessingUpload = true;
+        this.isUploadValidated = false;
+        this.stageGroupLeaderPayment('VALIDATE', this.buildStagedGroupLeaderRows(this.uploadedPaymentRows)).subscribe({
+            next: (response: any) => {
+                this.isProcessingUpload = false;
+                const issues = this.readStageValidationIssues(response);
+                if (issues.length) {
+                    this.uploadValidationIssues.push(...issues);
+                    this.isUploadValidated = true;
+                    return;
+                }
+
+                this.isUploadValidated = true;
+                this.showUploadPreviewDialog = true;
+                this.showSuccess(`Validation complete. ${this.uploadedPaymentRows.length} row(s) are ready to process.`);
+            },
+            error: (error: any) => {
+                this.isProcessingUpload = false;
+                const issues = this.readStageValidationIssues(error);
+                this.uploadValidationIssues.push(...(issues.length ? issues : [this.createStageRequestIssue(error)]));
+                this.isUploadValidated = true;
+            }
+        });
+    }
+
+    private validateStagedWorkerPayment(): void {
+        this.isProcessingUpload = true;
+        this.isUploadValidated = false;
+        this.stageWorkerPayment('VALIDATE', this.buildStagedWorkerRows(this.uploadedPaymentRows)).subscribe({
+            next: (response: any) => {
+                this.isProcessingUpload = false;
+                const issues = this.readStageValidationIssues(response);
+                if (issues.length) {
+                    this.uploadValidationIssues.push(...issues);
+                    this.isUploadValidated = true;
+                    return;
+                }
+
+                this.isUploadValidated = true;
+                this.showUploadPreviewDialog = true;
+                this.showSuccess(`Validation complete. ${this.uploadedPaymentRows.length} row(s) are ready to process.`);
+            },
+            error: (error: any) => {
+                this.isProcessingUpload = false;
+                const issues = this.readStageValidationIssues(error);
+                this.uploadValidationIssues.push(...(issues.length ? issues : [this.createStageRequestIssue(error)]));
+                this.isUploadValidated = true;
+            }
+        });
+    }
+
+    private processStagedGroupLeaderPayment(): void {
+        this.isProcessingUpload = true;
+        this.stageGroupLeaderPayment('PROCESS', null).subscribe({
+            next: (response: any) => {
+                this.isProcessingUpload = false;
+                const issues = this.readStageValidationIssues(response);
+                if (issues.length) {
+                    this.uploadValidationIssues.push(...issues);
+                    this.showUploadPreviewDialog = false;
+                    return;
+                }
+                this.hasUploadProcessed = true;
+                this.showUploadPreviewDialog = false;
+                this.showSuccess(response?.data?.message || `${this.uploadedPaymentRows.length} record(s) uploaded successfully.`);
+            },
+            error: (error: any) => {
+                this.isProcessingUpload = false;
+                const issues = this.readStageValidationIssues(error);
+                this.uploadValidationIssues.push(...(issues.length ? issues : [this.createStageRequestIssue(error)]));
+                this.showUploadPreviewDialog = false;
+            }
+        });
+    }
+
+    private processStagedWorkerPayment(): void {
+        this.isProcessingUpload = true;
+        this.stageWorkerPayment('PROCESS', null).subscribe({
+            next: (response: any) => {
+                this.isProcessingUpload = false;
+                const issues = this.readStageValidationIssues(response);
+                if (issues.length) {
+                    this.uploadValidationIssues.push(...issues);
+                    this.showUploadPreviewDialog = false;
+                    return;
+                }
+                this.hasUploadProcessed = true;
+                this.showUploadPreviewDialog = false;
+                this.showSuccess(response?.data?.message || `${this.uploadedPaymentRows.length} record(s) uploaded successfully.`);
+            },
+            error: (error: any) => {
+                this.isProcessingUpload = false;
+                const issues = this.readStageValidationIssues(error);
+                this.uploadValidationIssues.push(...(issues.length ? issues : [this.createStageRequestIssue(error)]));
+                this.showUploadPreviewDialog = false;
+            }
+        });
+    }
+
+    private createStageRequestIssue(error: any): UploadValidationIssue {
+        const detail = error?.error?.message ?? error?.error ?? error?.message ?? 'Backend validation request failed.';
+        return {
+            rowNumber: 1,
+            column: '',
+            value: '',
+            issue: typeof detail === 'string' ? detail : JSON.stringify(detail),
+            type: 'Error'
+        };
+    }
+
+    private readStageValidationIssues(response: any): UploadValidationIssue[] {
+        const payload = response?.error ?? response;
+        const result = Array.isArray(payload?.data) && payload.data.length === 1 ? payload.data[0] : (payload?.data ?? payload);
+        const body =
+            result?.fn_stage_group_leader_payment ??
+            result?.stage_group_leader_payment ??
+            result?.fn_stage_worker_payment ??
+            result?.stage_worker_payment ??
+            result?.fn_bulk_update_worker_profile_rate ??
+            result?.bulk_update_worker_profile_rate ??
+            result;
+        const status = (body?.status ?? body?.result ?? payload?.status)?.toString().toUpperCase();
+        const listedIssues = body?.errors ?? body?.validation_errors ?? body?.validationErrors ?? body?.error_details ?? body?.error;
+        const rawIssues = Array.isArray(listedIssues)
+            ? listedIssues
+            : listedIssues
+              ? [typeof listedIssues === 'string' ? { message: listedIssues } : listedIssues]
+              : Array.isArray(body) && body.some((entry: any) => entry?.error || entry?.error_message || entry?.message)
+                ? body
+                : [];
+        const responseMessage = (body?.message ?? payload?.message ?? '').toString();
+        const hasErrorStatus = payload?.success === false || body?.success === false || ['ERROR', 'FAILED', 'FAILURE', 'INVALID'].some((errorStatus) => status?.includes(errorStatus)) || /\b(error|failed|invalid)\b/i.test(responseMessage);
+
+        const issues = rawIssues.map(
+            (issue: any): UploadValidationIssue => ({
+                rowNumber: Number(issue?.rowNumber ?? issue?.row_number ?? issue?.row_no ?? issue?.row ?? 1) || 1,
+                column: (issue?.column ?? issue?.column_name ?? issue?.field ?? '').toString(),
+                value: (issue?.value ?? issue?.error_value ?? '').toString(),
+                issue: (issue?.message ?? issue?.error_message ?? issue?.error ?? issue?.detail ?? JSON.stringify(issue)).toString(),
+                type: 'Error'
+            })
+        );
+
+        if (issues.length) return issues;
+        if (!hasErrorStatus) return [];
+
+        const message = body?.message ?? body?.error ?? payload?.message ?? 'Backend validation failed.';
+        return [
+            {
+                rowNumber: 1,
+                column: '',
+                value: '',
+                issue: message.toString(),
+                type: 'Error'
+            }
+        ];
     }
 
     private get uploadUserId(): number {
@@ -529,12 +1184,19 @@ link(){
     }
 
     private runUpload(recordCount: number, upload$: Observable<any>) {
+        this.isProcessingUpload = true;
         upload$.subscribe({
             next: (res: any) => {
+                this.isProcessingUpload = false;
                 const msg = res?.data?.message;
                 this.showSuccess(msg || `${recordCount} record(s) uploaded successfully.`);
+                if (this.isPaymentReport) {
+                    this.hasUploadProcessed = true;
+                    this.showUploadPreviewDialog = false;
+                }
             },
             error: (err) => {
+                this.isProcessingUpload = false;
                 console.error(err);
                 this.errorSuccess('Upload failed. Please check the file format and try again.');
             }
@@ -543,12 +1205,6 @@ link(){
 
     private runDemandSearch(): void {
         this.hasDemandSearchExecuted = false;
-
-        if (!this.fundForm.get('projectName')?.value) {
-            this.fundForm.get('projectName')?.markAsTouched();
-            this.errorSuccess('Site is required.');
-            return;
-        }
 
         const payload: DropdownParamter = {
             returnType: 'REQINPUT',
@@ -592,9 +1248,7 @@ link(){
                 });
 
                 if (groupleader) {
-                    filtered = filtered.filter(
-                        (row) => row['group_leader_name']?.toString().toLowerCase().trim() === groupleader?.toString().toLowerCase().trim()
-                    );
+                    filtered = filtered.filter((row) => row['group_leader_name']?.toString().toLowerCase().trim() === groupleader?.toString().toLowerCase().trim());
                 }
 
                 if (startDate && endDate) {
@@ -628,9 +1282,11 @@ link(){
         const params = this.getReportRequestParams('search');
         if (!params) {
             this.fundForm.get('period')?.markAsTouched();
-            this.fundForm.get('projectName')?.markAsTouched();
             this.fundForm.get('paymentFor')?.markAsTouched();
-            this.errorSuccess('Site, Period and Payment For are required.');
+            if (this.selectedPaymentFor === 'WORKER') {
+                this.fundForm.get('projectName')?.markAsTouched();
+            }
+            this.errorSuccess(this.selectedPaymentFor === 'WORKER' ? 'Period, Payment For, and Site are required for Worker payments.' : 'Period and Payment For are required.');
             return;
         }
 
@@ -714,12 +1370,17 @@ link(){
         return filtered;
     }
 
-   reset() {
+    reset() {
         const isPaymentMode = this.isPaymentReport;
         this.fundForm.reset({
             startDate: this.today,
             endDate: this.today,
+            projectName: '',
+            groupleader: '',
             workerProfile: '',
+            period: '',
+            paymentFor: 'GROUP_LEADER',
+            reportType: isPaymentMode ? 'payment' : 'demand'
         });
         this.groupLeaderOptions = [];
         this.recordReport = [];
@@ -729,6 +1390,9 @@ link(){
         this.isExcelUploaded = false;
         this.hasDemandSearchExecuted = false;
         this.selectedStatus = isPaymentMode ? 'APPROVED' : 'PENDING';
+        this.isProcessingUpload = false;
+        this.resetUploadValidation();
+        this.refreshUploadTemplateHref();
     }
 
     private buildWorksheetData(data: any[]): any[] {
@@ -748,17 +1412,34 @@ link(){
 
         const paymentFor = this.fundForm.get('paymentFor')?.value;
 
+        if (paymentFor === 'WORKER_RATE') {
+            return data.map((row: any) => ({
+                'Site Id': row.project_id ?? '',
+                'Site Name': row.project_name ?? '',
+                'Group Leader Id': row.group_leader_id ?? '',
+                'Group Leader Name': row.group_leader_name ?? '',
+                'Worker Id': row.profileid ?? '',
+                'Worker Code': row.worker_code ?? '',
+                'Worker Name': row.worker_name ?? '',
+                'Worker Mobile': row.mobileno ?? '',
+                'Worker Aadhaar': row.aadhaar_no ?? '',
+                'Is Active': row.isactive ?? '',
+                Trade: row.trade ?? '',
+                Rate: row.rate ?? ''
+            }));
+        }
+
         if (paymentFor === 'GROUP_LEADER') {
             return data.map((row: any) => ({
                 'Period Id': row.period_id ?? '',
-                'Project Id': row.project_id ?? '',
-                'Group Leader Id': row.groupleader_id ?? '',
                 'Period Name': row.period_name ?? '',
+                'Site Id': row.project_id ?? '',
                 'Site Name': row.project_name ?? '',
+                'Group Leader Id': row.groupleader_id ?? '',
                 'Group Leader Name': row.groupleader_name ?? '',
-                'Head': row.head ?? '',
-                'Transaction Date': this.datePipe.transform(row.transaction_date, 'dd/MM/yy') || '',
-                'Type(P/G)': row.type_p_g ?? '',
+                Head: row.head ?? '',
+                'Transaction Date': this.datePipe.transform(row.transaction_date, 'dd/MM/yyyy') || '',
+                'Type(P/G)': this.getTypeForHead(row.head),
                 Active: row.isactive ?? '',
                 Amount: row.amount ?? '',
                 Remark: row.remarks ?? ''
@@ -768,30 +1449,45 @@ link(){
         // WORKER
         return data.map((row: any) => ({
             'Period Id': row.period_id ?? '',
-            'Profile Id': row.profileid ?? '',
-            'Project Id': row.project_id ?? '',
-            'Group Id': row.group_leader_id ?? '',
-            'Group Leader Name': row.group_leader_name ?? '',
-            'Site Name': row.project_name ?? '',
             'Period Name': row.period_name ?? '',
+            'Site Id': row.project_id ?? '',
+            'Site Name': row.project_name ?? '',
+            'Group Leader Id': row.group_leader_id ?? '',
+            'Group Leader Name': row.group_leader_name ?? '',
+            'Worker Id': row.profileid ?? '',
             'Worker Code': row.worker_code ?? '',
             'Worker Name': row.worker_name ?? '',
-            'Type(P/G)': row.type_p_g ?? '',
+            'Worker Mobile': row.mobileno ?? '',
+            'Worker Aadhaar': row.aadhaar_no ?? '',
+            Head: row.head ?? '',
+            'Transaction Date': this.datePipe.transform(row.transaction_date, 'dd/MM/yyyy') || '',
+            'Type(P/W)': row.type_p_g ?? '',
             Active: row.isactive ?? '',
-            Amount: row.amount ?? ''
+            Amount: row.amount ?? '',
+            Remark: row.remarks ?? ''
         }));
+    }
+
+    onDownloadClick(): void {
+        if (this.downloadValidationMessage) {
+            this.fundForm.get('paymentFor')?.markAsTouched();
+            this.fundForm.get('period')?.markAsTouched();
+            this.fundForm.get('projectName')?.markAsTouched();
+            return;
+        }
+        this.downloadExcel();
     }
 
     downloadExcel() {
         const params = this.getReportRequestParams('download');
         if (!params) {
-            this.errorSuccess('Please select Site, Period and Payment For before downloading.');
+            this.errorSuccess(this.downloadValidationMessage);
             return;
         }
         const payload: DropdownParamter = {
             returnType: params.returnType,
             returnValue: params.returnType === 'REQINPUT' ? this.selectedStatus : params.returnValue,
-            username: params.username || '',
+            username: params.username ?? null,
             option1: this.companyId,
             option2: params.option2
         };
@@ -805,6 +1501,10 @@ link(){
                 }
 
                 const worksheetData = this.buildWorksheetData(data);
+                if (!worksheetData.length) {
+                    this.errorSuccess('No data available for the selected filters.');
+                    return;
+                }
                 const worksheet = XLSX.utils.json_to_sheet(worksheetData);
                 const workbook = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(workbook, worksheet, 'Fund Allocation');

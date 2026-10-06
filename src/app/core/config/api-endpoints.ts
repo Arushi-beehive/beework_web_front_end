@@ -83,7 +83,10 @@ getapprovalrequesthaziri:'/beework/approval/create_approval_request_haziri',
     savefundexcel:'/beework/savefundexcel',
     uploadApprovedAmount:'/beework/fund/uploadApprovedAmount',
     uploadPaymentGroupLeader:'/beework/fund/uploadPaymentGroupLeader',
-    uploadPaymentWorker:'/beework/fund/uploadPaymentWorker'
+    uploadPaymentWorker:'/beework/fund/uploadPaymentWorker',
+    stageGroupleaderPayment:'/beework/fund/stageGroupleaderPayment',
+    stageWorkerPayment:'/beework/fund/stageWorkerPayment',
+    bulkUpdateWorkerProfileRate:'/beework/fund/bulkUpdateWorkerProfileRate'
   },
 
   report:{

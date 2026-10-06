@@ -104,7 +104,8 @@ export class CompanySetupComponent {
             pan:                  ['', [Validators.required, Validators.maxLength(25)]],
             ifsc:                 ['', [Validators.required, Validators.maxLength(25)]],
             branch:               ['', [Validators.required, Validators.maxLength(100)]],
-            timezone:             ['', Validators.required]  
+            timezone:             ['', Validators.required],
+            attendance:           [false]
         });
     }
 
@@ -191,7 +192,8 @@ export class CompanySetupComponent {
             pan:                  user.pan,
             accountno:            user.accountno,
             industrytype:         user.industry_type_id,
-            timezone:             user.timezone
+            timezone:             user.timezone,
+            attendance:           user.attendance_enabled === 'Y'
         });
 
         this.imageUrl = this.base64ToBlobUrl(user.companylogo);
@@ -358,7 +360,8 @@ export class CompanySetupComponent {
             p_companyLogo: this.logoBase64 || null,
             p_loginuser: loggedIn,
             p_industry: form.industrytype,
-            p_timezone: form.timezone
+            p_timezone: form.timezone,
+            p_attendance: form.attendance ? 'Y' : 'N',
         };
 
         this.companyService.upsertCompanyDetails(payload).subscribe({
